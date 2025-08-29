@@ -1,16 +1,13 @@
-import 'package:Vincere/ble_device/page_ble_connect.dart';
+import 'package:Vincere/page_ble_device/page_ble_connect.dart';
 import 'package:Vincere/component/card_muscle_result.dart';
 import 'package:Vincere/custom_widget/custom_button.dart';
 import 'package:Vincere/custom_widget/custom_text.dart';
-import 'package:Vincere/screen/screen_my_health_info.dart';
-import 'package:Vincere/screen/screen_my_page.dart';
-import 'package:Vincere/screen/screen_newsboard_list.dart';
-import 'package:Vincere/workout/page_statistics.dart';
+import 'package:Vincere/page_health/screen_my_health_info.dart';
+import 'package:Vincere/page_account/screen_my_page.dart';
+import 'package:Vincere/page_notice/screen_newsboard_list.dart';
+import 'package:Vincere/page_workout/page_statistics.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:intl/intl.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' show max;
 import 'package:flutter/services.dart';
 
@@ -20,8 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../component/metric_chart_dialog.dart';
-import 'screen_nutrition_info_popup.dart';
-import 'screen_my_health_info.dart';
+import '../page_nutrition/screen_nutrition_info_popup.dart';
 
 class MyHomePage extends StatefulWidget {
   final String title;
@@ -177,8 +173,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
   void updateProfileImage(String? url) {
-    // 마이페이지용 콜백함수
     setState(() {
+      // 마이페이지용 콜백함수
       _profileImageUrl = url;
     });
   }
@@ -189,7 +185,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     });
   }
 
-  // 세션에서 userId와 password 불러오기
   Future<void> _loadSessionData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -3925,7 +3920,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                           alignment: Alignment.centerLeft,
                           child: Container(
                             margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                            child: TextLarge(text: '{USER} 님의 \n운동등급에 따른 운동추천'),
+                            child: TextLarge(text: '${userData?["userNm"] ?? ""} 님의 \n운동등급에 따른 운동추천'),
                           ),
                         ),
                         Card(
