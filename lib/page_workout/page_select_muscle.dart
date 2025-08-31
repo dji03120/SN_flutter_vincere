@@ -1,10 +1,11 @@
 import 'package:Vincere/component/header.dart';
+import 'package:Vincere/custom_widget/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Vincere/workout/workout_provider.dart';
+import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/custom_widget/custom_button.dart';
 import 'package:Vincere/custom_widget/custom_text.dart';
-import 'package:Vincere/workout/page_workout_plan.dart';
+import 'package:Vincere/page_workout/page_workout_plan.dart';
 
 class SelectMuscle extends StatefulWidget {
   const SelectMuscle({super.key});
@@ -34,6 +35,7 @@ class Component3State extends State<SelectMuscle> {
 
     return Scaffold(
       appBar: const Header(),
+      drawer: CustomDrawer(isLogin: true),
       body: Container(
         width: screenWidth,
         height: screenHeight,
@@ -80,8 +82,7 @@ class Component3State extends State<SelectMuscle> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => WorkoutPlan(
-                            explainText:
-                                '운동 계획이 설정되었습니다.\n준비가 되셨다면 시작버튼을 눌러주세요',
+                            explainText: '운동 계획이 설정되었습니다.\n준비가 되셨다면 시작버튼을 눌러주세요',
                           ),
                         ),
                       );

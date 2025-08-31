@@ -1,7 +1,7 @@
 import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/custom_widget/custom_button.dart';
-import 'package:Vincere/workout/page_select_mode.dart';
+import 'package:Vincere/page_workout/page_select_mode.dart';
 
 class PageConnectBLE extends StatefulWidget {
   const PageConnectBLE({super.key});

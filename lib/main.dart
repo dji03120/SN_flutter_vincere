@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:provider/provider.dart';
-import 'package:Vincere/workout/workout_provider.dart';
+import 'package:Vincere/provider_models.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(create: (_) => WorkoutModel(), child: const MyApp()),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => WorkoutModel()),
+        ChangeNotifierProvider(create: (_) => UserModel()),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 

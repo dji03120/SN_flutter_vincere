@@ -56,8 +56,6 @@ class _MyNutriCheckScreenState extends State<MyNutriCheck> {
     }
   }
 
-  final TextEditingController _textEditingController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,18 +85,20 @@ class _MyNutriCheckScreenState extends State<MyNutriCheck> {
               color: Colors.green,
               padding: const EdgeInsets.all(20.0),
               child: _myNutriData != null
-                  ? Text('${_myNutriData?["content"] ?? "데이터가 없습니다."}',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                ),
-              )
-                  : Text('아직 영양상태 평가 및 추천받은 식단이 없습니다.',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                ),
-              ),
+                  ? Text(
+                      '${_myNutriData?["content"] ?? "데이터가 없습니다."}',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      '아직 영양상태 평가 및 추천받은 식단이 없습니다.',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
             )
           ],
         ),

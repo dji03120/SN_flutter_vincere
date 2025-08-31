@@ -14,7 +14,7 @@ class RoundButton extends StatelessWidget {
     required this.onPressed,
     this.color = const Color(0xFFFFFFFF),
     this.borderRadius = 30, // 기본값 30
-    this.textSize = 18,
+    this.textSize = 20,
     this.margin = const EdgeInsets.fromLTRB(10, 0, 10, 5),
   });
 
@@ -31,7 +31,7 @@ class RoundButton extends StatelessWidget {
             shadowColor: Colors.black.withOpacity(1),
             backgroundColor: color, // 배경 흰색
             foregroundColor: Colors.black, // 글자 검정
-            padding: EdgeInsets.symmetric(vertical: textSize / 1.5),
+            padding: EdgeInsets.symmetric(vertical: textSize * 0.7),
             textStyle: TextStyle(
               fontSize: textSize,
               fontWeight: FontWeight.bold,
@@ -56,7 +56,7 @@ class RoundCheckButton extends StatefulWidget {
     super.key,
     required this.text,
     this.onChanged,
-    this.textSize = 18,
+    this.textSize = 20,
     this.margin = const EdgeInsets.fromLTRB(10, 0, 10, 5),
   });
   @override
@@ -92,7 +92,7 @@ class _RoundCheckButtonState extends State<RoundCheckButton> {
             shadowColor: Colors.black.withOpacity(1),
             backgroundColor: _isSelected ? Colors.lightBlue[100] : Colors.white,
             foregroundColor: Colors.black,
-            padding: EdgeInsets.symmetric(vertical: widget.textSize / 1.8),
+            padding: EdgeInsets.symmetric(vertical: widget.textSize / 1.2),
             textStyle: TextStyle(
               fontSize: widget.textSize,
               fontWeight: FontWeight.bold,

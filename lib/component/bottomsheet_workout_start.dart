@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:Vincere/custom_widget/custom_button.dart';
 import 'package:Vincere/custom_widget/custom_text.dart';
-import 'package:Vincere/workout/page_workout_content.dart';
+import 'package:Vincere/page_workout/page_workout_content.dart';
 
 class BottomsheetWorkoutStart extends StatelessWidget {
   const BottomsheetWorkoutStart({super.key});

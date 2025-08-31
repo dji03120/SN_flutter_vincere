@@ -1,5 +1,5 @@
 import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/screen/screen_main.dart';
+import 'package:Vincere/screen/screen_home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Vincere/export/screens.dart';
@@ -24,14 +24,13 @@ class _QnaScreenState extends State<Qna> {
   int _selectedIndex = 0; // 현재 선택된 탭 인덱스
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _loadSessionData().then((_){
-      if(_isLogIn){
+    _loadSessionData().then((_) {
+      if (_isLogIn) {
         _getQnaInfo();
       }
     });
-
   }
 
   Future<void> _loadSessionData() async {
@@ -39,25 +38,25 @@ class _QnaScreenState extends State<Qna> {
     setState(() {
       userId = prefs.getString('userId');
       password = prefs.getString('password');
-      if(userId != null && password != null){
+      if (userId != null && password != null) {
         _isLogIn = true;
       }
     });
   }
 
   Future<void> _getQnaInfo() async {
-    try{
+    try {
       ApiService apiService = ApiService();
       print('userId >>> $userId');
       Map<String, dynamic> result = await apiService.fetchGetQna(userId.toString());
       print('Recevied data: $result');
 
-      if(result.containsKey('myQnAList')){
+      if (result.containsKey('myQnAList')) {
         setState(() {
           _qnaData = List<Map<String, dynamic>>.from(result['myQnAList']);
         });
       }
-    } catch(e){
+    } catch (e) {
       print('Error: $e');
     }
   }
@@ -144,10 +143,7 @@ class _QnaScreenState extends State<Qna> {
                         children: [
                           Text(
                             '질문 등록하기',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF555555)),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF555555)),
                           ),
                           SizedBox(width: 10),
                           Image.asset(
@@ -168,142 +164,134 @@ class _QnaScreenState extends State<Qna> {
           Expanded(
             child: _qnaData.isEmpty
                 ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  RichText(
-                    text: const TextSpan(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        TextSpan(
-                          text: '작성된 ',
-                          style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500),
-                        ),
-                        TextSpan(
-                          text: 'Q&A 문의글',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
-                          ),
-                        ),
-                        TextSpan(
-                          text: '이 없습니다.',
-                          style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-
-                  ),
-                ],
-              ),
-            )
-                : ListView.builder(
-              itemCount: _qnaData.length,
-              itemBuilder: (context, index) {
-                final rowData = _qnaData[index];
-                return Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QnaView(qnaData: rowData),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0), // 내부 패딩 추가
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom:
-                            BorderSide(color: Color(0xFFEDEDED), width: 1),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        RichText(
+                          text: const TextSpan(
                             children: [
-                              Expanded(
-                                flex: 3,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 24),
-                                    Text(
-                                      rowData['title'] ?? '',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                    SizedBox(height: 14),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          rowData['ansRegId'] == null || rowData['ansRegId'] == '' ? '미답변' : '답변완료',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: rowData['ansRegId'] == null || rowData['ansRegId'] == ''
-                                                ? Color(0xFF555555)
-                                                : const Color(0xFF00914B),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        if (rowData['regDtm'] != null)
-                                          Row(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8.0), // 좌우 패딩 추가
-                                                child: Container(
-                                                  height: 12,
-                                                  width: 1,
-                                                  color: Color(0xFF555555),
-                                                ),
-                                              ),
-                                              Text(
-                                                rowData['regDtm'],
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xFF555555),
-                                                  fontWeight:FontWeight.w500
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 24),
-                                  ],
+                              TextSpan(
+                                text: '작성된 ',
+                                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500),
+                              ),
+                              TextSpan(
+                                text: 'Q&A 문의글',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black,
                                 ),
                               ),
-                              Expanded(
-                                flex: 2,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      rowData['date'] ?? '',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              TextSpan(
+                                text: '이 없습니다.',
+                                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                );
-              },
-            ),
+                  )
+                : ListView.builder(
+                    itemCount: _qnaData.length,
+                    itemBuilder: (context, index) {
+                      final rowData = _qnaData[index];
+                      return Column(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => QnaView(qnaData: rowData),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0), // 내부 패딩 추가
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(color: Color(0xFFEDEDED), width: 1),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(height: 24),
+                                          Text(
+                                            rowData['title'] ?? '',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                          SizedBox(height: 14),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                rowData['ansRegId'] == null || rowData['ansRegId'] == '' ? '미답변' : '답변완료',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: rowData['ansRegId'] == null || rowData['ansRegId'] == '' ? Color(0xFF555555) : const Color(0xFF00914B),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              if (rowData['regDtm'] != null)
+                                                Row(
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8.0), // 좌우 패딩 추가
+                                                      child: Container(
+                                                        height: 12,
+                                                        width: 1,
+                                                        color: Color(0xFF555555),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      rowData['regDtm'],
+                                                      style: const TextStyle(fontSize: 14, color: Color(0xFF555555), fontWeight: FontWeight.w500),
+                                                    ),
+                                                  ],
+                                                ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 24),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            rowData['date'] ?? '',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -311,7 +299,7 @@ class _QnaScreenState extends State<Qna> {
   }
 }
 
-class QnaData extends DataTableSource{
+class QnaData extends DataTableSource {
   final List<Map<String, dynamic>> _qnaData;
   final BuildContext context;
 
@@ -334,12 +322,7 @@ class QnaData extends DataTableSource{
           ),
         ),
         onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => QnaView(qnaData: rowData)
-              )
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => QnaView(qnaData: rowData)));
         },
       ),
       DataCell(
@@ -353,12 +336,7 @@ class QnaData extends DataTableSource{
           ),
         ),
         onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => QnaView(qnaData: rowData)
-              )
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => QnaView(qnaData: rowData)));
         },
       ),
     ]);

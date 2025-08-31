@@ -2,7 +2,7 @@ import 'package:Vincere/export/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/screen/screen_kakao_address.dart';
+import 'package:Vincere/page_account/screen_kakao_address.dart';
 
 class SingUpScreen extends StatefulWidget {
   const SingUpScreen({super.key});
@@ -13,8 +13,7 @@ class SingUpScreen extends StatefulWidget {
 
 class HangulEnglishInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     // 한글, 영문만 허용하는 정규식
     final RegExp reg = RegExp(r'^[a-zA-Z가-힣\s]*$');
 
@@ -28,8 +27,7 @@ class HangulEnglishInputFormatter extends TextInputFormatter {
 
 class IdInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     // 영문, 숫자만 허용하는 정규식
     final RegExp reg = RegExp(r'^[a-zA-Z0-9]*$');
 
@@ -51,10 +49,8 @@ class _SingUpScreenState extends State<SingUpScreen> {
   TextEditingController addressCon = TextEditingController();
   TextEditingController addressDtCon = TextEditingController();
   TextEditingController phoneCon = TextEditingController();
-  TextEditingController emailLocalPartCon =
-      TextEditingController(); // 이메일 로컬 파트 (앞 부분)
-  TextEditingController emailCustomDomainCon =
-      TextEditingController(); // 직접 입력 도메인
+  TextEditingController emailLocalPartCon = TextEditingController(); // 이메일 로컬 파트 (앞 부분)
+  TextEditingController emailCustomDomainCon = TextEditingController(); // 직접 입력 도메인
   TextEditingController zipCdCon = TextEditingController(); // 우편번호 입력 필드
 
   String userId = '';
@@ -98,9 +94,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
       _validateUserNm = userNmCon.text.isEmpty;
       _validateBym = bymCon.text.isEmpty || bymCon.text.length != 8;
       _validatePhone = phoneCon.text.isEmpty;
-      _validateEmail = emailLocalPartCon.text.isEmpty ||
-          (_isCustomDomain &&
-              emailCustomDomainCon.text.isEmpty); // 직접 입력 도메인 확인
+      _validateEmail = emailLocalPartCon.text.isEmpty || (_isCustomDomain && emailCustomDomainCon.text.isEmpty); // 직접 입력 도메인 확인
 
       // 주소 관련 검증 상태 추가
       _validateZipCd = zipCdCon.text.isEmpty; // 우편번호 필드
@@ -115,8 +109,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
       _passWdError = '';
       _passWdChkError = '';
       _validatePw = passWdCon.text.isEmpty; // 비밀번호 필드 검증
-      _validatePwChk = passWdChkCon.text.isEmpty ||
-          passWdCon.text != passWdChkCon.text; // 재확인 필드 검증
+      _validatePwChk = passWdChkCon.text.isEmpty || passWdCon.text != passWdChkCon.text; // 재확인 필드 검증
 
       if (passWdCon.text.isEmpty) {
         _passWdError = '비밀번호를 입력해 주세요.';
@@ -182,8 +175,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
 
     try {
       ApiService apiService = ApiService();
-      Map<String, dynamic> result =
-          await apiService.fetchUserIdDuplication(userId);
+      Map<String, dynamic> result = await apiService.fetchUserIdDuplication(userId);
 
       if (result.containsKey('result')) {
         int duplicationResult = result['result']; // API에서 반환한 중복 여부 (0 또는 1)
@@ -270,15 +262,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
       return;
     }
 
-    if (_validateUserId ||
-        _validatePw ||
-        _validatePwChk ||
-        _validateUserNm ||
-        _validateBym ||
-        _validateEmail ||
-        _validateZipCd ||
-        _validateAddr ||
-        _validatePhone) {
+    if (_validateUserId || _validatePw || _validatePwChk || _validateUserNm || _validateBym || _validateEmail || _validateZipCd || _validateAddr || _validatePhone) {
       _showMissingFieldsAlert();
       return; // 유효하지 않은 필드가 있으면 함수 종료
     }
@@ -287,9 +271,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
     addr = addressCon.text; // 주소 입력값
     addrDtl = addressDtCon.text; // 상세주소 입력값
     zipCd = zipCdCon.text; // 우편번호 입력값
-    email = _isCustomDomain
-        ? '${emailLocalPartCon.text}@${emailCustomDomainCon.text}'
-        : '${emailLocalPartCon.text}@$emailDomain';
+    email = _isCustomDomain ? '${emailLocalPartCon.text}@${emailCustomDomainCon.text}' : '${emailLocalPartCon.text}@$emailDomain';
 
     try {
       ApiService apiService = ApiService();
@@ -315,10 +297,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
             content: const Text('회원가입이 완료되었습니다. 로그인을 해주세요.'),
             actions: [
               TextButton(
-                onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const LoginScreen())),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen())),
                 child: const Text('로그인 하기'),
               ),
             ],
@@ -376,23 +355,19 @@ class _SingUpScreenState extends State<SingUpScreen> {
       hintText: hint,
       filled: true,
       fillColor: const Color(0xFFF8F9FB),
-      hintStyle: const TextStyle(
-          color: Color(0xFF8D8D8D), fontSize: 16, fontWeight: FontWeight.w400),
+      hintStyle: const TextStyle(color: Color(0xFF8D8D8D), fontSize: 16, fontWeight: FontWeight.w400),
       // 에러 상태에 따라 보더 색상 변경
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
         borderSide: BorderSide(
-          color:
-              isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), // 에러 상태 시 빨간색 보더
+          color: isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), // 에러 상태 시 빨간색 보더
           width: 1.0,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
         borderSide: BorderSide(
-          color: isError
-              ? Color(0xFFAA4743)
-              : Color(0xFFEDEDED), // 에러 상태 시 빨간색 포커스 보더
+          color: isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), // 에러 상태 시 빨간색 포커스 보더
           width: 1.0,
         ),
       ),
@@ -508,10 +483,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                               hintText: '아이디를 입력해 주세요',
                               filled: true,
                               fillColor: const Color(0xFFF8F9FB),
-                              hintStyle: const TextStyle(
-                                  color: Color(0xFF8D8D8D),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400),
+                              hintStyle: const TextStyle(color: Color(0xFF8D8D8D), fontSize: 16, fontWeight: FontWeight.w400),
                               // 보더 색상 처리
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16.0),
@@ -519,8 +491,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                   color: _validateUserId
                                       ? Color(0xFFAA4743) // 에러 상태
                                       : _isUserIdChecked
-                                          ? const Color(
-                                              0xFF007331) // 중복 확인 성공 시 초록색
+                                          ? const Color(0xFF007331) // 중복 확인 성공 시 초록색
                                           : Color(0xFFEDEDED), // 기본 상태
                                   width: 1.0,
                                 ),
@@ -534,8 +505,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                   width: 1.0,
                                 ),
                               ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 20),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                             ),
                             keyboardType: TextInputType.text,
                           ),
@@ -560,20 +530,17 @@ class _SingUpScreenState extends State<SingUpScreen> {
                               elevation: 0,
                               // 둥근 모서리 설정
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(16.0), // 둥글기 조절
+                                borderRadius: BorderRadius.circular(16.0), // 둥글기 조절
                               ),
                               // 버튼 내부 패딩 조정
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                             ),
                             child: const Text(
                               '중복확인',
                               style: TextStyle(
                                 fontSize: 18, // 텍스트 크기
                                 fontWeight: FontWeight.w500, // 텍스트 굵기
-                                color: Color(
-                                    0xFF555555), // 텍스트 색상 (foregroundColor와 동일하게 설정)
+                                color: Color(0xFF555555), // 텍스트 색상 (foregroundColor와 동일하게 설정)
                               ),
                             ),
                           ),
@@ -653,8 +620,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: userNmCon,
-                      decoration: getInputDecoration('이름을 입력해 주세요',
-                          isError: _validateUserNm),
+                      decoration: getInputDecoration('이름을 입력해 주세요', isError: _validateUserNm),
                     ),
                     const SizedBox(height: 30),
                     Column(
@@ -693,8 +659,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                               child: TextFormField(
                                 controller: zipCdCon,
                                 readOnly: true,
-                                decoration: getInputDecoration('우편번호',
-                                    isError: _validateZipCd // 우편번호 미입력 시 에러 처리
+                                decoration: getInputDecoration('우편번호', isError: _validateZipCd // 우편번호 미입력 시 에러 처리
                                     ),
                               ),
                             ),
@@ -708,8 +673,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                   final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          KakaoAddressSearchScreen(),
+                                      builder: (context) => KakaoAddressSearchScreen(),
                                     ),
                                   );
                                   if (result != null) {
@@ -722,22 +686,19 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.black,
-                                  side: const BorderSide(
-                                      color: Color(0xFF555555), width: 1),
+                                  side: const BorderSide(color: Color(0xFF555555), width: 1),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16.0),
                                   ),
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                                 ),
                                 child: const Text(
                                   '주소찾기',
                                   style: TextStyle(
                                     fontSize: 18, // 텍스트 크기
                                     fontWeight: FontWeight.w500, // 텍스트 굵기
-                                    color: Color(
-                                        0xFF555555), // 텍스트 색상 (foregroundColor와 동일하게 설정)
+                                    color: Color(0xFF555555), // 텍스트 색상 (foregroundColor와 동일하게 설정)
                                   ),
                                 ),
                               ),
@@ -749,17 +710,13 @@ class _SingUpScreenState extends State<SingUpScreen> {
                         TextFormField(
                           controller: addressCon,
                           readOnly: true,
-                          decoration: getInputDecoration('주소',
-                              isError:
-                                  _validateAddr && addressDtCon.text.isEmpty),
+                          decoration: getInputDecoration('주소', isError: _validateAddr && addressDtCon.text.isEmpty),
                         ),
                         const SizedBox(height: 8),
                         // 상세 주소 입력 필드
                         TextFormField(
                           controller: addressDtCon,
-                          decoration: getInputDecoration('상세 주소를 입력해 주세요',
-                              isError:
-                                  _validateAddr && addressDtCon.text.isEmpty),
+                          decoration: getInputDecoration('상세 주소를 입력해 주세요', isError: _validateAddr && addressDtCon.text.isEmpty),
                         ),
                       ],
                     ),
@@ -791,11 +748,9 @@ class _SingUpScreenState extends State<SingUpScreen> {
                     TextFormField(
                       controller: phoneCon,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'[\d-]')), // 숫자와 -만 허용
+                        FilteringTextInputFormatter.allow(RegExp(r'[\d-]')), // 숫자와 -만 허용
                       ],
-                      decoration: getInputDecoration('전화번호를 입력해 주세요',
-                          isError: _validatePhone),
+                      decoration: getInputDecoration('전화번호를 입력해 주세요', isError: _validatePhone),
                       keyboardType: TextInputType.phone,
                     ),
                     Column(
@@ -836,19 +791,16 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                 flex: 4,
                                 child: TextFormField(
                                   controller: emailLocalPartCon,
-                                  decoration: getInputDecoration('user01',
-                                      isError: _validateEmail),
+                                  decoration: getInputDecoration('user01', isError: _validateEmail),
                                 ),
                               ),
                               // @ 문자
                               Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                 alignment: Alignment.center,
                                 child: const Text(
                                   '@',
-                                  style: TextStyle(
-                                      fontSize: 20, color: Colors.black),
+                                  style: TextStyle(fontSize: 20, color: Colors.black),
                                 ),
                               ),
                               // 도메인 드롭다운 또는 직접 입력 필드
@@ -862,61 +814,37 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                         flex: 5,
                                         child: TextFormField(
                                           controller: emailCustomDomainCon,
-                                          keyboardType:
-                                              TextInputType.emailAddress,
+                                          keyboardType: TextInputType.emailAddress,
                                           decoration: getInputDecoration(
                                             '도메인을 입력해 주세요', // 힌트 텍스트만 사용
-                                            errorText: _validateEmail &&
-                                                    emailCustomDomainCon
-                                                        .text.isEmpty
-                                                ? "도메인을 입력해 주세요"
-                                                : null,
+                                            errorText: _validateEmail && emailCustomDomainCon.text.isEmpty ? "도메인을 입력해 주세요" : null,
                                           ),
                                         ),
                                       ),
-                                    if (_isCustomDomain)
-                                      const SizedBox(width: 8), // 간격 추가
+                                    if (_isCustomDomain) const SizedBox(width: 8), // 간격 추가
 
                                     // 도메인 선택 드롭다운 (오른쪽에 배치)
                                     Expanded(
                                       flex: 5,
                                       child: DropdownButtonFormField<String>(
-                                        value: _isCustomDomain
-                                            ? 'custom'
-                                            : emailDomain,
+                                        value: _isCustomDomain ? 'custom' : emailDomain,
                                         items: [
-                                          DropdownMenuItem(
-                                              value: 'naver.com',
-                                              child: Text('naver.com')),
-                                          DropdownMenuItem(
-                                              value: 'gmail.com',
-                                              child: Text('gmail.com')),
-                                          DropdownMenuItem(
-                                              value: 'daum.net',
-                                              child: Text('daum.net')),
-                                          DropdownMenuItem(
-                                              value: 'hanmail.net',
-                                              child: Text('hanmail.net')),
-                                          DropdownMenuItem(
-                                              value: 'nate.com',
-                                              child: Text('nate.com')),
-                                          DropdownMenuItem(
-                                              value: 'custom',
-                                              child: Text('직접 입력')),
+                                          DropdownMenuItem(value: 'naver.com', child: Text('naver.com')),
+                                          DropdownMenuItem(value: 'gmail.com', child: Text('gmail.com')),
+                                          DropdownMenuItem(value: 'daum.net', child: Text('daum.net')),
+                                          DropdownMenuItem(value: 'hanmail.net', child: Text('hanmail.net')),
+                                          DropdownMenuItem(value: 'nate.com', child: Text('nate.com')),
+                                          DropdownMenuItem(value: 'custom', child: Text('직접 입력')),
                                         ],
                                         onChanged: (String? value) {
                                           setState(() {
                                             if (value == 'custom') {
-                                              _isCustomDomain =
-                                                  true; // 직접 입력 활성화
+                                              _isCustomDomain = true; // 직접 입력 활성화
                                               emailDomain = ''; // 도메인 초기화
                                             } else {
-                                              _isCustomDomain =
-                                                  false; // 드롭다운 활성화
-                                              emailDomain =
-                                                  value ?? ''; // 도메인 값 설정
-                                              emailCustomDomainCon
-                                                  .clear(); // 직접 입력 값 초기화
+                                              _isCustomDomain = false; // 드롭다운 활성화
+                                              emailDomain = value ?? ''; // 도메인 값 설정
+                                              emailCustomDomainCon.clear(); // 직접 입력 값 초기화
                                             }
                                           });
                                         },
@@ -960,8 +888,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: bymCon,
-                      decoration:
-                          getInputDecoration('YYYYMMDD', isError: _validateBym),
+                      decoration: getInputDecoration('YYYYMMDD', isError: _validateBym),
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         LengthLimitingTextInputFormatter(8),
@@ -977,10 +904,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                             flex: 3, // 좌측 title 영역
                             child: Text(
                               '육체활동 설정',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
                             ),
                           ),
                           Expanded(
@@ -988,16 +912,12 @@ class _SingUpScreenState extends State<SingUpScreen> {
                             child: Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: _validateActivityLevel
-                                      ? Color(0xFFAA4743)
-                                      : Color(0xFF555555), // 설정하지 않으면 빨간색
+                                  color: _validateActivityLevel ? Color(0xFFAA4743) : Color(0xFF555555), // 설정하지 않으면 빨간색
                                   width: 1,
                                 ),
-                                borderRadius:
-                                    BorderRadius.circular(16.0), // 모서리 둥글게
+                                borderRadius: BorderRadius.circular(16.0), // 모서리 둥글게
                               ),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 16.0), // 내부 여백
+                              padding: EdgeInsets.symmetric(horizontal: 16.0), // 내부 여백
                               child: DropdownButtonHideUnderline(
                                 // 기본 밑줄 제거
                                 child: DropdownButton<String>(
@@ -1007,33 +927,23 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                   hint: Center(
                                     child: Text(
                                       '선택',
-                                      style: TextStyle(
-                                          color: Color(0xFF555555),
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 18),
+                                      style: TextStyle(color: Color(0xFF555555), fontWeight: FontWeight.w500, fontSize: 18),
                                     ),
                                   ),
                                   items: [
                                     DropdownMenuItem(
                                       value: 'LOW',
                                       child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .center, // 수직 가운데 정렬
+                                        crossAxisAlignment: CrossAxisAlignment.center, // 수직 가운데 정렬
                                         children: [
                                           SizedBox(
                                             width: 100, // "좌업자" 텍스트의 고정 너비
-                                            child: Text('좌업자',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
+                                            child: Text('좌업자', style: TextStyle(fontWeight: FontWeight.bold)),
                                           ),
                                           Expanded(
                                             child: Text(
                                               '일일활동량 30분 미만',
-                                              style: TextStyle(
-                                                  color: Color(0xFF00914B),
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500),
+                                              style: TextStyle(color: Color(0xFF00914B), fontSize: 13, fontWeight: FontWeight.w500),
                                             ),
                                           ),
                                         ],
@@ -1042,23 +952,16 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                     DropdownMenuItem(
                                       value: 'NORMAL',
                                       child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
                                         children: [
                                           SizedBox(
                                             width: 100, // "보통활동"과 동일한 너비
-                                            child: Text('보통활동',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
+                                            child: Text('보통활동', style: TextStyle(fontWeight: FontWeight.bold)),
                                           ),
                                           Expanded(
                                             child: Text(
                                               '일일활동량 30분에서 60분 사이',
-                                              style: TextStyle(
-                                                  color: Color(0xFF00914B),
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500),
+                                              style: TextStyle(color: Color(0xFF00914B), fontSize: 13, fontWeight: FontWeight.w500),
                                             ),
                                           ),
                                         ],
@@ -1067,23 +970,16 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                     DropdownMenuItem(
                                       value: 'HIGH',
                                       child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
                                         children: [
                                           SizedBox(
                                             width: 100, // "많은 육체활동"과 동일한 너비
-                                            child: Text('많은 육체활동',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
+                                            child: Text('많은 육체활동', style: TextStyle(fontWeight: FontWeight.bold)),
                                           ),
                                           Expanded(
                                             child: Text(
                                               '일일활동량 60분 이상',
-                                              style: TextStyle(
-                                                  color: Color(0xFF007331),
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500),
+                                              style: TextStyle(color: Color(0xFF007331), fontSize: 13, fontWeight: FontWeight.w500),
                                             ),
                                           ),
                                         ],
@@ -1111,8 +1007,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                       width: MediaQuery.of(context).size.width * 0.95,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start, // 왼쪽 정렬
-                        crossAxisAlignment:
-                            CrossAxisAlignment.center, // 수직 가운데 정렬
+                        crossAxisAlignment: CrossAxisAlignment.center, // 수직 가운데 정렬
                         children: [
                           // 성별 라벨
                           Text(
@@ -1139,13 +1034,10 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                       });
                                     },
                                   ),
-                                  const SizedBox(
-                                      width: 8), // 라디오 버튼과 "남성" 라벨 간의 간격
+                                  const SizedBox(width: 8), // 라디오 버튼과 "남성" 라벨 간의 간격
                                   const Text(
                                     '남성',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                                   ),
                                 ],
                               ),
@@ -1162,13 +1054,10 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                       });
                                     },
                                   ),
-                                  const SizedBox(
-                                      width: 8), // 라디오 버튼과 "여성" 라벨 간의 간격
+                                  const SizedBox(width: 8), // 라디오 버튼과 "여성" 라벨 간의 간격
                                   const Text(
                                     '여성',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                                   ),
                                 ],
                               ),
@@ -1207,8 +1096,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                           },
                           child: const Text(
                             '개인정보 제공 및 이용에 동의합니다.',
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w400),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                           ),
                         ),
                         const SizedBox(width: 10), // 텍스트 간 간격 추가
@@ -1261,8 +1149,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                   return;
                                 }
 
-                                if (_formKey.currentState?.validate() ??
-                                    false) {
+                                if (_formKey.currentState?.validate() ?? false) {
                                   _regUser(); // 회원가입 처리
                                 }
                               }
@@ -1273,8 +1160,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                               : Colors.grey, // 체크박스 미동의 시 회색 배경
                           foregroundColor: Colors.white, // 텍스트 색상 흰색
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(16.0), // 버튼 모서리 둥글게
+                            borderRadius: BorderRadius.circular(16.0), // 버튼 모서리 둥글게
                           ),
                         ),
                         child: const Text(

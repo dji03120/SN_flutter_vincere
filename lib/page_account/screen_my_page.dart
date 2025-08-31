@@ -1,7 +1,7 @@
 import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/screen/screen_kakao_address.dart';
-import 'package:Vincere/account/screen_update_pswd.dart';
+import 'package:Vincere/page_account/screen_kakao_address.dart';
+import 'package:Vincere/page_account/screen_update_pswd.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -50,8 +50,7 @@ class _MyPageState extends State<MyPage> {
   void initState() {
     super.initState();
 
-    currentActivityLevel =
-        widget.userData?["activityLevel"]?.toUpperCase() ?? "LOW";
+    currentActivityLevel = widget.userData?["activityLevel"]?.toUpperCase() ?? "LOW";
     userId = widget.userData?["userId"];
 
     //이름 초기값 설정
@@ -107,23 +106,19 @@ class _MyPageState extends State<MyPage> {
       hintText: hint,
       filled: true,
       fillColor: const Color(0xFFF8F9FB),
-      hintStyle: const TextStyle(
-          color: Color(0xFF8D8D8D), fontSize: 16, fontWeight: FontWeight.w400),
+      hintStyle: const TextStyle(color: Color(0xFF8D8D8D), fontSize: 16, fontWeight: FontWeight.w400),
       // 에러 상태에 따라 보더 색상 변경
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
         borderSide: BorderSide(
-          color:
-              isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), // 에러 상태 시 빨간색 보더
+          color: isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), // 에러 상태 시 빨간색 보더
           width: 1.0,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
         borderSide: BorderSide(
-          color: isError
-              ? Color(0xFFAA4743)
-              : Color(0xFFEDEDED), // 에러 상태 시 빨간색 포커스 보더
+          color: isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), // 에러 상태 시 빨간색 포커스 보더
           width: 1.0,
         ),
       ),
@@ -173,13 +168,7 @@ class _MyPageState extends State<MyPage> {
     _validateFields();
 
     // 검증 실패 시 중단
-    if (_validateUserNm ||
-        _validateEmail ||
-        _validatePhone ||
-        _validateBym ||
-        _validateZipCd ||
-        _validateAddr ||
-        _validateActivityLevel) {
+    if (_validateUserNm || _validateEmail || _validatePhone || _validateBym || _validateZipCd || _validateAddr || _validateActivityLevel) {
       return;
     }
 
@@ -243,8 +232,7 @@ class _MyPageState extends State<MyPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start, // 수직 정렬을 위쪽으로 맞춤
+                  crossAxisAlignment: CrossAxisAlignment.start, // 수직 정렬을 위쪽으로 맞춤
                   children: [
                     // 회원정보 텍스트와 비밀번호 변경
                     Expanded(
@@ -265,8 +253,7 @@ class _MyPageState extends State<MyPage> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                    builder: (context) => const UpdatePswd()),
+                                MaterialPageRoute(builder: (context) => const UpdatePswd()),
                               );
                             },
                             child: Row(
@@ -279,8 +266,7 @@ class _MyPageState extends State<MyPage> {
                                     color: Color(0xFF555555),
                                   ),
                                 ),
-                                Icon(Icons.chevron_right,
-                                    color: Color(0xFF555555)),
+                                Icon(Icons.chevron_right, color: Color(0xFF555555)),
                               ],
                             ),
                           ),
@@ -308,13 +294,8 @@ class _MyPageState extends State<MyPage> {
                               child: CircleAvatar(
                                 radius: 58, // Avatar 크기
                                 backgroundColor: Colors.white,
-                                backgroundImage: _profileImageUrl != null
-                                    ? NetworkImage(_profileImageUrl!)
-                                    : null,
-                                child: _profileImageUrl == null
-                                    ? Image.asset('images/profile_user.png',
-                                        width: 60, height: 60)
-                                    : null,
+                                backgroundImage: _profileImageUrl != null ? NetworkImage(_profileImageUrl!) : null,
+                                child: _profileImageUrl == null ? Image.asset('images/profile_user.png', width: 60, height: 60) : null,
                               ),
                             ),
                             Positioned(
@@ -330,17 +311,12 @@ class _MyPageState extends State<MyPage> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: <Widget>[
                                             ListTile(
-                                              leading: const Icon(
-                                                  Icons.photo_library),
+                                              leading: const Icon(Icons.photo_library),
                                               title: const Text('갤러리에서 선택'),
                                               onTap: () async {
                                                 Navigator.pop(context);
-                                                final ImagePicker picker =
-                                                    ImagePicker();
-                                                final XFile? image =
-                                                    await picker.pickImage(
-                                                        source: ImageSource
-                                                            .gallery);
+                                                final ImagePicker picker = ImagePicker();
+                                                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
                                                 if (image != null) {
                                                   setState(() {
                                                     _profileImage = image;
@@ -350,17 +326,12 @@ class _MyPageState extends State<MyPage> {
                                               },
                                             ),
                                             ListTile(
-                                              leading: const Icon(
-                                                  Icons.photo_camera),
+                                              leading: const Icon(Icons.photo_camera),
                                               title: const Text('카메라로 촬영'),
                                               onTap: () async {
                                                 Navigator.pop(context);
-                                                final ImagePicker picker =
-                                                    ImagePicker();
-                                                final XFile? image =
-                                                    await picker.pickImage(
-                                                        source:
-                                                            ImageSource.camera);
+                                                final ImagePicker picker = ImagePicker();
+                                                final XFile? image = await picker.pickImage(source: ImageSource.camera);
                                                 if (image != null) {
                                                   setState(() {
                                                     _profileImage = image;
@@ -371,8 +342,7 @@ class _MyPageState extends State<MyPage> {
                                             ),
                                             if (_profileImageUrl != null)
                                               ListTile(
-                                                leading:
-                                                    const Icon(Icons.delete),
+                                                leading: const Icon(Icons.delete),
                                                 title: const Text('프로필 사진 삭제'),
                                                 onTap: () async {
                                                   Navigator.pop(context);
@@ -465,8 +435,7 @@ class _MyPageState extends State<MyPage> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: emailCon,
-                  decoration: getInputDecoration('이메일을 입력해 주세요',
-                      isError: _validateEmail),
+                  decoration: getInputDecoration('이메일을 입력해 주세요', isError: _validateEmail),
                 ),
                 const SizedBox(height: 30),
                 Row(
@@ -495,8 +464,7 @@ class _MyPageState extends State<MyPage> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: phoneCon,
-                  decoration: getInputDecoration('연락처를 입력해 주세요',
-                      isError: _validatePhone),
+                  decoration: getInputDecoration('연락처를 입력해 주세요', isError: _validatePhone),
                 ),
                 const SizedBox(height: 30),
                 Row(
@@ -525,8 +493,7 @@ class _MyPageState extends State<MyPage> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: bymCon,
-                  decoration: getInputDecoration('생년월일을 입력해 주세요',
-                      isError: _validateBym),
+                  decoration: getInputDecoration('생년월일을 입력해 주세요', isError: _validateBym),
                 ),
                 const SizedBox(height: 30),
                 Column(
@@ -565,8 +532,7 @@ class _MyPageState extends State<MyPage> {
                           child: TextFormField(
                             controller: zipCdCon,
                             readOnly: true,
-                            decoration: getInputDecoration('우편번호',
-                                isError: _validateZipCd // 우편번호 미입력 시 에러 처리
+                            decoration: getInputDecoration('우편번호', isError: _validateZipCd // 우편번호 미입력 시 에러 처리
                                 ),
                           ),
                         ),
@@ -580,8 +546,7 @@ class _MyPageState extends State<MyPage> {
                               final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      KakaoAddressSearchScreen(),
+                                  builder: (context) => KakaoAddressSearchScreen(),
                                 ),
                               );
                               if (result != null) {
@@ -594,22 +559,19 @@ class _MyPageState extends State<MyPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.black,
-                              side: const BorderSide(
-                                  color: Color(0xFF555555), width: 1),
+                              side: const BorderSide(color: Color(0xFF555555), width: 1),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16.0),
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                             ),
                             child: const Text(
                               '주소찾기',
                               style: TextStyle(
                                 fontSize: 18, // 텍스트 크기
                                 fontWeight: FontWeight.w500, // 텍스트 굵기
-                                color: Color(
-                                    0xFF555555), // 텍스트 색상 (foregroundColor와 동일하게 설정)
+                                color: Color(0xFF555555), // 텍스트 색상 (foregroundColor와 동일하게 설정)
                               ),
                             ),
                           ),
@@ -621,15 +583,13 @@ class _MyPageState extends State<MyPage> {
                     TextFormField(
                       controller: addrCon,
                       readOnly: true,
-                      decoration: getInputDecoration('주소',
-                          isError: _validateAddr && addrDtlCon.text.isEmpty),
+                      decoration: getInputDecoration('주소', isError: _validateAddr && addrDtlCon.text.isEmpty),
                     ),
                     const SizedBox(height: 8),
                     // 상세 주소 입력 필드
                     TextFormField(
                       controller: addrDtlCon,
-                      decoration: getInputDecoration('상세 주소를 입력해 주세요',
-                          isError: _validateAddr && addrDtlCon.text.isEmpty),
+                      decoration: getInputDecoration('상세 주소를 입력해 주세요', isError: _validateAddr && addrDtlCon.text.isEmpty),
                     ),
                   ],
                 ),
@@ -642,10 +602,7 @@ class _MyPageState extends State<MyPage> {
                         flex: 3, // 좌측 title 영역
                         child: Text(
                           '육체활동 설정',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
                         ),
                       ),
                       Expanded(
@@ -653,16 +610,12 @@ class _MyPageState extends State<MyPage> {
                         child: Container(
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: _validateActivityLevel
-                                  ? Color(0xFFAA4743)
-                                  : Color(0xFF555555), // 설정하지 않으면 빨간색
+                              color: _validateActivityLevel ? Color(0xFFAA4743) : Color(0xFF555555), // 설정하지 않으면 빨간색
                               width: 1,
                             ),
-                            borderRadius:
-                                BorderRadius.circular(12.0), // 모서리 둥글게
+                            borderRadius: BorderRadius.circular(12.0), // 모서리 둥글게
                           ),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 16.0), // 내부 여백
+                          padding: EdgeInsets.symmetric(horizontal: 16.0), // 내부 여백
                           child: DropdownButtonHideUnderline(
                             // 기본 밑줄 제거
                             child: DropdownButton<String>(
@@ -672,32 +625,23 @@ class _MyPageState extends State<MyPage> {
                               hint: Center(
                                 child: Text(
                                   '선택',
-                                  style: TextStyle(
-                                      color: Color(0xFF555555),
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 18),
+                                  style: TextStyle(color: Color(0xFF555555), fontWeight: FontWeight.w500, fontSize: 18),
                                 ),
                               ),
                               items: [
                                 DropdownMenuItem(
                                   value: 'LOW',
                                   child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center, // 수직 가운데 정렬
+                                    crossAxisAlignment: CrossAxisAlignment.center, // 수직 가운데 정렬
                                     children: [
                                       SizedBox(
                                         width: 100, // "좌업자" 텍스트의 고정 너비
-                                        child: Text('좌업자',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold)),
+                                        child: Text('좌업자', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ),
                                       Expanded(
                                         child: Text(
                                           '일일활동량 30분 미만',
-                                          style: TextStyle(
-                                              color: Color(0xFF00914B),
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500),
+                                          style: TextStyle(color: Color(0xFF00914B), fontSize: 13, fontWeight: FontWeight.w500),
                                         ),
                                       ),
                                     ],
@@ -706,22 +650,16 @@ class _MyPageState extends State<MyPage> {
                                 DropdownMenuItem(
                                   value: 'NORMAL',
                                   child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       SizedBox(
                                         width: 100, // "보통활동"과 동일한 너비
-                                        child: Text('보통활동',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold)),
+                                        child: Text('보통활동', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ),
                                       Expanded(
                                         child: Text(
                                           '일일활동량 30분에서 60분 사이',
-                                          style: TextStyle(
-                                              color: Color(0xFF00914B),
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500),
+                                          style: TextStyle(color: Color(0xFF00914B), fontSize: 13, fontWeight: FontWeight.w500),
                                         ),
                                       ),
                                     ],
@@ -730,22 +668,16 @@ class _MyPageState extends State<MyPage> {
                                 DropdownMenuItem(
                                   value: 'HIGH',
                                   child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       SizedBox(
                                         width: 100, // "많은 육체활동"과 동일한 너비
-                                        child: Text('많은 육체활동',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold)),
+                                        child: Text('많은 육체활동', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ),
                                       Expanded(
                                         child: Text(
                                           '일일활동량 60분 이상',
-                                          style: TextStyle(
-                                              color: Color(0xFF007331),
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500),
+                                          style: TextStyle(color: Color(0xFF007331), fontSize: 13, fontWeight: FontWeight.w500),
                                         ),
                                       ),
                                     ],
@@ -799,8 +731,7 @@ class _MyPageState extends State<MyPage> {
                               const SizedBox(width: 8), // 라디오 버튼과 "남성" 라벨 간의 간격
                               const Text(
                                 '남성',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w500),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),
@@ -820,8 +751,7 @@ class _MyPageState extends State<MyPage> {
                               const SizedBox(width: 8), // 라디오 버튼과 "여성" 라벨 간의 간격
                               const Text(
                                 '여성',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w500),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),
@@ -856,8 +786,7 @@ class _MyPageState extends State<MyPage> {
                       },
                       child: const Text(
                         '개인정보 제공 및 이용에 동의합니다.',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w400),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                       ),
                     ),
                     const SizedBox(width: 10), // 텍스트 간 간격 추가
@@ -902,8 +831,7 @@ class _MyPageState extends State<MyPage> {
                     child: ElevatedButton(
                       onPressed: _isAgreed ? _saveUserInfo : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            _isAgreed ? const Color(0xFF007331) : Colors.grey,
+                        backgroundColor: _isAgreed ? const Color(0xFF007331) : Colors.grey,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16.0),
@@ -956,8 +884,7 @@ class _MyPageState extends State<MyPage> {
                     onTap: () async {
                       Navigator.pop(context);
                       final ImagePicker picker = ImagePicker();
-                      final XFile? image =
-                          await picker.pickImage(source: ImageSource.gallery);
+                      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
                       if (image != null) {
                         setState(() {
                           _profileImage = image;
@@ -972,8 +899,7 @@ class _MyPageState extends State<MyPage> {
                     onTap: () async {
                       Navigator.pop(context);
                       final ImagePicker picker = ImagePicker();
-                      final XFile? image =
-                          await picker.pickImage(source: ImageSource.camera);
+                      final XFile? image = await picker.pickImage(source: ImageSource.camera);
                       if (image != null) {
                         setState(() {
                           _profileImage = image;
@@ -1025,13 +951,11 @@ class _MyPageState extends State<MyPage> {
       ApiService apiService = ApiService();
       print('Fetching profile image for user: $userId');
 
-      Map<String, dynamic> result =
-          await apiService.fetchProfileImage(userId.toString());
+      Map<String, dynamic> result = await apiService.fetchProfileImage(userId.toString());
       print('Profile image API response: $result');
 
       if (result['success'] == true && result['imageUrl'] != null) {
-        print(
-            'Setting profile image URL: ${result['imageUrl'].substring(0, 50)}...');
+        print('Setting profile image URL: ${result['imageUrl'].substring(0, 50)}...');
         setState(() {
           _profileImageUrl = result['imageUrl'];
           widget.onProfileImageChange(_profileImageUrl); // main화면의 상태 업데이트

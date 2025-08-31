@@ -2,7 +2,7 @@ import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Vincere/screen/screen_main.dart';
+import 'package:Vincere/screen/screen_home.dart';
 
 class ScreenHealthInfo extends StatefulWidget {
   final List<Map<String, dynamic>> healthData;
@@ -45,9 +45,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
     // 각 필드별로 기존 값을 가진 컨트롤러 생성
     _controllers = List.generate(
         _editedHealthData.length,
-        (index) => TextEditingController(
-            text: _editedHealthData[index]['MSMT_VALUE']?.toString() ??
-                '' // 기존 값을 초기값으로 설정
+        (index) => TextEditingController(text: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '' // 기존 값을 초기값으로 설정
             ));
   }
 
@@ -66,12 +64,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
 
     _editMsmtItemData = widget.msmtItemData
         .where((item) => item['USE_YN'] == 'Y') // USE_YN이 Y인 항목만 필터링
-        .map((item) => {
-              'MSMT_ITEM_CD': item['MSMT_ITEM_CD'],
-              'MSMT_ITEM_NM': item['MSMT_ITEM_NM'],
-              'MSMT_VALUE': item['MSMT_VALUE'] ?? '',
-              'MSMT_UNIT': item['MSMT_UNIT'] ?? ''
-            })
+        .map((item) => {'MSMT_ITEM_CD': item['MSMT_ITEM_CD'], 'MSMT_ITEM_NM': item['MSMT_ITEM_NM'], 'MSMT_VALUE': item['MSMT_VALUE'] ?? '', 'MSMT_UNIT': item['MSMT_UNIT'] ?? ''})
         .toList();
 
     // widget.healthData 값이 null이면 _editMsmtItemData 초기값 반환,
@@ -138,8 +131,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
     }
   }
 
-  void updateValueByCode(
-      List<Map<String, dynamic>> healthData, String code, String value) {
+  void updateValueByCode(List<Map<String, dynamic>> healthData, String code, String value) {
     final index = healthData.indexWhere((item) => item['MSMT_ITEM_CD'] == code);
     if (index != -1) {
       setState(() {
@@ -149,8 +141,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
     }
   }
 
-  InputDecoration getInputDecoration(
-      String hint, bool isReadOnly, String? unit) {
+  InputDecoration getInputDecoration(String hint, bool isReadOnly, String? unit) {
     return InputDecoration(
       hintText: hint,
       filled: true,
@@ -220,10 +211,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
               ))),
     );
     while (index < _editedHealthData.length) {
-      if (index < _editedHealthData.length &&
-          _editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_001' &&
-          index + 1 < _editedHealthData.length &&
-          _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_002') {
+      if (index < _editedHealthData.length && _editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_001' && index + 1 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_002') {
         // 키와 몸무게를 Row로 배치
         int areaidx = index;
         int areaidx2 = index + 1;
@@ -244,11 +232,9 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index], // controller 사용
-                      keyboardType:
-                          TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$')),
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
                       ],
                       decoration: getInputDecoration(
                         '',
@@ -282,11 +268,9 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     TextFormField(
                       controller: _controllers[index + 1],
                       //initialValue: _editedHealthData[index+1]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
                       ],
                       decoration: getInputDecoration(
                         '',
@@ -309,10 +293,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
         );
         children.add(const SizedBox(height: 0)); // 간격 수정
         index += 2; // 두 항목을 처리했으므로 2 증가
-      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_005' &&
-          index + 2 < _editedHealthData.length &&
-          _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_006' &&
-          _editedHealthData[index + 2]['MSMT_ITEM_CD'] == 'MSMT_007') {
+      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_005' && index + 2 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_006' && _editedHealthData[index + 2]['MSMT_ITEM_CD'] == 'MSMT_007') {
         print("index:$index");
         int areaidx = index;
         // 간수치 ALT, AST, ALP를 Row로 배치
@@ -326,8 +307,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _editedHealthData[index + i]['MSMT_ITEM_NM'] ??
-                            '항목명 없음',
+                        _editedHealthData[index + i]['MSMT_ITEM_NM'] ?? '항목명 없음',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -337,11 +317,9 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                       TextFormField(
                         controller: _controllers[index + i],
                         //initialValue: _editedHealthData[index + i]['MSMT_VALUE']?.toString() ?? '', // index + i로 변경
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
                         ],
                         decoration: getInputDecoration(
                           '',
@@ -352,8 +330,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                           setState(() {
                             print("value:$value");
                             print("index:$index");
-                            _editedHealthData[areaidx + i]['MSMT_VALUE'] =
-                                value; // index + i로 변경
+                            _editedHealthData[areaidx + i]['MSMT_VALUE'] = value; // index + i로 변경
                           });
                         },
                       ),
@@ -367,9 +344,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
         );
         children.add(const SizedBox(height: 0)); // 간격 수정
         index += 3; // 세 항목을 처리했으므로 index를 3 증가
-      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_010' &&
-          index + 1 < _editedHealthData.length &&
-          _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_011') {
+      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_010' && index + 1 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_011') {
         int areaidx = index;
         int areaidx2 = index + 1;
         children.add(const SizedBox(height: 30)); // 간격 추가
@@ -392,14 +367,11 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     TextFormField(
                       controller: _controllers[index],
                       //initialValue: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
                       ],
-                      enabled: _editedHealthData[index]['MSMT_ITEM_CD'] !=
-                          'MSMT_010',
+                      enabled: _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_010',
                       decoration: getInputDecoration(
                         '',
                         false,
@@ -407,8 +379,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          _editedHealthData[areaidx]['MSMT_VALUE'] =
-                              value; // 정확히 index 데이터 참조
+                          _editedHealthData[areaidx]['MSMT_VALUE'] = value; // 정확히 index 데이터 참조
                         });
                       },
                     ),
@@ -431,11 +402,9 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     TextFormField(
                       controller: _controllers[index + 1],
                       //initialValue: _editedHealthData[index + 1]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
                       ],
                       decoration: getInputDecoration(
                         '',
@@ -444,8 +413,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          _editedHealthData[areaidx2]['MSMT_VALUE'] =
-                              value; // 정확히 index + 1 데이터 참조
+                          _editedHealthData[areaidx2]['MSMT_VALUE'] = value; // 정확히 index + 1 데이터 참조
                         });
                       },
                     ),
@@ -457,9 +425,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
         );
         children.add(const SizedBox(height: 30)); // Row 밑 간격 추가
         index += 2; // 두 항목을 처리했으므로 index를 2 증가
-      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_012' &&
-          index + 1 < _editedHealthData.length &&
-          _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_013') {
+      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_012' && index + 1 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_013') {
         int areaidx = index;
         int areaidx2 = index + 1;
         // 근육량과 악력을 Row로 배치
@@ -481,11 +447,9 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     TextFormField(
                       controller: _controllers[index],
                       //initialValue: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '', // index만 참조
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
                       ],
                       decoration: getInputDecoration(
                         '',
@@ -494,8 +458,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          _editedHealthData[areaidx]['MSMT_VALUE'] =
-                              value; // index만 참조
+                          _editedHealthData[areaidx]['MSMT_VALUE'] = value; // index만 참조
                         });
                       },
                     ),
@@ -518,11 +481,9 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     TextFormField(
                       controller: _controllers[index + 1],
                       //initialValue: _editedHealthData[index + 1]['MSMT_VALUE']?.toString() ?? '', // index + 1로 변경
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
                       ],
                       decoration: getInputDecoration(
                         '',
@@ -531,8 +492,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          _editedHealthData[areaidx2]['MSMT_VALUE'] =
-                              value; // index + 1로 변경
+                          _editedHealthData[areaidx2]['MSMT_VALUE'] = value; // index + 1로 변경
                         });
                       },
                     ),
@@ -544,9 +504,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
         );
         children.add(const SizedBox(height: 30)); // Row 밑 간격 추가
         index += 2; // 두 항목을 처리했으므로 index를 2 증가
-      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_014' &&
-          index + 1 < _editedHealthData.length &&
-          _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_015') {
+      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_014' && index + 1 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_015') {
         int areaidx = index;
         int areaidx2 = index + 1;
         // 혈당과 혈압을 Row로 배치
@@ -568,11 +526,9 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     TextFormField(
                       controller: _controllers[index],
                       //initialValue: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
                       ],
                       decoration: getInputDecoration(
                         '',
@@ -604,12 +560,10 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                     TextFormField(
                       controller: _controllers[index + 1],
                       //initialValue: _editedHealthData[index + 1]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                          RegExp(
-                              r'^\d{0,3}(\/\d{0,3})?$'), // 숫자 최대 3자리 + 슬래시 + 숫자 최대 3자리 허용
+                          RegExp(r'^\d{0,3}(\/\d{0,3})?$'), // 숫자 최대 3자리 + 슬래시 + 숫자 최대 3자리 허용
                         ),
                       ],
                       decoration: getInputDecoration(
@@ -651,16 +605,11 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
               TextFormField(
                 controller: _controllers[index],
                 //initialValue: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '',
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                      RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
                 ],
-                enabled: _editedHealthData[index]['MSMT_ITEM_CD'] !=
-                        'MSMT_003' &&
-                    _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_004' &&
-                    _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_010',
+                enabled: _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_003' && _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_004' && _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_010',
                 decoration: getInputDecoration(
                   '',
                   false,
@@ -712,8 +661,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
 
                 // API 호출
                 ApiService apiService = ApiService();
-                Map<String, dynamic> result =
-                    await apiService.updateUserHealthData(
+                Map<String, dynamic> result = await apiService.updateUserHealthData(
                   widget.userId!,
                   updateData,
                 );

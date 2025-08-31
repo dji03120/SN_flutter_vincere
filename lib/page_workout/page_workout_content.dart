@@ -1,4 +1,5 @@
 import 'package:Vincere/component/header.dart';
+import 'package:Vincere/custom_widget/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/bottomsheet_workout_content.dart';
 import 'package:Vincere/component/progress_donut.dart';
@@ -61,6 +62,7 @@ class Component3State extends State<WorkoutContent> {
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: const Header(),
+      drawer: CustomDrawer(isLogin: true),
       body: Container(
         width: screenWidth,
         height: screenHeight,

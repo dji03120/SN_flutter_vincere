@@ -11,7 +11,7 @@ class regQnA extends StatefulWidget {
   _RegQnaScreenState createState() => _RegQnaScreenState();
 }
 
-class _RegQnaScreenState extends State<regQnA>{
+class _RegQnaScreenState extends State<regQnA> {
   /*
   * Q&A Regist
   */
@@ -28,7 +28,7 @@ class _RegQnaScreenState extends State<regQnA>{
   bool isButtonEnabled = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _loadSessionData();
 
@@ -61,43 +61,40 @@ class _RegQnaScreenState extends State<regQnA>{
     });
   }
 
-
   Future<void> _loadSessionData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       userId = prefs.getString('userId');
       password = prefs.getString('password');
-      if(userId != null && password != null){
+      if (userId != null && password != null) {
         _isLogIn = true;
       }
     });
   }
 
   Future<void> _regQna() async {
-    try{
+    try {
       ApiService apiService = ApiService();
       Map<String, dynamic> result = await apiService.fetchRegQna(userId.toString(), title, content);
       print('Recevied data: $result');
-      if(result['result'] == 1){
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('질문 등록 완료'),
-            content: Text('회원님의 질문을 등록하였습니다.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.push(
-                    context, MaterialPageRoute(
-                    builder: (context) => const Qna()
-                )
+      if (_isLogIn) {
+        if (result['result'] == 1) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('질문 등록 완료'),
+              content: Text('회원님의 질문을 등록하였습니다.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Qna())),
+                  child: Text('확인'),
                 ),
-                child: Text('확인'),
-              ),
-            ],
-          ),
-        );
+              ],
+            ),
+          );
+        }
       }
-    } catch(e) {
+    } catch (e) {
       print('Error: $e');
     }
   }
@@ -118,11 +115,7 @@ class _RegQnaScreenState extends State<regQnA>{
                 child: Text(
                   'Q&A 입력',
                   textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.black),
                 ),
               ),
             ),
@@ -151,11 +144,7 @@ class _RegQnaScreenState extends State<regQnA>{
                                   children: [
                                     const Text(
                                       '제목',
-                                      style: TextStyle(
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black
-                                      ),
+                                      style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500, color: Colors.black),
                                     ),
                                     const SizedBox(height: 8.0),
                                     TextFormField(
@@ -207,11 +196,7 @@ class _RegQnaScreenState extends State<regQnA>{
                                     const SizedBox(height: 30.0),
                                     const Text(
                                       '문의내용',
-                                      style: TextStyle(
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black
-                                      ),
+                                      style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500, color: Colors.black),
                                     ),
                                     const SizedBox(height: 8.0),
                                     Stack(
@@ -260,11 +245,7 @@ class _RegQnaScreenState extends State<regQnA>{
                                             padding: const EdgeInsets.all(16.0), // 상하좌우 16 패딩 추가
                                             child: Text(
                                               '${contentCon.text.length}/$maxCharacters',
-                                              style: const TextStyle(
-                                                fontSize: 14.0,
-                                                color: Color(0xFF8D8D8D),
-                                                fontWeight: FontWeight.w500
-                                              ),
+                                              style: const TextStyle(fontSize: 14.0, color: Color(0xFF8D8D8D), fontWeight: FontWeight.w500),
                                             ),
                                           ),
                                         ),
@@ -276,36 +257,36 @@ class _RegQnaScreenState extends State<regQnA>{
                                   height: 40.0,
                                 ),
                                 Center(
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      child: ElevatedButton(
-                                        onPressed: isButtonEnabled
-                                            ? () {
-                                          title = titleCon.text;
-                                          content = contentCon.text;
-                                          _regQna();
-                                        }
-                                            : null, // 비활성화 처리
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isButtonEnabled
-                                              ? const Color(0xFF007130) // 활성화 색상
-                                              : Colors.grey, // 비활성화 색상
-                                          foregroundColor: Colors.white,
-                                          minimumSize: const Size(0, 65),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16.0),
-                                          ),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: isButtonEnabled
+                                          ? () {
+                                              title = titleCon.text;
+                                              content = contentCon.text;
+                                              _regQna();
+                                            }
+                                          : null, // 비활성화 처리
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isButtonEnabled
+                                            ? const Color(0xFF007130) // 활성화 색상
+                                            : Colors.grey, // 비활성화 색상
+                                        foregroundColor: Colors.white,
+                                        minimumSize: const Size(0, 65),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16.0),
                                         ),
-                                        child: const Text(
-                                          '질문 등록하기',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                      ),
+                                      child: const Text(
+                                        '질문 등록하기',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                     ),
                                   ),
+                                ),
                               ],
                             );
                           },

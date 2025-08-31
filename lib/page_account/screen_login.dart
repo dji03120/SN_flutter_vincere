@@ -1,8 +1,8 @@
-import 'package:Vincere/workout/workout_provider.dart';
+import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/export/screens.dart';
-import 'package:Vincere/account/screen_find_id.dart';
-import 'package:Vincere/account/screen_find_pswd.dart';
+import 'package:Vincere/page_account/screen_find_id.dart';
+import 'package:Vincere/page_account/screen_find_pswd.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' show ChangeNotifierProvider, Provider;
@@ -66,11 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 30),
               Form(
                   child: Theme(
-                data: ThemeData(
-                    primaryColor: Colors.white,
-                    inputDecorationTheme: const InputDecorationTheme(
-                        labelStyle:
-                            TextStyle(color: Colors.teal, fontSize: 15.0))),
+                data: ThemeData(primaryColor: Colors.white, inputDecorationTheme: const InputDecorationTheme(labelStyle: TextStyle(color: Colors.teal, fontSize: 15.0))),
                 child: Container(child: Builder(builder: (context) {
                   return Column(
                     children: [
@@ -98,8 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: const Color(0xFF8D8D8D),
                             ),
                             border: InputBorder.none, // 기본 border 제거
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 20),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 20),
                           ),
                           keyboardType: TextInputType.text,
                         ),
@@ -129,8 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Color(0xFF8D8D8D), // 힌트 텍스트 색상
                             ),
                             border: InputBorder.none, // 기본 보더 제거
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 20), // 좌우 패딩 설정
+                            contentPadding: EdgeInsets.symmetric(horizontal: 20), // 좌우 패딩 설정
                           ),
                           keyboardType: TextInputType.text,
                         ),
@@ -155,12 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: Text('로그인',
-                              style: const TextStyle(
-                                  fontFamily: 'NotoSansKR',
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white)),
+                          child: Text('로그인', style: const TextStyle(fontFamily: 'NotoSansKR', fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white)),
                         ),
                       ),
                       const SizedBox(height: 54),
@@ -171,8 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                    builder: (context) => FindId()),
+                                MaterialPageRoute(builder: (context) => FindId()),
                               );
                             },
                             child: RichText(
@@ -207,8 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                    builder: (context) => FindPswd()),
+                                MaterialPageRoute(builder: (context) => FindPswd()),
                               );
                             },
                             child: RichText(
@@ -261,8 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SingUpScreen(), // 회원가입 화면으로 이동
+                                      builder: (context) => const SingUpScreen(), // 회원가입 화면으로 이동
                                     ),
                                   );
                                 },

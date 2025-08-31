@@ -1,10 +1,11 @@
 import 'package:Vincere/component/header.dart';
+import 'package:Vincere/custom_widget/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Vincere/workout/workout_provider.dart';
+import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/custom_widget/custom_button.dart';
 import 'package:Vincere/custom_widget/custom_text.dart';
-import 'package:Vincere/workout/page_select_muscle.dart';
+import 'package:Vincere/page_workout/page_select_muscle.dart';
 
 class SelectMode extends StatefulWidget {
   const SelectMode({super.key});
@@ -30,6 +31,7 @@ class SelectModeState extends State<SelectMode> {
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: const Header(),
+      drawer: CustomDrawer(isLogin: true),
       body: Container(
         width: double.infinity,
         child: Container(
@@ -38,10 +40,10 @@ class SelectModeState extends State<SelectMode> {
             children: [
               SizedBox(height: screenHeight * 0.1),
               TextLarge(text: '운동 모드를 선택해주세요.'),
-              SizedBox(height: 100),
+              SizedBox(height: screenHeight * 0.1),
               RoundButton(
                 text: 'Passive Mode',
-                margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+                margin: EdgeInsets.fromLTRB(20, 0, 20, 20),
                 onPressed: () {
                   workoutModel.set_current_workout(0);
                   workoutModel.set_workouts([

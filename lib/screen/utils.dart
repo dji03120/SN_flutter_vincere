@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart'; // 링크를 열기 위한 패�
 class HtmlUtils {
   // HTML을 파싱하여 위젯으로 변환하는 함수
   static Widget parseHtmlContent(String htmlContent) {
-    var document = parse(htmlContent);  // HTML 파싱
+    var document = parse(htmlContent); // HTML 파싱
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: _parseHtmlNode(document.body),
@@ -128,4 +128,107 @@ class HtmlUtils {
       ),
     );
   }
+}
+
+// 회원 정보 카드 빌더
+Widget userInfoCard({required String title, required String value}) {
+  return Card(
+    color: Colors.white,
+    margin: EdgeInsets.symmetric(vertical: 8.0),
+    child: Padding(
+      padding: EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            value,
+            style: TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Container pscpInfoContainer(BuildContext context, List<Map<String, dynamic>> pscpData) {
+  return Container(
+    color: Colors.blueGrey,
+    child: (pscpData.isEmpty)
+        ? const Center(
+            child: Text(
+              '처방 정보가 없습니다.',
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          )
+        : Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  '처방 정보',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: pscpData.map((item) {
+                    return _buildInfoCard(
+                      title: item['hlthFoodNm'] ?? '항목명 없음',
+                      value: '${item['pscpDose']}',
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+  );
+}
+
+// 공통 카드 빌더
+Widget _buildInfoCard({required String title, required String value}) {
+  return Card(
+    color: Colors.white,
+    margin: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// ignore: non_constant_identifier_names
+int get_birth_to_age(String bym) {
+  if (bym.length != 8) return 0; // 생년월일 형식이 맞지 않을 경우
+
+  // bym이 'YYYYMMDD' 형식일 경우
+  int birthYear = int.parse(bym.substring(0, 4));
+  int birthMonth = int.parse(bym.substring(4, 6));
+  int birthDay = int.parse(bym.substring(6, 8));
+
+  DateTime birthDate = DateTime(birthYear, birthMonth, birthDay);
+  DateTime currentDate = DateTime.now();
+  int age = currentDate.year - birthDate.year;
+
+  // 생일이 아직 지나지 않았다면 1을 빼줌
+  if (currentDate.month < birthDate.month || (currentDate.month == birthDate.month && currentDate.day < birthDate.day)) {
+    age--;
+  }
+  return age;
 }

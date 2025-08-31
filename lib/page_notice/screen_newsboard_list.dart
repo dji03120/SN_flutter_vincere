@@ -1,11 +1,8 @@
-import 'dart:convert'; // Base64 디코딩을 위해 추가
-import 'dart:typed_data'; // Uint8List 사용을 위해 추가
 import 'package:Vincere/export/screens.dart';
-import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../http/webReq.dart';
-import 'utils.dart'; // utils.dart 파일 import
+import '../screen/utils.dart'; // utils.dart 파일 import
 
 class NewsBoard extends StatefulWidget {
   const NewsBoard({super.key});
@@ -43,8 +40,7 @@ class _NewsBoardState extends State<NewsBoard> {
     try {
       ApiService apiService = ApiService();
       print('userId >>> $userId');
-      Map<String, dynamic> result =
-          await apiService.fetchGetNewsBoard(userId.toString());
+      Map<String, dynamic> result = await apiService.fetchGetNewsBoard(userId.toString());
 
       if (result.containsKey('newsBoardList')) {
         setState(() {
@@ -87,8 +83,7 @@ class _NewsBoardState extends State<NewsBoard> {
             ),
             const SizedBox(height: 30),
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 25, vertical: 32), // 내부 패딩
+              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 32), // 내부 패딩
               decoration: BoxDecoration(
                 image: const DecorationImage(
                   image: AssetImage('images/news_top_img.png'), // 배경 이미지 경로
@@ -96,27 +91,21 @@ class _NewsBoardState extends State<NewsBoard> {
                 ),
                 borderRadius: BorderRadius.circular(16.0), // 모서리를 둥글게
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           '유용한 건강소식',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500),
+                          style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w500),
                         ),
                         SizedBox(height: 12),
                         Text(
                           '근육을 키우는 데 도움이 되는 식단 정보',
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700),
+                          style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
@@ -135,8 +124,8 @@ class _NewsBoardState extends State<NewsBoard> {
                     )
                   : ListView.separated(
                       itemCount: _qnaData.length,
-                      separatorBuilder: (context, index) => Column(
-                        children: const [
+                      separatorBuilder: (context, index) => const Column(
+                        children: [
                           SizedBox(height: 16), // 상단 여백
                           Divider(
                             color: Color(0xFFEDEDED), // 선 색상
@@ -212,10 +201,7 @@ class QnaView extends StatelessWidget {
           children: [
             Text(
               qnaData["title"] ?? "제목 없음",
-              style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.black),
             ),
             const SizedBox(height: 30),
             const Divider(
@@ -226,8 +212,7 @@ class QnaView extends StatelessWidget {
             const SizedBox(height: 30),
             HtmlUtils.parseHtmlContent(qnaData["content"] ?? "내용 없음"),
             const SizedBox(height: 20),
-            if (qnaData["imageUrl"] != null)
-              HtmlUtils.buildImage(qnaData["imageUrl"]),
+            if (qnaData["imageUrl"] != null) HtmlUtils.buildImage(qnaData["imageUrl"]),
           ],
         ),
       ),

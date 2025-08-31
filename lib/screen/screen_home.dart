@@ -6,6 +6,7 @@ import 'package:Vincere/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/page_notice/screen_newsboard_list.dart';
 import 'package:Vincere/page_workout/page_statistics.dart';
+import 'package:Vincere/provider_models.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' show max;
@@ -14,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/export/screens.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../component/metric_chart_dialog.dart';
@@ -118,22 +120,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   // 새로운 초기화 메서드
   Future<void> _initializeData() async {
     try {
-      await _loadSessionData();
-
+      await _loadSessionData(); // check is login
       if (_isLogIn) {
         // 사용자 정보 먼저 로드
         await _getUserInfo();
         await _getUserHlthInfo();
-        await _getLastMstmtDte();
-        await getMuscleAgeList();
-
-        // 표준 체중으로 일일 에너지 계산
-        // double stdWeight = double.parse(
-        //     userHlthData.firstWhere(
-        //           (item) => item['MSMT_ITEM_CD'] == 'MSMT_004',
-        //       orElse: () => {'MSMT_VALUE': '0'},
-        //     )['MSMT_VALUE']?.toString() ?? '0'  // null 체크 추가
-        // );
+        await _getMuscleAgeList();
+        await _alertLastMstmtDte();
 
         double stdWeight = 0; // 기본값 설정
         final msmtValue = userHlthData
@@ -145,13 +138,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
             '';
 
         stdWeight = msmtValue.isEmpty ? 0 : (double.tryParse(msmtValue) ?? 0);
-        print('Final stdWeight: $stdWeight'); // 최종 값 확인
-        print("22222");
+        print('Final stdWeight: $stdWeight'); // 최종 값 확인=
 
         // 일일 에너지 계산
         print("일일 에너지 계산 확인중 : $userData");
         recDailyEnergy = calculateEnergy(stdWeight, userData?["activityLevel"] ?? "LOW");
-        print("33333");
 
         // 나머지 데이터 로드
         await _getUserPscpInfo();
@@ -248,7 +239,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
   // 회원 건강 정보 가져오기
-  Future<void> _getLastMstmtDte() async {
+  Future<void> _alertLastMstmtDte() async {
     try {
       ApiService apiService = ApiService();
       Map<String, dynamic> result = await apiService.getLastMstmtDte(userId.toString());
@@ -983,7 +974,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     }
   }
 
-  Future<void> getMuscleAgeList() async {
+  Future<void> _getMuscleAgeList() async {
     try {
       ApiService apiService = ApiService();
       Map<String, dynamic> result = await apiService.getMuscleAgeList();
@@ -1670,6 +1661,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final userModel = Provider.of<UserModel>(context); // 상태 접근
+
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -3901,16 +3894,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                     ],
                   ),
 
-                  MuscleAgeCard(
-                    muscleAge: muscleAge,
-                    msmt003Grade: msmt003Grade,
-                    msmt008Grade: msmt008Grade,
-                    msmt011Grade: msmt011Grade,
-                    msmt012Grade: msmt012Grade,
-                    msmt013Grade: msmt013Grade,
-                    userId: userId!,
-                  ),
-
                   Container(
                     color: Color(0xFFf5f4f9),
                     child: Column(
@@ -3941,7 +3924,17 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 SizedBox(height: screenHeight * 0.04),
                                 RoundButton(
                                   text: '장치연결',
-                                  onPressed: () {
+                                  onPressed: () async {
+                                    await userModel.set_local_saved_data();
+                                    userModel.set_datas(
+                                      g003: msmt003Grade.toDouble(),
+                                      g008: msmt008Grade.toDouble(),
+                                      g011: msmt011Grade.toDouble(),
+                                      g012: msmt012Grade.toDouble(),
+                                      g013: msmt013Grade.toDouble(),
+                                      avg: gradeAvg.toDouble(),
+                                      age: muscleAge,
+                                    );
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(builder: (context) => PageConnectBLE()),

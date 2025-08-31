@@ -1,16 +1,15 @@
 import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/account/screen_update_pswd.dart';
+import 'package:Vincere/page_account/screen_update_pswd.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Vincere/export/screens.dart';
-import '../screen/screen_newsboard_list.dart';
+import '../page_notice/screen_newsboard_list.dart';
 
 class CustomDrawer extends StatefulWidget {
   final bool isLogin;
   final String? userId;
 
-  const CustomDrawer({Key? key, required this.isLogin, this.userId})
-      : super(key: key);
+  const CustomDrawer({Key? key, required this.isLogin, this.userId}) : super(key: key);
 
   @override
   _CustomDrawerState createState() => _CustomDrawerState();
@@ -45,8 +44,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   Future<void> _getUserInfo() async {
     try {
       ApiService apiService = ApiService();
-      Map<String, dynamic> result =
-          await apiService.fetchGetUserInfo(userId.toString());
+      Map<String, dynamic> result = await apiService.fetchGetUserInfo(userId.toString());
 
       setState(() {
         userData = result["userOne"];
@@ -100,9 +98,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.isLogin
-                      ? '${userNm ?? "사용자"}님, 환영합니다.'
-                      : '로그인이 필요합니다.',
+                  widget.isLogin ? '${userNm ?? "사용자"}님, 환영합니다.' : '로그인이 필요합니다.',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -120,15 +116,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           // 로그인 화면으로 이동
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => const LoginScreen()),
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
                           );
                         }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white, // 버튼 배경색
-                        side: const BorderSide(
-                            color: Color(0xFFEDEDED), width: 1), // 테두리 설정
+                        side: const BorderSide(color: Color(0xFFEDEDED), width: 1), // 테두리 설정
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게
                         ),
@@ -157,15 +151,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
             height: 1,
           ),
           SizedBox(height: 30),
-          _buildListTile(
-              context, '홈으로', const MyHomePage(title: "vincere_App")),
-          _buildListTileUser(
-              context, '나의 건강 정보 이력', const HisHealth(), widget.isLogin),
+          _buildListTile(context, '홈으로', const MyHomePage(title: "vincere_App")),
+          _buildListTileUser(context, '나의 건강 정보 이력', const HisHealth(), widget.isLogin),
           _buildListTileUser(context, 'Q&A', const Qna(), widget.isLogin),
-          _buildListTileUser(
-              context, '정보 및 기사', const NewsBoard(), widget.isLogin),
-          _buildListTileUser(
-              context, '비밀번호 재설정', const UpdatePswd(), widget.isLogin),
+          _buildListTileUser(context, '정보 및 기사', const NewsBoard(), widget.isLogin),
+          _buildListTileUser(context, '비밀번호 재설정', const UpdatePswd(), widget.isLogin),
         ],
       ),
     );
@@ -210,8 +200,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   ListTile _buildListTile(BuildContext context, String title, Widget screen) {
     return ListTile(
       contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 20), // 좌우 패딩 제거
-      visualDensity:
-          const VisualDensity(horizontal: 0, vertical: -4), // 상하 패딩 제거
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -4), // 상하 패딩 제거
       title: Text(
         title,
         style: const TextStyle(
@@ -221,18 +210,15 @@ class _CustomDrawerState extends State<CustomDrawer> {
         ),
       ),
       onTap: () {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => screen));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => screen));
       },
     );
   }
 
-  ListTile _buildListTileUser(
-      BuildContext context, String title, Widget screen, bool loginYn) {
+  ListTile _buildListTileUser(BuildContext context, String title, Widget screen, bool loginYn) {
     return ListTile(
       contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-      visualDensity:
-          const VisualDensity(horizontal: 0, vertical: -4), // 상하 패딩 제거
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -4), // 상하 패딩 제거
       title: Text(
         title,
         style: const TextStyle(
@@ -243,8 +229,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
       ),
       onTap: () {
         if (loginYn) {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => screen));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => screen));
         } else {
           _showLoginPrompt(context);
         }

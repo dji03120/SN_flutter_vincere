@@ -24,33 +24,28 @@ class MetricBarGraph extends StatelessWidget {
     String strVal = "";
     double strInterval = 100;
 
-    if(code == 'riceIntake') {
+    if (code == 'riceIntake') {
       strDate = 'INTAKE_DATE';
       strVal = 'TOTAL_RICE';
       strInterval = 500;
-    } else if(code == 'carbsIntake') {
+    } else if (code == 'carbsIntake') {
       strDate = 'INTAKE_DATE';
       strVal = 'TOTAL_CARBS';
-    } else if(code == 'proteinIntake') {
+    } else if (code == 'proteinIntake') {
       strDate = 'INTAKE_DATE';
       strVal = 'TOTAL_PROTEIN';
       strInterval = 50;
-    }else {
+    } else {
       strDate = 'MSMT_DATE';
       strVal = 'MSMT_VALUE';
       strInterval = 10;
     }
 
     // API 데이터를 차트 데이터 형식으로 변환
-    final formattedData = chartData.map((item) => {
-      'date': item[strDate],
-      'value': double.parse(item[strVal].toString())
-    }).toList();
+    final formattedData = chartData.map((item) => {'date': item[strDate], 'value': double.parse(item[strVal].toString())}).toList();
 
     // 최대값 계산
-    final maxValue = formattedData
-        .map((e) => e['value'] as double)
-        .reduce((a, b) => a > b ? a : b);
+    final maxValue = formattedData.map((e) => e['value'] as double).reduce((a, b) => a > b ? a : b);
 
     return Container(
       padding: EdgeInsets.all(8),
@@ -62,7 +57,7 @@ class MetricBarGraph extends StatelessWidget {
             padding: const EdgeInsets.only(top: 20, bottom: 20),
             child: BarChart(
               BarChartData(
-                alignment: BarChartAlignment.start,  // 왼쪽부터 시작
+                alignment: BarChartAlignment.start, // 왼쪽부터 시작
                 //maxY: maxValue * 1.2, // 최대값의 120%
                 minY: 0,
                 groupsSpace: 20, // 그룹 간 간격 설정
@@ -87,16 +82,16 @@ class MetricBarGraph extends StatelessWidget {
                         if (value.toInt() >= 0 && value.toInt() < formattedData.length) {
                           return Padding(
                             padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                formattedData[value.toInt()]['date'],
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 10,
-                                  letterSpacing: -0.05,
-                                ),
-                                textAlign: TextAlign.center,
+                            child: Text(
+                              formattedData[value.toInt()]['date'],
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 10,
+                                letterSpacing: -0.05,
                               ),
+                              textAlign: TextAlign.center,
+                            ),
                           );
                         }
                         return Text('');
@@ -169,12 +164,7 @@ class MetricChartDialog extends StatefulWidget {
   final String? code;
   final String? userId;
 
-  const MetricChartDialog({
-    Key? key,
-    this.title,
-    this.code,
-    this.userId
-  }) : super(key: key);
+  const MetricChartDialog({Key? key, this.title, this.code, this.userId}) : super(key: key);
 
   @override
   State<MetricChartDialog> createState() => _MetricChartDialogState();
@@ -196,9 +186,7 @@ class _MetricChartDialogState extends State<MetricChartDialog> {
         Map<String, dynamic> result;
         ApiService apiService = ApiService();
 
-        if(widget.code == 'riceIntake'
-            || widget.code == 'carbsIntake'
-            || widget.code == 'proteinIntake') {
+        if (widget.code == 'riceIntake' || widget.code == 'carbsIntake' || widget.code == 'proteinIntake') {
           result = await apiService.getIntakeData(widget.userId!);
         } else {
           result = await apiService.getChartData(widget.code!, widget.userId!);
@@ -215,7 +203,7 @@ class _MetricChartDialogState extends State<MetricChartDialog> {
       print('Error: $e');
       if (mounted) {
         setState(() {
-          isLoading = false;  // 에러 발생시에도 로딩 상태 해제
+          isLoading = false; // 에러 발생시에도 로딩 상태 해제
         });
       }
     }
@@ -281,12 +269,15 @@ class _MetricChartDialogState extends State<MetricChartDialog> {
               ),
             ),
             Container(
-              margin: EdgeInsets.only(bottom: 6.0),  // 하단 여백 16 추가
+              margin: EdgeInsets.only(bottom: 6.0), // 하단 여백 16 추가
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('닫기', style: TextStyle(color: Colors.white),),
+                child: Text(
+                  '닫기',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF007130),
                   minimumSize: Size.fromHeight(48),

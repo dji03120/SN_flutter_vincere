@@ -1,3 +1,4 @@
+import 'package:Vincere/custom_widget/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:Vincere/custom_widget/custom_text.dart';
@@ -45,11 +46,11 @@ class Component4State extends State<StatisticsPage> {
     final screenHeight = MediaQuery.of(context).size.height - 50;
 
     // 선택된 날짜의 운동 기록 가져오기
-    final exercise = _exerciseData[_selectedDay] ??
-        {'mode': '-', 'intensity': '-', 'duration': '-'};
+    final exercise = _exerciseData[_selectedDay] ?? {'mode': '-', 'intensity': '-', 'duration': '-'};
 
     return Scaffold(
       appBar: AppBar(title: const Text("운동 통계 화면")),
+      drawer: CustomDrawer(isLogin: true),
       body: Container(
         width: double.infinity,
         child: Container(
@@ -110,8 +111,7 @@ class Component4State extends State<StatisticsPage> {
                         children: [
                           SizedBox(height: 20),
                           TextLarge(
-                            text:
-                                '${_selectedDay?.month}월 ${_selectedDay?.day}일 의 운동 기록',
+                            text: '${_selectedDay?.month}월 ${_selectedDay?.day}일 의 운동 기록',
                           ),
                           TextMedium(text: '모드 : ${exercise['mode']}'),
                           TextMedium(text: '강도 : ${exercise['intensity']}'),
