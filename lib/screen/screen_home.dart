@@ -7,6 +7,7 @@ import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/page_notice/screen_newsboard_list.dart';
 import 'package:Vincere/page_workout/page_statistics.dart';
 import 'package:Vincere/provider_models.dart';
+import 'package:Vincere/screen/utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' show max;
@@ -1177,182 +1178,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     }
   }
 
-// 테이블 데이터 셀 위젯
-  Widget _buildTableCell(String text, {bool isHeader = false, String? str = ' '}) {
-    double numericValue = 0;
-
-    try {
-      numericValue = double.parse(text);
-    } catch (e) {
-      // text가 숫자로 변환할 수 없는 경우 기본값 0 사용
-      print("숫자로 변환할 수 없는 텍스트입니다: $text");
-    }
-    Color dotColor;
-    Color numberColor;
-
-    if (!isHeader && str != null && ((str.contains('recBreakfastCarbs') && breakfastRice > 0) || (str.contains('recBreakfastProtein') && breakfastRice > 0) || (str.contains('recLunchCarbs') && lunchRice > 0) || (str.contains('recLunchProtein') && lunchRice > 0) || (str.contains('recDinnerCarbs') && dinnerRice > 0) || (str.contains('recDinnerProtein') && dinnerRice > 0))) {
-      dotColor = const Color(0xFFFABE00);
-    } else if (!isHeader && str != null && str.contains('TotalRecKcal') && ((str == 'breakfastTotalRecKcal' && breakfastRice > 0) || (str == 'lunchTotalRecKcal' && lunchRice > 0) || (str == 'dinnerTotalRecKcal' && dinnerRice > 0))) {
-      dotColor = const Color(0xFFFABE00);
-    } else if (!isHeader && str != ' ') {
-      dotColor = const Color(0xFFDEDEDE);
-    } else {
-      dotColor = const Color(0xFFF5F5F5);
-    }
-
-    if (!isHeader && str != null && str.contains('Carbs')) {
-      numberColor = const Color(0xFF00914B);
-    } else if (!isHeader && str != null && str.contains('Protein')) {
-      numberColor = const Color(0xFF9D895B);
-    } else {
-      numberColor = const Color(0xFF000000);
-    }
-
-    List<Widget> children = [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.start, // 좌측 정렬
-        children: [
-          SizedBox(width: 10),
-          if (!isHeader) ...[
-            Container(
-              width: 10, // 동그라미 크기
-              height: 10,
-              margin: EdgeInsets.only(top: 10, bottom: 3),
-              decoration: BoxDecoration(
-                color: dotColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
-          if (isHeader) ...[
-            SizedBox(height: 15),
-          ],
-        ],
-        // SizedBox(height: 10),
-      ),
-      Row(
-        // 새로운 Row 추가
-        mainAxisAlignment: isHeader ? MainAxisAlignment.center : MainAxisAlignment.end, // 중앙 정렬
-        //crossAxisAlignment: isHeader ? CrossAxisAlignment.center : CrossAxisAlignment.start,  // 추가: 세로 중앙 정렬
-        children: [
-          Text(
-            // textAlign: TextAlign.center,
-            isHeader ? text : '${numericValue.round()}',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-              color: numberColor,
-            ),
-          ),
-          if (!isHeader && str != null && !str.contains('totalRecKcal')) ...[
-            Text(
-              'kcal',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-                color: Color(0xFF555555),
-              ),
-            ),
-            SizedBox(width: 10),
-          ],
-          if (!isHeader && str != null && str.contains('totalRecKcal')) ...[
-            Text(
-              'kcal',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-                color: Color(0xFF000000),
-              ),
-            ),
-            SizedBox(width: 10),
-          ],
-          // SizedBox(width: 8),
-        ],
-      ),
-    ];
-
-    if (!isHeader && str != null && ((str.contains('recBreakfastCarbs') && breakfastRice > 0) || (str.contains('recBreakfastProtein') && breakfastRice > 0) || (str.contains('recLunchCarbs') && lunchRice > 0) || (str.contains('recLunchProtein') && lunchRice > 0) || (str.contains('recDinnerCarbs') && dinnerRice > 0) || (str.contains('recDinnerProtein') && dinnerRice > 0))) {
-      children.addAll([
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end, // 우측 정렬
-          children: [
-            Text(
-              '${(numericValue / 4).round().toString()}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF000000),
-              ),
-            ),
-            Text(
-              'g',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF555555),
-              ),
-            ),
-            SizedBox(width: 10),
-          ],
-        ),
-      ]);
-    } else if (!isHeader && str != ' ' && str != null && !str.contains('TotalRecKcal')) {
-      // 탄수화물 필요량 또는 단백질 필요량 cell인 경우
-      children.addAll([
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end, // 우측 정렬
-          children: [
-            Text(
-              '${(numericValue / 4).round().toString()}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF000000),
-              ),
-            ),
-            Text(
-              'g',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF555555),
-              ),
-            ),
-            SizedBox(width: 10),
-          ],
-        ),
-      ]);
-    } else if (!isHeader && str != ' ' && str != null && str.contains('totalRecKcal')) {
-      children.addAll([
-        SizedBox(height: 20),
-      ]);
-    }
-
-    Color cellColor;
-    switch (str) {
-      case String s when s.contains('Carbs'):
-        cellColor = const Color(0xFFF0F9F4);
-      case String s when s.contains('Protein'):
-        cellColor = const Color(0xFFF9F8F5);
-      default:
-        cellColor = const Color(0xFFF5F5F5);
-        break;
-    }
-
-    return Container(
-      // padding: const EdgeInsets.symmetric(vertical: 12),
-      alignment: Alignment.center,
-      height: 76,
-      decoration: BoxDecoration(
-        color: !isHeader ? cellColor : Colors.white, // 헤더일 때만 초록색 배경
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: children,
-      ),
-    );
-  }
-
   // 표 행을 생성하는 helper 메소드
   Widget _buildTableRow(String foodId, String name, String totalAmt, double carb, double protein) {
     return Container(
@@ -1613,24 +1438,20 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     if (code == 'muscleAmt') {
       value = ((muscleAmt * 10).round() / 10).toStringAsFixed(1);
     } else {
-      value = ((double.parse(data
-                              .firstWhere(
-                                (item) => item['MSMT_ITEM_CD'] == code,
-                                orElse: () => {'MSMT_VALUE': '0'},
-                              )['MSMT_VALUE']
-                              ?.toString() ??
-                          '0') *
-                      10)
-                  .round() /
-              10.0)
-          .toStringAsFixed(1);
+      value = data
+              .firstWhere(
+                (item) => item['MSMT_ITEM_CD'] == code,
+                orElse: () => {'MSMT_VALUE': '0'},
+              )['MSMT_VALUE']
+              ?.toString() ??
+          '0';
+      value = ((double.parse(value) * 10).round() / 10.0).toStringAsFixed(1);
     }
 
     return Column(
       children: [
         Text(
-          // 라벨(키, 몸무게 등) 위치를 위로 이동
-          label,
+          label, // 라벨(키, 몸무게 등) 위치를 위로 이동
           style: TextStyle(
             fontSize: 15,
             color: Color(0xFFFFFF).withOpacity(0.8),
@@ -1640,11 +1461,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         Text(
           // 숫자 값
           value,
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
         ),
         SizedBox(height: 2),
         Text(
@@ -1757,13 +1574,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                           minimumSize: Size.zero,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(16),
-                                            side: BorderSide(
+                                            side: const BorderSide(
                                               color: Color(0xFF92D2B0),
                                               width: 2,
                                             ),
                                           ),
                                         ),
-                                        child: Text(
+                                        child: const Text(
                                           '내 건강정보 업데이트',
                                           style: TextStyle(
                                             fontSize: 14,
@@ -1792,16 +1609,12 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    margin: EdgeInsets.only(left: 40.0, top: 24.0, bottom: 24.0, right: 24.0),
+                                    margin: const EdgeInsets.only(left: 30.0, top: 24.0, bottom: 24.0, right: 24.0),
                                     child: _buildHealthMetric('키', userHlthData, 'MSMT_001', 'cm'),
                                   ),
                                   Container(
                                     height: 74,
-                                    child: VerticalDivider(
-                                      color: Colors.white.withOpacity(0.15),
-                                      thickness: 1,
-                                      width: 1,
-                                    ),
+                                    child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1, width: 1),
                                   ),
                                   Container(
                                     margin: EdgeInsets.all(24.0),
@@ -1809,14 +1622,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   ),
                                   Container(
                                     height: 74,
-                                    child: VerticalDivider(
-                                      color: Colors.white.withOpacity(0.15),
-                                      thickness: 1,
-                                      width: 1,
-                                    ),
+                                    child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1, width: 1),
                                   ),
                                   Container(
-                                    margin: EdgeInsets.only(left: 24.0, top: 24.0, bottom: 24.0, right: 40.0),
+                                    margin: const EdgeInsets.only(left: 24.0, top: 24.0, bottom: 24.0, right: 30.0),
                                     child: _buildHealthMetric('근육량', userHlthData, 'muscleAmt', 'kg'),
                                   ),
                                 ],
@@ -1859,19 +1668,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   children: [
                                     TextSpan(
                                       text: '${userData?["userNm"] ?? ""}',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF007130), // 초록색
-                                      ),
+                                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF007130)),
                                     ),
-                                    TextSpan(
+                                    const TextSpan(
                                       text: ' 님의',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF000000), // 검정색
-                                      ),
+                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF000000)),
                                     ),
                                   ],
                                 ),
@@ -1883,38 +1684,19 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   children: [
                                     Text(
                                       '일일 에너지 권장량',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF000000),
-                                      ),
+                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF000000)),
                                     ),
                                     RichText(
                                       text: TextSpan(
                                         children: [
+                                          TextSpan(text: '총 ', style: TextStyle(fontSize: 16)),
                                           TextSpan(
-                                            text: '총 ',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: '${NumberFormat('#,###').format(calculateEnergy(double.tryParse(userHlthData.firstWhere(
-                                                  (item) => item['MSMT_ITEM_CD'] == 'MSMT_004',
-                                                  orElse: () => {'MSMT_VALUE': '0'},
-                                                )['MSMT_VALUE']?.toString() ?? '0') ?? 0.0, userData?["activityLevel"] ?? "LOW").round())}',
-                                            style: TextStyle(
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.w800,
-                                              color: Color(0xFF000000),
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: ' kcal',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                            ),
-                                          ),
+                                              text: '${NumberFormat('#,###').format(calculateEnergy(double.tryParse(userHlthData.firstWhere(
+                                                    (item) => item['MSMT_ITEM_CD'] == 'MSMT_004',
+                                                    orElse: () => {'MSMT_VALUE': '0'},
+                                                  )['MSMT_VALUE']?.toString() ?? '0') ?? 0.0, userData?["activityLevel"] ?? "LOW").round())}',
+                                              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF000000))),
+                                          TextSpan(text: ' kcal', style: TextStyle(fontSize: 16)),
                                         ],
                                       ),
                                     ),
@@ -1949,12 +1731,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                   alignment: Alignment.center,
                                                   child: Text(
                                                     '쌀 칼로리 계산',
-                                                    style: TextStyle(
-                                                      color: Color(0xFF000000),
-                                                      letterSpacing: -0.02,
-                                                      fontSize: 22,
-                                                      fontWeight: FontWeight.w700,
-                                                    ),
+                                                    style: TextStyle(color: Color(0xFF000000), letterSpacing: -0.02, fontSize: 22, fontWeight: FontWeight.w700),
                                                   ),
                                                 ),
                                                 content: SingleChildScrollView(
@@ -2033,21 +1810,14 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                                   },
                                                                   child: Text(
                                                                     '입력',
-                                                                    style: TextStyle(
-                                                                      fontWeight: FontWeight.w500,
-                                                                      fontSize: 18,
-                                                                      color: Color(0xFF555555),
-                                                                    ),
+                                                                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18, color: Color(0xFF555555)),
                                                                   ),
                                                                   style: ElevatedButton.styleFrom(
                                                                     padding: EdgeInsets.zero, // 패딩 제거
                                                                     backgroundColor: Colors.white,
                                                                     shape: RoundedRectangleBorder(
                                                                       borderRadius: BorderRadius.circular(16),
-                                                                      side: BorderSide(
-                                                                        width: 1,
-                                                                        color: Color(0xFF555555),
-                                                                      ),
+                                                                      side: BorderSide(width: 1, color: Color(0xFF555555)),
                                                                     ),
                                                                   ),
                                                                 ),
@@ -2061,132 +1831,18 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                           width: double.infinity,
                                                           padding: EdgeInsets.all(12),
                                                           decoration: BoxDecoration(
-                                                            // color: Colors.white,
                                                             borderRadius: BorderRadius.circular(16),
-                                                            border: Border.all(
-                                                              color: Color(0xFFEDEDED),
-                                                              width: 1.0,
-                                                            ),
+                                                            border: Border.all(color: Color(0xFFEDEDED), width: 1.0),
                                                           ),
                                                           child: Column(
                                                             crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
-                                                              // Text('섭취 예정 칼로리',
-                                                              //     style: TextStyle(
-                                                              //       fontSize: 16,
-                                                              //       fontWeight: FontWeight.bold,
-                                                              //     )),
                                                               SizedBox(height: 8),
-                                                              Row(
-                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                children: [
-                                                                  const Text(
-                                                                    '섭취예정 총 칼로리',
-                                                                    style: TextStyle(
-                                                                      fontSize: 16,
-                                                                      fontWeight: FontWeight.w500,
-                                                                      color: Color(0xFF000000),
-                                                                      letterSpacing: -0.02,
-                                                                    ),
-                                                                  ),
-                                                                  RichText(
-                                                                    text: TextSpan(
-                                                                      children: [
-                                                                        TextSpan(
-                                                                          text: '${calories['total']} ',
-                                                                          style: TextStyle(
-                                                                            fontSize: 24,
-                                                                            fontWeight: FontWeight.w700,
-                                                                            color: Color(0xFF000000),
-                                                                          ),
-                                                                        ),
-                                                                        TextSpan(
-                                                                          text: ' kcal ',
-                                                                          style: TextStyle(
-                                                                            fontSize: 16,
-                                                                            fontWeight: FontWeight.w500,
-                                                                            color: Color(0xFF555555),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
+                                                              RiceCaloriesRow(totalCalories: calories['total'], text: '섭취예정 총 칼로리', color: Color(0xFF000000)),
                                                               SizedBox(height: 12),
-                                                              Row(
-                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                children: [
-                                                                  Text(
-                                                                    '탄수화물 칼로리',
-                                                                    style: TextStyle(
-                                                                      fontSize: 16,
-                                                                      fontWeight: FontWeight.w500,
-                                                                      color: Color(0xFF000000),
-                                                                      letterSpacing: -0.02,
-                                                                    ),
-                                                                  ),
-                                                                  RichText(
-                                                                    text: TextSpan(
-                                                                      children: [
-                                                                        TextSpan(
-                                                                          text: '${calories['carb']} ',
-                                                                          style: TextStyle(
-                                                                            fontSize: 24,
-                                                                            fontWeight: FontWeight.w700,
-                                                                            color: Color(0xFF00914B),
-                                                                          ),
-                                                                        ),
-                                                                        TextSpan(
-                                                                          text: ' kcal ',
-                                                                          style: TextStyle(
-                                                                            fontSize: 16,
-                                                                            fontWeight: FontWeight.w500,
-                                                                            color: Color(0xFF555555),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
+                                                              RiceCaloriesRow(totalCalories: calories['carb'], text: '탄수화물 칼로리', color: Color(0xFF00914B)),
                                                               SizedBox(height: 12),
-                                                              Row(
-                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                children: [
-                                                                  Text(
-                                                                    '단백질 칼로리',
-                                                                    style: TextStyle(
-                                                                      fontSize: 16,
-                                                                      fontWeight: FontWeight.w500,
-                                                                      color: Color(0xFF000000),
-                                                                      letterSpacing: -0.02,
-                                                                    ),
-                                                                  ),
-                                                                  RichText(
-                                                                    text: TextSpan(
-                                                                      children: [
-                                                                        TextSpan(
-                                                                          text: '${calories['protein']} ',
-                                                                          style: TextStyle(
-                                                                            fontSize: 24,
-                                                                            fontWeight: FontWeight.w700,
-                                                                            color: Color(0xFF927E52),
-                                                                          ),
-                                                                        ),
-                                                                        TextSpan(
-                                                                          text: ' kcal ',
-                                                                          style: TextStyle(
-                                                                            fontSize: 16,
-                                                                            fontWeight: FontWeight.w500,
-                                                                            color: Color(0xFF555555),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
+                                                              RiceCaloriesRow(totalCalories: calories['protein'], text: '단백질 칼로리', color: Color(0xFF927E52)),
                                                             ],
                                                           ),
                                                         ),
@@ -2202,11 +1858,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                     child: ElevatedButton(
                                                       child: Text(
                                                         '닫기',
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 18,
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
+                                                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
                                                       ),
                                                       style: ElevatedButton.styleFrom(
                                                         backgroundColor: Color(0xFF007130),
@@ -2321,7 +1973,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                         Padding(
                                           padding: EdgeInsets.symmetric(horizontal: 8),
                                           child: SizedBox(
-                                            width: 144,
+                                            width: screenWidth * 0.35,
                                             height: 42,
                                             child: ElevatedButton(
                                               onPressed: () async {
@@ -2350,29 +2002,15 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                               children: [
                                                                 TextSpan(
                                                                   text: '섭취한 쌀의 ',
-                                                                  style: TextStyle(
-                                                                    fontSize: 22,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Color(0xFF000000),
-                                                                    letterSpacing: -0.04,
-                                                                  ),
+                                                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.04),
                                                                 ),
                                                                 TextSpan(
                                                                   text: '총량',
-                                                                  style: TextStyle(
-                                                                    fontSize: 22,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Color(0xFF00914B),
-                                                                  ),
+                                                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF00914B)),
                                                                 ),
                                                                 TextSpan(
                                                                   text: '을 입력해주세요',
-                                                                  style: TextStyle(
-                                                                    fontSize: 22,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Color(0xFF000000),
-                                                                    letterSpacing: -0.04,
-                                                                  ),
+                                                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.04),
                                                                 ),
                                                               ],
                                                             ),
@@ -2383,11 +2021,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                             children: [
                                                               const Text(
                                                                 '백미,현미,흑미,잡곡 등 종류 상관없음',
-                                                                style: TextStyle(
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w400,
-                                                                  color: Color(0xFF555555),
-                                                                ),
+                                                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: Color(0xFF555555)),
                                                               ),
                                                               Spacer(), // 남은 공간을 차지하여 우측 정렬 효과를 줌
                                                               Container(
@@ -2411,10 +2045,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                                                     alignment: Alignment.topRight,
                                                                                     children: [
                                                                                       // 이미지
-                                                                                      Image.asset(
-                                                                                        'images/rice_calculate_info.png',
-                                                                                        fit: BoxFit.contain,
-                                                                                      ),
+                                                                                      Image.asset('images/rice_calculate_info.png', fit: BoxFit.contain),
                                                                                       // 닫기 버튼
                                                                                       Positioned(
                                                                                         top: 1,
@@ -2436,11 +2067,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Image.asset(
-                                                                    'images/question_mark.png',
-                                                                    width: 20,
-                                                                    height: 20,
-                                                                  ),
+                                                                  child: Image.asset('images/question_mark.png', width: 20, height: 20),
                                                                 ),
                                                               )
                                                             ],
@@ -2453,379 +2080,28 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                           mainAxisSize: MainAxisSize.min,
                                                           mainAxisAlignment: MainAxisAlignment.center,
                                                           children: [
-                                                            // 아침
-                                                            Row(
-                                                              children: [
-                                                                SizedBox(width: 12),
-                                                                Expanded(
-                                                                  flex: 2,
-                                                                  child: Text(
-                                                                    '아침',
-                                                                    style: TextStyle(
-                                                                      color: Color(0xFF000000),
-                                                                      fontSize: 20,
-                                                                      fontWeight: FontWeight.w500,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                SizedBox(width: 12),
-                                                                Expanded(
-                                                                  flex: 4,
-                                                                  child: TextField(
-                                                                    controller: breakfastController,
-                                                                    textAlign: TextAlign.right,
-                                                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Color(0xFF007330)),
-                                                                    decoration: const InputDecoration(
-                                                                      filled: true, // 배경색을 적용하기 위해 필요
-                                                                      fillColor: Color(0xFFF5F4F9), // 배경색 설정
-                                                                      enabledBorder: OutlineInputBorder(
-                                                                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                                                                        borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                                                      ),
-                                                                      focusedBorder: OutlineInputBorder(
-                                                                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                                                                        borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                                                      ),
-                                                                      suffixIcon: Center(
-                                                                        widthFactor: 1.0,
-                                                                        child: Padding(
-                                                                          padding: EdgeInsets.only(right: 16),
-                                                                          child: Text(
-                                                                            'g',
-                                                                            style: TextStyle(
-                                                                              color: Color(0xFF555555),
-                                                                              fontSize: 14,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    keyboardType: TextInputType.number,
-                                                                    inputFormatters: [
-                                                                      FilteringTextInputFormatter.digitsOnly, // 숫자만 입력 허용
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                                SizedBox(width: 8),
-                                                                Expanded(
-                                                                  flex: 3,
-                                                                  child: SizedBox(
-                                                                    // SizedBox로 감싸서 높이 제어
-                                                                    height: 54, // TextField의 기본 높이
-                                                                    child: ElevatedButton(
-                                                                      onPressed: () {
-                                                                        // 입력값 유효성 검사
-                                                                        if (breakfastController.text.isEmpty) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('섭취량을 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        // 숫자 변환 시도
-                                                                        double? amount = double.tryParse(breakfastController.text);
-                                                                        if (amount == null) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('올바른 숫자를 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        // 0 이상의 값인지 확인
-                                                                        if (amount < 0) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('0보다 큰 값을 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        insertRiceIntake(
-                                                                          'BREAKFAST',
-                                                                          double.tryParse(breakfastController.text) ?? 0,
-                                                                        );
-                                                                      },
-                                                                      child: Text(
-                                                                        '입력',
-                                                                        style: TextStyle(
-                                                                          fontSize: 18,
-                                                                          fontWeight: FontWeight.w500,
-                                                                          color: Color(0xFF555555),
-                                                                        ),
-                                                                      ),
-                                                                      style: ElevatedButton.styleFrom(
-                                                                        padding: EdgeInsets.zero, // 패딩 제거
-                                                                        backgroundColor: Colors.white,
-                                                                        shape: RoundedRectangleBorder(
-                                                                          borderRadius: BorderRadius.circular(16),
-                                                                          side: BorderSide(
-                                                                            width: 1,
-                                                                            color: Color(0xFF555555),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                            RiceWeightInput(
+                                                              label: '아침',
+                                                              controller: breakfastController,
+                                                              onSubmit: (amount) {
+                                                                insertRiceIntake("BREAKFAST", amount);
+                                                              },
                                                             ),
                                                             SizedBox(height: 8),
-                                                            // 점심
-                                                            Row(
-                                                              children: [
-                                                                SizedBox(width: 12),
-                                                                Expanded(
-                                                                  flex: 2,
-                                                                  child: Text(
-                                                                    '점심',
-                                                                    style: TextStyle(
-                                                                      color: Color(0xFF000000),
-                                                                      fontSize: 20,
-                                                                      fontWeight: FontWeight.w500,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                SizedBox(width: 12),
-                                                                Expanded(
-                                                                  flex: 4,
-                                                                  child: TextField(
-                                                                    textAlign: TextAlign.right,
-                                                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Color(0xFF007330)),
-                                                                    controller: lunchController,
-                                                                    decoration: const InputDecoration(
-                                                                      filled: true, // 배경색을 적용하기 위해 필요
-                                                                      fillColor: Color(0xFFF5F4F9), // 배경색 설정
-                                                                      enabledBorder: OutlineInputBorder(
-                                                                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                                                                        borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                                                      ),
-                                                                      focusedBorder: OutlineInputBorder(
-                                                                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                                                                        borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                                                      ),
-                                                                      suffixIcon: Center(
-                                                                        widthFactor: 1.0,
-                                                                        child: Padding(
-                                                                          padding: EdgeInsets.only(right: 16),
-                                                                          child: Text(
-                                                                            'g',
-                                                                            style: TextStyle(
-                                                                              color: Color(0xFF555555),
-                                                                              fontSize: 14,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    keyboardType: TextInputType.number,
-                                                                    inputFormatters: [
-                                                                      FilteringTextInputFormatter.digitsOnly, // 숫자만 입력 허용
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                                SizedBox(width: 8),
-                                                                Expanded(
-                                                                  flex: 3,
-                                                                  child: SizedBox(
-                                                                    // SizedBox로 감싸서 높이 제어
-                                                                    height: 54, // TextField의 기본 높이
-                                                                    child: ElevatedButton(
-                                                                      onPressed: () {
-                                                                        // 입력값 유효성 검사
-                                                                        if (lunchController.text.isEmpty) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('섭취량을 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        // 숫자 변환 시도
-                                                                        double? amount = double.tryParse(lunchController.text);
-                                                                        if (amount == null) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('올바른 숫자를 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        // 0 이상의 값인지 확인
-                                                                        if (amount < 0) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('0보다 큰 값을 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        insertRiceIntake(
-                                                                          'LUNCH',
-                                                                          double.tryParse(lunchController.text) ?? 0,
-                                                                        );
-                                                                      },
-                                                                      child: Text(
-                                                                        '입력',
-                                                                        style: TextStyle(
-                                                                          fontSize: 18,
-                                                                          fontWeight: FontWeight.w500,
-                                                                          color: Color(0xFF555555),
-                                                                        ),
-                                                                      ),
-                                                                      style: ElevatedButton.styleFrom(
-                                                                        padding: EdgeInsets.zero, // 패딩 제거
-                                                                        backgroundColor: Colors.white,
-                                                                        shape: RoundedRectangleBorder(
-                                                                          borderRadius: BorderRadius.circular(16),
-                                                                          side: BorderSide(
-                                                                            width: 1,
-                                                                            color: Color(0xFF555555),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                            RiceWeightInput(
+                                                              label: '점심',
+                                                              controller: lunchController,
+                                                              onSubmit: (amount) {
+                                                                insertRiceIntake("LUNCH", amount);
+                                                              },
                                                             ),
                                                             SizedBox(height: 8),
-                                                            // 저녁
-                                                            Row(
-                                                              children: [
-                                                                SizedBox(width: 12),
-                                                                Expanded(
-                                                                  flex: 2,
-                                                                  child: Text(
-                                                                    '저녁',
-                                                                    style: TextStyle(
-                                                                      color: Color(0xFF000000),
-                                                                      fontSize: 20,
-                                                                      fontWeight: FontWeight.w500,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                SizedBox(width: 12),
-                                                                Expanded(
-                                                                  flex: 4,
-                                                                  child: TextField(
-                                                                    textAlign: TextAlign.right,
-                                                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Color(0xFF007330)),
-                                                                    controller: dinnerController,
-                                                                    decoration: const InputDecoration(
-                                                                      filled: true, // 배경색을 적용하기 위해 필요
-                                                                      fillColor: Color(0xFFF5F4F9), // 배경색 설정
-                                                                      enabledBorder: OutlineInputBorder(
-                                                                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                                                                        borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                                                      ),
-                                                                      focusedBorder: OutlineInputBorder(
-                                                                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                                                                        borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                                                      ),
-                                                                      suffixIcon: Center(
-                                                                        widthFactor: 1.0,
-                                                                        child: Padding(
-                                                                          padding: EdgeInsets.only(right: 16),
-                                                                          child: Text(
-                                                                            'g',
-                                                                            style: TextStyle(
-                                                                              color: Color(0xFF555555),
-                                                                              fontSize: 14,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    keyboardType: TextInputType.number,
-                                                                    inputFormatters: [
-                                                                      FilteringTextInputFormatter.digitsOnly, // 숫자만 입력 허용
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                                SizedBox(width: 8),
-                                                                Expanded(
-                                                                  flex: 3,
-                                                                  child: SizedBox(
-                                                                    // SizedBox로 감싸서 높이 제어
-                                                                    height: 54, // TextField의 기본 높이
-                                                                    child: ElevatedButton(
-                                                                      onPressed: () {
-                                                                        // 입력값 유효성 검사
-                                                                        if (dinnerController.text.isEmpty) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('섭취량을 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        // 숫자 변환 시도
-                                                                        double? amount = double.tryParse(dinnerController.text);
-                                                                        if (amount == null) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('올바른 숫자를 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        // 0 이상의 값인지 확인
-                                                                        if (amount < 0) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                                            SnackBar(
-                                                                              content: Text('0보다 큰 값을 입력해주세요.'),
-                                                                              backgroundColor: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                          return;
-                                                                        }
-
-                                                                        insertRiceIntake(
-                                                                          'DINNER',
-                                                                          double.tryParse(dinnerController.text) ?? 0,
-                                                                        );
-                                                                      },
-                                                                      child: Text(
-                                                                        '입력',
-                                                                        style: TextStyle(
-                                                                          fontSize: 18,
-                                                                          fontWeight: FontWeight.w500,
-                                                                          color: Color(0xFF555555),
-                                                                        ),
-                                                                      ),
-                                                                      style: ElevatedButton.styleFrom(
-                                                                        padding: EdgeInsets.zero, // 패딩 제거
-                                                                        backgroundColor: Colors.white,
-                                                                        shape: RoundedRectangleBorder(
-                                                                          borderRadius: BorderRadius.circular(16),
-                                                                          side: BorderSide(
-                                                                            width: 1,
-                                                                            color: Color(0xFF555555),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                            RiceWeightInput(
+                                                              label: '저녁',
+                                                              controller: dinnerController,
+                                                              onSubmit: (amount) {
+                                                                insertRiceIntake("DINNER", amount);
+                                                              },
                                                             ),
                                                           ],
                                                         ),
@@ -2836,13 +2112,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                           margin: EdgeInsets.only(top: 30),
                                                           // padding: EdgeInsets.symmetric(horizontal: 4),
                                                           child: ElevatedButton(
-                                                            child: Text(
+                                                            child: const Text(
                                                               '닫기',
-                                                              style: TextStyle(
-                                                                color: Colors.white,
-                                                                fontSize: 18,
-                                                                fontWeight: FontWeight.w500,
-                                                              ),
+                                                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
                                                             ),
                                                             style: ElevatedButton.styleFrom(
                                                               backgroundColor: Color(0xFF007130),
@@ -2875,11 +2147,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                               ),
                                               child: Text(
                                                 '입력하기',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Color(0xFFFFFFFF),
-                                                ),
+                                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFFFFFFFF)),
                                                 softWrap: false,
                                                 overflow: TextOverflow.visible,
                                               ),
@@ -2889,7 +2157,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                         Padding(
                                           padding: EdgeInsets.symmetric(horizontal: 2),
                                           child: SizedBox(
-                                            width: 144,
+                                            width: screenWidth * 0.35,
                                             height: 42,
                                             child: ElevatedButton(
                                               onPressed: () {
@@ -2912,7 +2180,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                   borderRadius: BorderRadius.circular(16),
                                                 ),
                                               ),
-                                              child: Row(
+                                              child: const Row(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
@@ -2956,33 +2224,24 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 36),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       SizedBox(height: 10),
                                       Text(
                                         '입력한 쌀 섭취량으로 알아보세요!',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF000000),
-                                        ),
+                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
                                       ),
                                       SizedBox(height: 4),
                                       Text(
                                         '오늘 먹은 총 칼로리 섭취량',
-                                        style: TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF000000),
-                                        ),
+                                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
                                       ),
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 20),
                                 // 영양소 정보 rows
                                 Container(
                                   width: constraints.maxWidth > 300 ? (constraints.maxWidth - 32) : constraints.maxWidth - 32,
@@ -2995,262 +2254,17 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      // 쌀 row
                                       Padding(
                                         padding: const EdgeInsets.symmetric(vertical: 0),
-                                        child: Row(
-                                          children: [
-                                            SizedBox(width: 16),
-                                            Container(
-                                              width: 8,
-                                              height: 8,
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFF007130),
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              '쌀',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            Spacer(),
-                                            Text(
-                                              '총',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF555555),
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              NumberFormat('#,###').format((totalRice * 1.46).round()),
-                                              style: TextStyle(
-                                                fontSize: 24,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              'kcal',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF555555),
-                                              ),
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              '(',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            Text(
-                                              NumberFormat('#,###').format((totalRice).round()),
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            Text(
-                                              'g)',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            SizedBox(width: 16),
-                                          ],
-                                        ),
+                                        child: FoodRow(color: Color(0xFF007130), name: '쌀', totalGram: totalRice, kcalRatio: 1.46),
                                       ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: MediaQuery.of(context).size.width * 0.8,
-                                            child: CustomPaint(
-                                              painter: DashedLinePainter(color: Color(0xFFFED144)),
-                                              size: Size(double.infinity, 1), // 높이를 1로 설정
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      // 탄수화물 row
                                       Padding(
                                         padding: const EdgeInsets.symmetric(vertical: 0),
-                                        child: Row(
-                                          children: [
-                                            SizedBox(width: 16),
-                                            Container(
-                                              width: 8,
-                                              height: 8,
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFF00914B),
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              '탄수화물',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            Spacer(),
-                                            Text(
-                                              '총',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF555555),
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              NumberFormat('#,###').format(carbCalories.round()),
-                                              style: TextStyle(
-                                                fontSize: 24,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              'kcal',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF555555),
-                                              ),
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              '(',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            Text(
-                                              NumberFormat('#,###').format((carbCalories / 4).round()),
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            Text(
-                                              'g)',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            SizedBox(width: 16),
-                                          ],
-                                        ),
+                                        child: FoodRow(color: Color(0xFF00914B), name: '탄수화물', totalGram: carbCalories / 4, kcalRatio: 4),
                                       ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: MediaQuery.of(context).size.width * 0.8,
-                                            child: CustomPaint(
-                                              painter: DashedLinePainter(color: Color(0xFFFED144)),
-                                              size: Size(double.infinity, 1), // 높이를 1로 설정
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      // 단백질 row
                                       Padding(
                                         padding: const EdgeInsets.symmetric(vertical: 0),
-                                        child: Row(
-                                          children: [
-                                            SizedBox(width: 16),
-                                            Container(
-                                              width: 8,
-                                              height: 8,
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFF9D895B),
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              '단백질',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            Spacer(),
-                                            Text(
-                                              '총',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF555555),
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              NumberFormat('#,###').format(proteinCalories.round()),
-                                              style: TextStyle(
-                                                fontSize: 24,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              ' kcal',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF555555),
-                                              ),
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              '(',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            Text(
-                                              NumberFormat('#,###').format((proteinCalories / 4).round()),
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            Text(
-                                              'g)',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF000000),
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            SizedBox(width: 16),
-                                          ],
-                                        ),
+                                        child: FoodRow(color: Color(0xFF9D895B), name: '단백질', totalGram: proteinCalories / 4, kcalRatio: 4),
                                       ),
                                     ],
                                   ),
@@ -3420,7 +2434,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                   // 칼로리 그리드
                   // 칼로리 그리드 섹션
                   Container(
-                    margin: const EdgeInsets.only(left: 16, right: 16, top: 48),
+                    margin: const EdgeInsets.only(left: 8, right: 8, top: 48),
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3432,40 +2446,18 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF000000),
-                            letterSpacing: -0.04,
+                            letterSpacing: -0.08,
                           ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             RichText(
-                              text: TextSpan(
+                              text: const TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: '섭취해야 할 ',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF000000),
-                                      letterSpacing: -0.04,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: '권장 칼로리',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF000000),
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: '는?',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF000000),
-                                      letterSpacing: -0.04,
-                                    ),
+                                    text: '섭취해야 할 권장 칼로리는? ',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.06),
                                   ),
                                 ],
                               ),
@@ -3475,21 +2467,14 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 Container(
                                   width: 10,
                                   height: 10,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFFABE00),
-                                    shape: BoxShape.circle,
-                                  ),
+                                  decoration: BoxDecoration(color: Color(0xFFFABE00), shape: BoxShape.circle),
                                 ),
                                 SizedBox(width: 4), // 동그라미와 텍스트 사이 간격
                                 Container(
                                   margin: EdgeInsets.only(right: 8),
-                                  child: Text(
+                                  child: const Text(
                                     '섭취완료',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF555555),
-                                    ),
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
                                   ),
                                 )
                               ],
@@ -3516,36 +2501,36 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 children: [
                                   // _buildTableHeader('${NumberFormat('#,###').format(recDailyEnergy)}'),
                                   _buildTableHeader('${NumberFormat('#,###').format(recDailyEnergy.round())}'),
-                                  _buildTableCell('한끼  권장\n칼   로   리', isHeader: true),
-                                  _buildTableCell('탄수화물\n필  요  량', isHeader: true),
-                                  _buildTableCell('단  백  질\n필  요  량', isHeader: true),
+                                  buildTableCell('한끼  권장\n칼   로   리', breakfastRice, lunchRice, dinnerRice, isHeader: true),
+                                  buildTableCell('탄수화물\n필  요  량', breakfastRice, lunchRice, dinnerRice, isHeader: true),
+                                  buildTableCell('단  백  질\n필  요  량', breakfastRice, lunchRice, dinnerRice, isHeader: true),
                                 ],
                               ),
                               // 아침 행
                               TableRow(
                                 children: [
                                   _buildTableHeader('아침'),
-                                  _buildTableCell('${(recBreakfastEnergy).round()}', str: 'breakfastTotalRecKcal'),
-                                  _buildTableCell('${(recBreakfastCarbs).round()}', str: 'recBreakfastCarbs'),
-                                  _buildTableCell('${(recBreakfastProtein).round()}', str: 'recBreakfastProtein'),
+                                  buildTableCell('${(recBreakfastEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'breakfastTotalRecKcal'),
+                                  buildTableCell('${(recBreakfastCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recBreakfastCarbs'),
+                                  buildTableCell('${(recBreakfastProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recBreakfastProtein'),
                                 ],
                               ),
                               // 점심 행
                               TableRow(
                                 children: [
                                   _buildTableHeader('점심'),
-                                  _buildTableCell('${(recLunchEnergy).round()}', str: 'lunchTotalRecKcal'),
-                                  _buildTableCell('${(recLunchCarbs).round()}', str: 'recLunchCarbs'),
-                                  _buildTableCell('${(recLunchProtein).round()}', str: 'recLunchProtein'),
+                                  buildTableCell('${(recLunchEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'lunchTotalRecKcal'),
+                                  buildTableCell('${(recLunchCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recLunchCarbs'),
+                                  buildTableCell('${(recLunchProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recLunchProtein'),
                                 ],
                               ),
                               // 저녁 행
                               TableRow(
                                 children: [
                                   _buildTableHeader('저녁'),
-                                  _buildTableCell('${(recDinnerEnergy).round()}', str: 'dinnerTotalRecKcal'),
-                                  _buildTableCell('${(recDinnerCarbs).round()}', str: 'recDinnerCarbs'),
-                                  _buildTableCell('${(recDinnerProtein).round()}', str: 'recDinnerProtein'),
+                                  buildTableCell('${(recDinnerEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'dinnerTotalRecKcal'),
+                                  buildTableCell('${(recDinnerCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recDinnerCarbs'),
+                                  buildTableCell('${(recDinnerProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recDinnerProtein'),
                                 ],
                               ),
                             ],
@@ -3554,10 +2539,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                         (breakfastRice != 0 && lunchRice != 0 && dinnerRice != 0) && (dailyCarbsLackCal != 0 || dailyProteinLackCal != 0)
                             ? Text(
                                 '"탄수화물 ${dailyCarbsLackCal}kcal, 단백질 ${dailyProteinLackCal}kcal 부족해요. 근육과 건강을 위해 파이팅!"',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                               )
                             : const SizedBox(),
                       ],
@@ -3574,11 +2556,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             Text(
                               '${userData?["userNm"] ?? ""} 님의 권장 필요'
                               '\n에너지량에 따른 음식추천',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF000000),
-                              ),
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF000000)),
                             ),
                           ],
                         ),
@@ -3601,27 +2579,21 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             children: [
                               Flexible(
                                 child: RichText(
-                                  text: TextSpan(
-                                    style: TextStyle(
-                                      fontSize: 14.0,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black, // 기본 텍스트 색상
-                                    ),
+                                  text: const TextSpan(
+                                    style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.black),
                                     children: [
                                       TextSpan(
-                                        text: '탄수화물',
-                                        style: TextStyle(
-                                            color: Color(0xFF00914B), // 초록색
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700),
-                                      ),
+                                          text: '탄수화물',
+                                          style: TextStyle(
+                                              color: Color(0xFF00914B), // 초록색
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700)),
                                       TextSpan(
-                                        text: '만 먼저 채우고 싶어요!',
-                                        style: TextStyle(
-                                            color: Color(0xFF000000), // 검정색
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600),
-                                      ),
+                                          text: '만 먼저 채우고 싶어요!',
+                                          style: TextStyle(
+                                              color: Color(0xFF000000), // 검정색
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600)),
                                     ],
                                   ),
                                 ),
@@ -3636,19 +2608,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: Color(0xFF00914B),
-                                      width: 2, // 테두리 두께
-                                    ),
+                                    border: Border.all(color: Color(0xFF00914B), width: 2),
                                   ),
                                   child: Text(
                                     '$strRec 추천음식',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF00914B),
-                                      fontSize: 11,
-                                      letterSpacing: -0.04,
-                                    ),
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00914B), fontSize: 11, letterSpacing: -0.04),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
@@ -3679,7 +2643,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 children: [
                                   Divider(thickness: 1.0),
                                   // 표 헤더
-                                  Row(
+                                  const Row(
                                     children: [
                                       Expanded(
                                         flex: 3,
@@ -3753,7 +2717,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             children: [
                               Flexible(
                                 child: RichText(
-                                  text: TextSpan(
+                                  text: const TextSpan(
                                     style: TextStyle(
                                       fontSize: 14.0,
                                       fontWeight: FontWeight.bold,
@@ -3792,27 +2756,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   ),
                                   child: Text(
                                     '$strRec 추천음식',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF9D895B),
-                                      fontSize: 11,
-                                      letterSpacing: -0.04,
-                                    ),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF9D895B), fontSize: 11, letterSpacing: -0.04),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
                               ),
-                              // Transform.translate(
-                              //   offset: Offset(8, 0),
-                              //   child: Container(
-                              //     padding: EdgeInsets.zero,
-                              //     child: Image.asset(
-                              //       'images/arrow_down.png',
-                              //       width: 24,
-                              //       height: 24,
-                              //     ),
-                              //   ),
-                              // ),
                             ],
                           ),
                           onExpansionChanged: (bool expanded) {
@@ -3829,12 +2777,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   Divider(thickness: 1.0),
                                   // 표 헤더
                                   Container(
-                                    // decoration: BoxDecoration(
-                                    //   color: Color(0xFFE8F5E9), // 연한 초록색 배경
-                                    //   borderRadius: BorderRadius.circular(4), // 선택적: 모서리를 둥글게
-                                    // ),
                                     padding: EdgeInsets.zero,
-                                    child: Row(
+                                    child: const Row(
                                       children: [
                                         Expanded(
                                           flex: 3,
@@ -3960,7 +2904,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                TextLarge(text: '헬스케어 기기 연동', color: Colors.white),
+                                TextLarge(text: '헬스케어 기기 사용 이력', color: Colors.white),
                                 SizedBox(height: screenHeight * 0.04),
                                 RoundButton(
                                   text: '통계화면',
@@ -4043,37 +2987,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
             text: "건강뉴스",
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMetricCard(String title, String value, String code) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.5),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title),
-            Row(
-              children: [
-                Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.bar_chart),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return MetricChartDialog(title: title, code: code, userId: userId);
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -4338,10 +3251,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             height: 120,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 2,
-                              ),
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                             child: _buildProfileImage(),
                           ),
@@ -4434,17 +3344,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                                 boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4,
-                                  ),
+                                  BoxShadow(color: Colors.black26, blurRadius: 4),
                                 ],
                               ),
-                              child: Icon(
-                                Icons.edit,
-                                size: 20,
-                                color: Colors.blue,
-                              ),
+                              child: Icon(Icons.edit, size: 20, color: Colors.blue),
                             ),
                           ),
                         ],
@@ -4453,10 +3356,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                         Container(
                           width: 120,
                           height: 120,
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
+                          decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
                           child: Center(
                             child: CircularProgressIndicator(
                               color: Colors.white,
@@ -4470,22 +3370,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                   child: ListView(
                     padding: EdgeInsets.all(16),
                     children: [
-                      _buildUserInfoCard(
-                        title: '회원 아이디',
-                        value: userData["userId"] ?? "N/A",
-                      ),
-                      _buildUserInfoCard(
-                        title: '회원 이름',
-                        value: userData["userNm"] ?? "N/A",
-                      ),
-                      _buildUserInfoCard(
-                        title: '생년월일',
-                        value: userData["bym"] ?? "N/A",
-                      ),
-                      _buildUserInfoCard(
-                        title: '성별',
-                        value: userData?["sex"] == "M" ? "남성" : "여성",
-                      ),
+                      buildUserInfoCard(title: '회원 아이디', value: userData["userId"] ?? "N/A"),
+                      buildUserInfoCard(title: '회원 이름', value: userData["userNm"] ?? "N/A"),
+                      buildUserInfoCard(title: '생년월일', value: userData["bym"] ?? "N/A"),
+                      buildUserInfoCard(title: '성별', value: userData?["sex"] == "M" ? "남성" : "여성"),
                       StatefulBuilder(
                         builder: (BuildContext context, StateSetter setState) {
                           return Card(
@@ -4589,89 +3477,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                 ),
               ],
             ),
-    );
-  }
-
-// 회원 정보 카드 빌더
-  Widget _buildUserInfoCard({required String title, required String value}) {
-    return Card(
-      color: Colors.white,
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              value,
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Container pscpInfoContainer(BuildContext context, List<Map<String, dynamic>> pscpData) {
-    return Container(
-      color: Colors.blueGrey,
-      child: (pscpData.isEmpty)
-          ? Center(
-              child: Text(
-                '처방 정보가 없습니다.',
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            )
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    '처방 정보',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.all(16),
-                    children: pscpData.map((item) {
-                      return _buildInfoCard(
-                        title: item['hlthFoodNm'] ?? '항목명 없음',
-                        value: '${item['pscpDose']}',
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-
-  // 공통 카드 빌더
-  Widget _buildInfoCard({required String title, required String value}) {
-    return Card(
-      color: Colors.white,
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              value,
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

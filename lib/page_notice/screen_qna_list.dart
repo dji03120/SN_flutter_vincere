@@ -141,7 +141,7 @@ class _QnaScreenState extends State<Qna> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
+                          const Text(
                             '질문 등록하기',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF555555)),
                           ),

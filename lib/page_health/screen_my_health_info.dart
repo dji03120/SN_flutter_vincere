@@ -72,6 +72,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
     // _editMsmtItemData에 값 세팅
 
     // widget.healthData가 null이 아니고 비어있지 않은 경우
+    // ignore: unnecessary_null_comparison
     if (widget.healthData != null && widget.healthData.isNotEmpty) {
       // _editMsmtItemData를 순회하면서 healthData의 값으로 업데이트
       for (var item in _editMsmtItemData) {
@@ -200,8 +201,14 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
   Widget build(BuildContext context) {
     List<Widget> children = [];
     int index = 0;
+
+    TextStyle textStyleFont16w500 = const TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+    );
+
     children.add(
-      Padding(
+      const Padding(
           padding: const EdgeInsets.only(bottom: 30),
           child: Text('My 건강정보 입력하기',
               style: const TextStyle(
@@ -222,13 +229,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index], // controller 사용
@@ -257,13 +258,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(_editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index + 1],
@@ -306,13 +301,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _editedHealthData[index + i]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      Text(_editedHealthData[index + i]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _controllers[index + i],
@@ -356,13 +345,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index],
@@ -391,13 +374,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(_editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index + 1],
@@ -436,13 +413,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index],
@@ -470,13 +441,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(_editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index + 1],
@@ -515,13 +480,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index],
@@ -549,13 +508,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(_editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controllers[index + 1],
@@ -594,13 +547,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30), // 간격 수정
-              Text(
-                _editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _controllers[index],

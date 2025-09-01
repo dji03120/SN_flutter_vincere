@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:Vincere/component/card_muscle_result.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:html/dom.dart' as dom;
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart'; // 링크를 열기 위한 패키지
 
 class HtmlUtils {
@@ -177,7 +180,7 @@ Container pscpInfoContainer(BuildContext context, List<Map<String, dynamic>> psc
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: pscpData.map((item) {
-                    return _buildInfoCard(
+                    return buildInfoCard(
                       title: item['hlthFoodNm'] ?? '항목명 없음',
                       value: '${item['pscpDose']}',
                     );
@@ -189,8 +192,26 @@ Container pscpInfoContainer(BuildContext context, List<Map<String, dynamic>> psc
   );
 }
 
+// 회원 정보 카드 빌더
+Widget buildUserInfoCard({required String title, required String value}) {
+  return Card(
+    color: Colors.white,
+    margin: EdgeInsets.symmetric(vertical: 8.0),
+    child: Padding(
+      padding: EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(value, style: TextStyle(fontSize: 16)),
+        ],
+      ),
+    ),
+  );
+}
+
 // 공통 카드 빌더
-Widget _buildInfoCard({required String title, required String value}) {
+Widget buildInfoCard({required String title, required String value}) {
   return Card(
     color: Colors.white,
     margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -231,4 +252,438 @@ int get_birth_to_age(String bym) {
     age--;
   }
   return age;
+}
+
+class FoodRow extends StatelessWidget {
+  final String name; // 음식 이름 (예: 쌀, 고기, 채소 등)
+  final Color color; // 아이콘 색상
+  final double totalGram; // 음식 총량(g)
+  final double kcalRatio; // g → kcal 변환 비율
+
+  const FoodRow({
+    super.key,
+    required this.name,
+    required this.color,
+    required this.totalGram,
+    required this.kcalRatio,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 16),
+
+            // ● 원형 색상 아이콘
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+
+            const SizedBox(width: 10),
+
+            // 음식 이름
+            Text(
+              name,
+              style: const TextStyle(fontSize: 16, color: Color(0xFF000000), fontWeight: FontWeight.w500),
+            ),
+
+            const Spacer(),
+
+            // "총"
+            const Text(
+              '총',
+              style: TextStyle(fontSize: 14, color: Color(0xFF555555)),
+            ),
+
+            const SizedBox(width: 10),
+
+            // kcal 값
+            Text(
+              NumberFormat('#,###').format((totalGram * kcalRatio).round()),
+              style: const TextStyle(fontSize: 24, color: Color(0xFF000000), fontWeight: FontWeight.w800),
+            ),
+
+            const SizedBox(width: 10),
+
+            // kcal 단위
+            const Text(
+              'kcal',
+              style: TextStyle(fontSize: 14, color: Color(0xFF555555)),
+            ),
+
+            const SizedBox(width: 5),
+
+            // 괄호 + g 단위
+            Text(
+              '(${NumberFormat('#,###').format(totalGram.round())}g)',
+              style: const TextStyle(fontSize: 14, color: Color(0xFF000000), fontWeight: FontWeight.w800),
+            ),
+
+            const SizedBox(width: 16),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: CustomPaint(
+                painter: DashedLinePainter(color: Color(0xFFFED144)),
+                size: Size(double.infinity, 1), // 높이를 1로 설정
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// 테이블 데이터 셀 위젯
+Widget buildTableCell(String text, double breakfastRice, double lunchRice, double dinnerRice, {bool isHeader = false, String? str = ' '}) {
+  double numericValue = 0;
+
+  try {
+    numericValue = double.parse(text);
+  } catch (e) {
+    // text가 숫자로 변환할 수 없는 경우 기본값 0 사용
+    print("숫자로 변환할 수 없는 텍스트입니다: $text");
+  }
+  Color dotColor;
+  Color numberColor;
+
+  if (!isHeader && str != null && ((str.contains('recBreakfastCarbs') && breakfastRice > 0) || (str.contains('recBreakfastProtein') && breakfastRice > 0) || (str.contains('recLunchCarbs') && lunchRice > 0) || (str.contains('recLunchProtein') && lunchRice > 0) || (str.contains('recDinnerCarbs') && dinnerRice > 0) || (str.contains('recDinnerProtein') && dinnerRice > 0))) {
+    dotColor = const Color(0xFFFABE00);
+  } else if (!isHeader && str != null && str.contains('TotalRecKcal') && ((str == 'breakfastTotalRecKcal' && breakfastRice > 0) || (str == 'lunchTotalRecKcal' && lunchRice > 0) || (str == 'dinnerTotalRecKcal' && dinnerRice > 0))) {
+    dotColor = const Color(0xFFFABE00);
+  } else if (!isHeader && str != ' ') {
+    dotColor = const Color(0xFFDEDEDE);
+  } else {
+    dotColor = const Color(0xFFF5F5F5);
+  }
+
+  if (!isHeader && str != null && str.contains('Carbs')) {
+    numberColor = const Color(0xFF00914B);
+  } else if (!isHeader && str != null && str.contains('Protein')) {
+    numberColor = const Color(0xFF9D895B);
+  } else {
+    numberColor = const Color(0xFF000000);
+  }
+
+  List<Widget> children = [
+    Row(
+      mainAxisAlignment: MainAxisAlignment.start, // 좌측 정렬
+      children: [
+        SizedBox(width: 10),
+        if (!isHeader) ...[
+          Container(
+            width: 10, // 동그라미 크기
+            height: 10,
+            margin: EdgeInsets.only(top: 10, bottom: 3),
+            decoration: BoxDecoration(
+              color: dotColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
+        if (isHeader) ...[
+          SizedBox(height: 15),
+        ],
+      ],
+      // SizedBox(height: 10),
+    ),
+    Row(
+      // 새로운 Row 추가
+      mainAxisAlignment: isHeader ? MainAxisAlignment.center : MainAxisAlignment.end, // 중앙 정렬
+      //crossAxisAlignment: isHeader ? CrossAxisAlignment.center : CrossAxisAlignment.start,  // 추가: 세로 중앙 정렬
+      children: [
+        Text(
+          // textAlign: TextAlign.center,
+          isHeader ? text : '${numericValue.round()}',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: numberColor,
+          ),
+        ),
+        if (!isHeader && str != null && !str.contains('totalRecKcal')) ...[
+          Text(
+            'kcal',
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: Color(0xFF555555)),
+          ),
+          SizedBox(width: 10),
+        ],
+        if (!isHeader && str != null && str.contains('totalRecKcal')) ...[
+          Text(
+            'kcal',
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: Color(0xFF000000)),
+          ),
+          SizedBox(width: 10),
+        ],
+        // SizedBox(width: 8),
+      ],
+    ),
+  ];
+
+  if (!isHeader && str != null && ((str.contains('recBreakfastCarbs') && breakfastRice > 0) || (str.contains('recBreakfastProtein') && breakfastRice > 0) || (str.contains('recLunchCarbs') && lunchRice > 0) || (str.contains('recLunchProtein') && lunchRice > 0) || (str.contains('recDinnerCarbs') && dinnerRice > 0) || (str.contains('recDinnerProtein') && dinnerRice > 0))) {
+    children.addAll([
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end, // 우측 정렬
+        children: [
+          Text(
+            '${(numericValue / 4).round().toString()}',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF000000)),
+          ),
+          Text(
+            'g',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF555555)),
+          ),
+          SizedBox(width: 10),
+        ],
+      ),
+    ]);
+  } else if (!isHeader && str != ' ' && str != null && !str.contains('TotalRecKcal')) {
+    // 탄수화물 필요량 또는 단백질 필요량 cell인 경우
+    children.addAll([
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end, // 우측 정렬
+        children: [
+          Text(
+            '${(numericValue / 4).round().toString()}',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF000000)),
+          ),
+          Text(
+            'g',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF555555)),
+          ),
+          SizedBox(width: 10),
+        ],
+      ),
+    ]);
+  } else if (!isHeader && str != ' ' && str != null && str.contains('totalRecKcal')) {
+    children.addAll([
+      SizedBox(height: 20),
+    ]);
+  }
+
+  Color cellColor;
+  switch (str) {
+    case String s when s.contains('Carbs'):
+      cellColor = const Color(0xFFF0F9F4);
+    case String s when s.contains('Protein'):
+      cellColor = const Color(0xFFF9F8F5);
+    default:
+      cellColor = const Color(0xFFF5F5F5);
+      break;
+  }
+
+  return Container(
+    // padding: const EdgeInsets.symmetric(vertical: 12),
+    alignment: Alignment.center,
+    height: 76,
+    decoration: BoxDecoration(
+      color: !isHeader ? cellColor : Colors.white, // 헤더일 때만 초록색 배경
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: children,
+    ),
+  );
+}
+
+class RiceCaloriesRow extends StatelessWidget {
+  final String text;
+  final int totalCalories; // 총 칼로리 값
+  final Color color;
+
+  const RiceCaloriesRow({super.key, required this.totalCalories, required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              text,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF000000),
+                letterSpacing: -0.02,
+              ),
+            ),
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$totalCalories ',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+                  const TextSpan(
+                    text: 'kcal',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF555555),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class RiceWeightInput extends StatelessWidget {
+  final String label; // 라벨 (아침, 점심, 저녁 등)
+  final TextEditingController controller; // 입력 컨트롤러
+  final void Function(double) onSubmit; // 입력 완료 콜백
+
+  const RiceWeightInput({
+    super.key,
+    required this.label,
+    required this.controller,
+    required this.onSubmit,
+  });
+
+  void _handleSubmit(BuildContext context) {
+    if (controller.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('섭취량을 입력해주세요.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final double? amount = double.tryParse(controller.text);
+    if (amount == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('올바른 숫자를 입력해주세요.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (amount < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('0보다 큰 값을 입력해주세요.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    onSubmit(amount); // 콜백 실행
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 12),
+
+        // 라벨 (아침/점심/저녁)
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF000000),
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        // 입력 필드
+        Expanded(
+          flex: 4,
+          child: TextField(
+            controller: controller,
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF007330),
+            ),
+            decoration: const InputDecoration(
+              filled: true,
+              fillColor: Color(0xFFF5F4F9),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+                borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+                borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
+              ),
+              suffixIcon: Center(
+                widthFactor: 1.0,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 16),
+                  child: Text(
+                    'g',
+                    style: TextStyle(color: Color(0xFF555555), fontSize: 14),
+                  ),
+                ),
+              ),
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        // 입력 버튼
+        Expanded(
+          flex: 3,
+          child: SizedBox(
+            height: 54,
+            child: ElevatedButton(
+              onPressed: () => _handleSubmit(context),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.zero,
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(width: 1, color: Color(0xFF555555)),
+                ),
+              ),
+              child: const Text(
+                '입력',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF555555),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
