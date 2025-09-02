@@ -1,10 +1,9 @@
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/custom_widget/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/custom_widget/custom_button.dart';
-import 'package:Vincere/custom_widget/custom_text.dart';
+import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/page_workout/page_workout_start.dart';
 
 class WorkoutPlan extends StatefulWidget {
@@ -25,7 +24,6 @@ class WorkoutPlanState extends State<WorkoutPlan> {
 
     return Scaffold(
       appBar: const Header(),
-      drawer: CustomDrawer(isLogin: true),
       body: Container(
         width: screenWidth,
         height: screenHeight,
@@ -33,68 +31,6 @@ class WorkoutPlanState extends State<WorkoutPlan> {
           color: Color(0xFFf5f4f9),
           child: Column(
             children: [
-              SizedBox(height: screenHeight * 0.08),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // 왼쪽: 근육 나이 텍스트
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    width: MediaQuery.of(context).size.width * 0.6,
-                    margin: EdgeInsets.only(
-                      left: MediaQuery.of(context).size.width * 0.06,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '내 근육 나이',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: userModel.muscleAge,
-                                style: const TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF007130),
-                                ),
-                              ),
-                              const TextSpan(
-                                text: ' 세',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  color: Color(0xFF000000),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // 오른쪽: 이미지
-                  Container(
-                    width: 60,
-                    height: 60,
-                    margin: EdgeInsets.only(
-                      right: MediaQuery.of(context).size.width * 0.06,
-                    ),
-                    child: Image.asset(
-                      'images/body.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ],
-              ),
-
               SizedBox(height: screenHeight * 0.08),
               TextLarge(text: widget.explainText),
               SizedBox(height: screenHeight * 0.08),
@@ -113,6 +49,22 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                   }).toList(),
                 ),
               ),
+              const Text('추천 운동 강도', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: userModel.gradeAvg.toString(),
+                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
+                    ),
+                    const TextSpan(
+                      text: ' 등급',
+                      style: TextStyle(fontSize: 22, color: Color(0xFF000000)),
+                    ),
+                  ],
+                ),
+              ),
+
               SizedBox(height: screenHeight * 0.04),
               SizedBox(
                 width: screenWidth * 0.75,

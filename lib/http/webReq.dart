@@ -5,41 +5,16 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   final String baseUrl = 'https://vincerebiohealth.kr/root'; // 운영
-  //final String baseUrl = 'http://127.0.0.1:8080/root'; // 로컬
+  //final String baseUrl = 'http://127.0.0.1:8080'; //root'; // 로컬
 
   // 2024-08-21 AJG web 통신용 추가
 
   // app 회원 가입
-  Future<Map<String, dynamic>> fetchUserRegist(
-      String userId,
-      String userNm,
-      String bym,
-      String sex,
-      String passWd,
-      String activityLevel,
-      String hpNo,
-      String zipCd,
-      String addr,
-      String addrDtl,
-      String email) async {
+  Future<Map<String, dynamic>> fetchUserRegist(String userId, String userNm, String bym, String sex, String passWd, String activityLevel, String hpNo, String zipCd, String addr, String addrDtl, String email) async {
     final response = await http.post(
       Uri.parse("$baseUrl/app/registUser.do"),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'userId': userId,
-        'userNm': userNm,
-        'bym': bym,
-        'sex': sex,
-        'auth': null,
-        'passWd': passWd,
-        'activityLevel': activityLevel,
-        'useYn': 'Y',
-        'hpNo': hpNo,
-        'zipCd': zipCd,
-        'addr': addr,
-        'addrDtl': addrDtl,
-        'email': email
-      }),
+      body: json.encode({'userId': userId, 'userNm': userNm, 'bym': bym, 'sex': sex, 'auth': null, 'passWd': passWd, 'activityLevel': activityLevel, 'useYn': 'Y', 'hpNo': hpNo, 'zipCd': zipCd, 'addr': addr, 'addrDtl': addrDtl, 'email': email}),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -65,16 +40,11 @@ class ApiService {
   }
 
   // app 아이디 문의
-  Future<Map<String, dynamic>> fetchIdQnA(
-      String userName, String contactEmail, String contactPhone) async {
+  Future<Map<String, dynamic>> fetchIdQnA(String userName, String contactEmail, String contactPhone) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/regIdQnA.do'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'userName': userName,
-        'contactEmail': contactEmail,
-        'contactPhone': contactPhone
-      }),
+      body: json.encode({'userName': userName, 'contactEmail': contactEmail, 'contactPhone': contactPhone}),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -85,8 +55,7 @@ class ApiService {
   }
 
   // app 비밀번호 문의
-  Future<Map<String, dynamic>> fetchPswdQnA(String userId, String userName,
-      String contactEmail, String contactPhone) async {
+  Future<Map<String, dynamic>> fetchPswdQnA(String userId, String userName, String contactEmail, String contactPhone) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/regPswdQnA.do'),
       headers: {'Content-Type': 'application/json'},
@@ -106,8 +75,9 @@ class ApiService {
   }
 
   // app 로그인
-  Future<Map<String, dynamic>> fetchUserLogin(
-      String id, String password) async {
+  Future<Map<String, dynamic>> fetchUserLogin(String id, String password) async {
+    print(id);
+    print(password);
     final response = await http.post(
       Uri.parse('$baseUrl/app/userLogin.do'),
       headers: {'Content-Type': 'application/json'},
@@ -115,6 +85,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
+      print(response.body);
       return json.decode(response.body);
     } else {
       throw Exception('Failed to load user AddInfo');
@@ -122,8 +93,7 @@ class ApiService {
   }
 
   // app 비밀번호 재설정
-  Future<Map<String, dynamic>> fetchUpdatePassWd(
-      Map<String, String> requestData) async {
+  Future<Map<String, dynamic>> fetchUpdatePassWd(Map<String, String> requestData) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/updatePassWd.do'),
       headers: {'Content-Type': 'application/json'},
@@ -138,8 +108,7 @@ class ApiService {
   }
 
   // app 회원 추가 정보 등록
-  Future<Map<String, dynamic>> fetchUserAddInfo(
-      Map<String, dynamic> addInfo) async {
+  Future<Map<String, dynamic>> fetchUserAddInfo(Map<String, dynamic> addInfo) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/regAddUser.do'),
       headers: {'Content-Type': 'application/json'},
@@ -220,32 +189,11 @@ class ApiService {
   }
 
   // app 회원 마이페이지 정보 수정
-  Future<Map<String, dynamic>> fetchUpdateUserMyPage(
-      String userId,
-      String userNm,
-      String email,
-      String hpNo,
-      String bym,
-      String zipCd,
-      String addr,
-      String addrDtl,
-      String activityLevel,
-      String sex) async {
+  Future<Map<String, dynamic>> fetchUpdateUserMyPage(String userId, String userNm, String email, String hpNo, String bym, String zipCd, String addr, String addrDtl, String activityLevel, String sex) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/updateUserMyPage.do'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'userId': userId,
-        'userNm': userNm,
-        'email': email,
-        'hpNo': hpNo,
-        'bym': bym,
-        'zipCd': zipCd,
-        'addr': addr,
-        'addrDtl': addrDtl,
-        'activityLevel': activityLevel,
-        'sex': sex
-      }),
+      body: json.encode({'userId': userId, 'userNm': userNm, 'email': email, 'hpNo': hpNo, 'bym': bym, 'zipCd': zipCd, 'addr': addr, 'addrDtl': addrDtl, 'activityLevel': activityLevel, 'sex': sex}),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -307,8 +255,7 @@ class ApiService {
   }
 
   //fetchGetUserGrades
-  Future<Map<String, dynamic>> fetchGetUserGrades(
-      String userId, String bym) async {
+  Future<Map<String, dynamic>> fetchGetUserGrades(String userId, String bym) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/getUserGrades.do'),
       headers: {'Content-Type': 'application/json'},
@@ -395,8 +342,7 @@ class ApiService {
   }
 
   // QNA Regist
-  Future<Map<String, dynamic>> fetchRegQna(
-      String userId, String title, String content) async {
+  Future<Map<String, dynamic>> fetchRegQna(String userId, String title, String content) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/regMyQnA.do'),
       headers: {'Content-Type': 'application/json'},
@@ -415,8 +361,7 @@ class ApiService {
   }
 
   // QNA View
-  Future<Map<String, dynamic>> fetchQnaView(
-      String userId, String noticeCd) async {
+  Future<Map<String, dynamic>> fetchQnaView(String userId, String noticeCd) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/getMyQnA.do'),
       headers: {'Content-Type': 'application/json'},
@@ -434,8 +379,7 @@ class ApiService {
   }
 
   // QNA Modify
-  Future<Map<String, dynamic>> fetchModiQna(
-      String userId, String title, String content, String noticeCd) async {
+  Future<Map<String, dynamic>> fetchModiQna(String userId, String title, String content, String noticeCd) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/modMyQnA.do'),
       headers: {'Content-Type': 'application/json'},
@@ -472,8 +416,7 @@ class ApiService {
   }
 
   // UserActivityLevel Modify
-  Future<Map<String, dynamic>> updateUserActivityLevel(
-      String userId, String activityLevel) async {
+  Future<Map<String, dynamic>> updateUserActivityLevel(String userId, String activityLevel) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/modUserActivityLevel.do'),
       headers: {'Content-Type': 'application/json'},
@@ -491,8 +434,7 @@ class ApiService {
   }
 
   // ApiService 클래스에 추가
-  Future<Map<String, dynamic>> fetchCalculatedValue(
-      Map<String, dynamic> requestData) async {
+  Future<Map<String, dynamic>> fetchCalculatedValue(Map<String, dynamic> requestData) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/app/calculateValue.do'), // 실제 API 엔드포인트로 수정
@@ -632,8 +574,7 @@ class ApiService {
   }
 
   // 추천 식품 리스트
-  Future<Map<String, dynamic>> fetchGetRcmdFoodList(
-      double carbsCal, double proteinCal) async {
+  Future<Map<String, dynamic>> fetchGetRcmdFoodList(double carbsCal, double proteinCal) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/getRecFoodList.do'),
       headers: {'Content-Type': 'application/json'},
@@ -700,8 +641,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> updateUserHealthData(
-      String userId, List<Map<String, dynamic>> healthData) async {
+  Future<Map<String, dynamic>> updateUserHealthData(String userId, List<Map<String, dynamic>> healthData) async {
     final String healthDataJson = json.encode(healthData);
 
     final Map<String, String> requestData = {

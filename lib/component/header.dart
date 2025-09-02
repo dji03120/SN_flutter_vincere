@@ -44,8 +44,7 @@ class _HeaderState extends State<Header> {
   Future<void> _getUserInfo() async {
     try {
       ApiService apiService = ApiService();
-      Map<String, dynamic> result =
-          await apiService.fetchGetUserInfo(userId.toString());
+      Map<String, dynamic> result = await apiService.fetchGetUserInfo(userId.toString());
 
       setState(() {
         userData = result["userOne"];
@@ -141,8 +140,7 @@ class _HeaderState extends State<Header> {
                   : () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
                       );
                     },
               style: OutlinedButton.styleFrom(

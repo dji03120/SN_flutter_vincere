@@ -1,10 +1,10 @@
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/custom_widget/custom_drawer.dart';
+import 'package:Vincere/component/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/custom_widget/custom_button.dart';
-import 'package:Vincere/custom_widget/custom_text.dart';
+import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/page_workout/page_workout_plan.dart';
 
 class SelectMuscle extends StatefulWidget {
@@ -19,12 +19,12 @@ class Component3State extends State<SelectMuscle> {
   List<String> selectedWorkouts = [];
 
   // 체크박스 항목 목록
-  final List<String> workouts = [
-    '상완근 10min',
-    '이두근 10min',
-    '삼각근 10min',
-    '대흉근 10min',
-    '대퇴근 10min',
+  final List<dynamic> workouts = [
+    {'name': '상완근', 'service_type': '무료'},
+    {'name': '이두근', 'service_type': '무료'},
+    {'name': '삼각근', 'service_type': '무료'},
+    {'name': '대흉근', 'service_type': '유료'},
+    {'name': '대퇴근', 'service_type': '유료'},
   ];
 
   @override
@@ -53,19 +53,36 @@ class Component3State extends State<SelectMuscle> {
                   itemCount: workouts.length,
                   itemBuilder: (context, index) {
                     final workout = workouts[index];
-                    return RoundCheckButton(
-                      text: workout,
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 15),
-                      onChanged: (bool isChecked) {
-                        setState(() {
-                          if (isChecked) {
-                            selectedWorkouts.add(workout);
-                          } else {
-                            selectedWorkouts.remove(workout);
-                          }
-                        });
-                      },
-                    );
+                    bool isDisabled = workout['service_type'] == '유료';
+                    if (isDisabled) {
+                      return RoundButton(
+                        text: workout['name'],
+                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 15),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('해당 서비스는 유료 모드 입니다. \n관리자에게 요청해주세요.')),
+                          );
+                        },
+                        color: Colors.grey,
+                      );
+                    } else {
+                      return RoundCheckButton(
+                        text: workout['name'],
+                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 15),
+                        onChanged: isDisabled
+                            ? null
+                            : (bool isChecked) {
+                                print(workout);
+                                setState(() {
+                                  if (isChecked) {
+                                    selectedWorkouts.add(workout['name']);
+                                  } else {
+                                    selectedWorkouts.remove(workout['name']);
+                                  }
+                                });
+                              },
+                      );
+                    }
                   },
                 ),
               ),

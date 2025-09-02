@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'dart:convert'; // hex 문자열 → int 리스트 변환용
 
 void main() => runApp(MyApp());
 
@@ -114,10 +113,7 @@ class _BLEHomePageState extends State<BLEHomePage> {
           (c) => c.uuid.toString() == "0000fe42-8e22-4541-9d4c-21edae82ed19",
         );
     String bytesToHex(List<int> bytes) {
-      return bytes
-          .map((b) => b.toRadixString(16).padLeft(2, '0'))
-          .join()
-          .toUpperCase();
+      return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join().toUpperCase();
     }
 
     // Notify 구독
@@ -136,8 +132,7 @@ class _BLEHomePageState extends State<BLEHomePage> {
     if (writeChar == null) return;
     final hexString = messageDict[key]!;
     final List<int> bytes = [
-      for (int i = 0; i < hexString.length; i += 2)
-        int.parse(hexString.substring(i, i + 2), radix: 16),
+      for (int i = 0; i < hexString.length; i += 2) int.parse(hexString.substring(i, i + 2), radix: 16),
     ];
     await writeChar!.write(bytes, withoutResponse: true);
     print("📤 Sent command: $key -> $bytes");
@@ -160,9 +155,7 @@ class _BLEHomePageState extends State<BLEHomePage> {
                 final r = scanResults[index];
                 return ListTile(
                   title: Text(
-                    r.device.platformName.isNotEmpty
-                        ? r.device.platformName
-                        : "Unknown",
+                    r.device.platformName.isNotEmpty ? r.device.platformName : "Unknown",
                   ),
                   subtitle: Text(r.device.remoteId.toString()),
                   trailing: ElevatedButton(
@@ -190,8 +183,7 @@ class _BLEHomePageState extends State<BLEHomePage> {
                       value: selectedCommandKey,
                       items: messageDict.keys
                           .map(
-                            (key) =>
-                                DropdownMenuItem(value: key, child: Text(key)),
+                            (key) => DropdownMenuItem(value: key, child: Text(key)),
                           )
                           .toList(),
                       onChanged: (value) {

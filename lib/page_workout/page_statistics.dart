@@ -1,7 +1,7 @@
-import 'package:Vincere/custom_widget/custom_drawer.dart';
+import 'package:Vincere/component/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:Vincere/custom_widget/custom_text.dart';
+import 'package:Vincere/component/custom_text.dart';
 
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});

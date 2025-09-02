@@ -1,7 +1,7 @@
 import 'package:Vincere/page_ble_device/page_ble_connect.dart';
 import 'package:Vincere/component/card_muscle_result.dart';
-import 'package:Vincere/custom_widget/custom_button.dart';
-import 'package:Vincere/custom_widget/custom_text.dart';
+import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/page_notice/screen_newsboard_list.dart';
@@ -1012,26 +1012,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     }
   }
 
-  // 건강 정보 위젯 추출
-  Widget _buildHealthInfo(String label, List<Map<String, dynamic>> data, String code, String unit) {
-    return Row(
-      children: [
-        Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        SizedBox(width: 4),
-        Text(
-            data
-                    .firstWhere(
-                      (item) => item['MSMT_ITEM_CD'] == code,
-                      orElse: () => {'MSMT_VALUE': '--', 'MSMT_UNIT': unit},
-                    )['MSMT_VALUE']
-                    ?.toString() ??
-                '--',
-            style: TextStyle(fontSize: 12)),
-        Text(unit),
-      ],
-    );
-  }
-
   // 비동기 초기화를 위한 새로운 메서드
   Future<void> _initializeHealthInfo() async {
     final result = await _getMsmtItemInfo();
@@ -1068,44 +1048,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       // 에러 발생 시 빈 리스트 반환 또는 에러 던지기
       return []; // 또는 throw e;
     }
-  }
-
-  // 정보 행을 만드는 헬퍼 메서드
-  Widget _buildInfoRow({
-    required String label,
-    required String value,
-    required BoxConstraints constraints,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: constraints.maxWidth < 400 ? 4 : 8,
-        vertical: constraints.maxWidth < 400 ? 2 : 4,
-      ),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: constraints.maxWidth < 400 ? 12 : 14,
-              color: Colors.grey[600],
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: constraints.maxWidth < 400 ? 12 : 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   // 테이블 헤더 셀 위젯
@@ -1339,99 +1281,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     );
   }
 
-  // 메트릭 행을 만드는 함수
-  Widget _buildMetricRow(String category, String title, int grade, bool isBest, String code) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: 0,
-        horizontal: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6% 로 설정
-      ),
-      child: Row(
-        children: [
-          // 카테고리가 있을 경우에만 표시
-          if (category.isNotEmpty) ...[
-            SizedBox(
-              width: 70,
-              child: Text(
-                category,
-                style: TextStyle(
-                  color: Color(0xFF000000),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-          // 카테고리가 없는 경우 들여쓰기
-          if (category.isEmpty) SizedBox(width: 70),
-          Expanded(
-            child: Row(
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: Color(0xFF555555),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (grade == 1) ...[
-            SizedBox(width: 8),
-            Container(
-              //padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              width: 40,
-              height: 22,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Color(0xFF00914B),
-                  width: 2, // 테두리 두께
-                ),
-              ),
-              child: Text(
-                'BEST',
-                style: TextStyle(
-                  color: Color(0xFF007130),
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-          SizedBox(width: 10),
-          Text(
-            '${grade.toString()}등급',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: grade == 1 ? Color(0xFF00914B) : (grade == 2 ? Color(0xFF9D895B) : Color(0xFF8D8D8D)),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.bar_chart,
-              color: Color(0xFF00914B),
-            ),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return MetricChartDialog(title: title, code: code, userId: userId);
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   // 건강 정보 지표를 위한 새로운 위젯
   Widget _buildHealthMetric(String label, List<dynamic> data, String code, String unit) {
     String value;
@@ -1496,7 +1345,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                       Card(
                         color: Colors.black87,
                         margin: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
+                        shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(16),
                             bottomRight: Radius.circular(16),
@@ -1516,13 +1365,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                     width: 80,
                                     height: 80,
                                     margin: EdgeInsets.all(24.0), // 상하좌우 8픽셀의 여백 추가
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[300],
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Center(
-                                      child: _buildProfileImage(),
-                                    ),
+                                    decoration: BoxDecoration(color: Colors.grey[300], shape: BoxShape.circle),
+                                    child: Center(child: _buildProfileImage()),
                                   ),
                                   SizedBox(width: 12),
                                   Column(
@@ -1533,19 +1377,12 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                         children: [
                                           Text(
                                             userData?["userNm"] ?? '',
-                                            style: TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
+                                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                                           ),
                                           SizedBox(width: 15),
                                           Text(
                                             '만 ${calculateAge(userData?["bym"] ?? "정보없음")}세',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              color: Colors.white,
-                                            ),
+                                            style: TextStyle(fontSize: 15, color: Colors.white),
                                           ),
                                         ],
                                       ),
@@ -1682,20 +1519,24 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      '일일 에너지 권장량',
-                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF000000)),
-                                    ),
+                                    const Text('일일 에너지 권장량', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF000000))),
                                     RichText(
                                       text: TextSpan(
                                         children: [
                                           TextSpan(text: '총 ', style: TextStyle(fontSize: 16)),
                                           TextSpan(
-                                              text: '${NumberFormat('#,###').format(calculateEnergy(double.tryParse(userHlthData.firstWhere(
-                                                    (item) => item['MSMT_ITEM_CD'] == 'MSMT_004',
-                                                    orElse: () => {'MSMT_VALUE': '0'},
-                                                  )['MSMT_VALUE']?.toString() ?? '0') ?? 0.0, userData?["activityLevel"] ?? "LOW").round())}',
-                                              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF000000))),
+                                              text: NumberFormat('#,###').format(calculateEnergy(
+                                                      double.tryParse(userHlthData
+                                                                  .firstWhere(
+                                                                    (item) => item['MSMT_ITEM_CD'] == 'MSMT_004',
+                                                                    orElse: () => {'MSMT_VALUE': '0'},
+                                                                  )['MSMT_VALUE']
+                                                                  ?.toString() ??
+                                                              '0') ??
+                                                          0.0,
+                                                      userData?["activityLevel"] ?? "LOW")
+                                                  .round()),
+                                              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF000000))),
                                           TextSpan(text: ' kcal', style: TextStyle(fontSize: 16)),
                                         ],
                                       ),
@@ -1714,11 +1555,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                         context: context,
                                         builder: (BuildContext context) {
                                           TextEditingController intakeController = TextEditingController();
-                                          Map<String, dynamic> calories = {
-                                            'total': 0,
-                                            'carb': 0,
-                                            'protein': 0,
-                                          };
+                                          Map<String, dynamic> calories = {'total': 0, 'carb': 0, 'protein': 0};
 
                                           return StatefulBuilder(
                                             builder: (context, setState) {
@@ -1729,7 +1566,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                 title: Container(
                                                   margin: EdgeInsets.only(top: 9, bottom: 24),
                                                   alignment: Alignment.center,
-                                                  child: Text(
+                                                  child: const Text(
                                                     '쌀 칼로리 계산',
                                                     style: TextStyle(color: Color(0xFF000000), letterSpacing: -0.02, fontSize: 22, fontWeight: FontWeight.w700),
                                                   ),
@@ -1751,12 +1588,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                                 child: TextField(
                                                                   controller: intakeController, // 컨트롤러 추가
                                                                   textAlign: TextAlign.right,
-                                                                  style: const TextStyle(
-                                                                    // 입력 텍스트 스타일 지정
-                                                                    fontWeight: FontWeight.bold,
-                                                                    fontSize: 24,
-                                                                    height: 1.0,
-                                                                  ),
+                                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, height: 1.0),
                                                                   decoration: const InputDecoration(
                                                                     filled: true, // 배경색을 적용하기 위해 필요
                                                                     fillColor: Color(0xFFF5F4F9), // 배경색 설정
@@ -1772,22 +1604,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                                       padding: EdgeInsets.only(left: 16),
                                                                       child: Center(
                                                                         widthFactor: 1.0,
-                                                                        child: Text(
-                                                                          '중량',
-                                                                          style: TextStyle(
-                                                                            color: Color(0xFF000000),
-                                                                            fontSize: 18,
-                                                                            fontWeight: FontWeight.w500,
-                                                                          ),
-                                                                        ),
+                                                                        child: Text('중량', style: TextStyle(color: Color(0xFF000000), fontSize: 18, fontWeight: FontWeight.w500)),
                                                                       ),
                                                                     ),
                                                                     suffixText: ' g ', // 우측에 단위 추가
-                                                                    suffixStyle: TextStyle(
-                                                                      color: Color(0xFF555555),
-                                                                      fontSize: 16,
-                                                                      letterSpacing: -0.04,
-                                                                    ),
+                                                                    suffixStyle: TextStyle(color: Color(0xFF555555), fontSize: 16, letterSpacing: -0.04),
                                                                   ),
                                                                   keyboardType: TextInputType.number,
                                                                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -1808,10 +1629,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                                       calories = calculateCalorie(intake);
                                                                     });
                                                                   },
-                                                                  child: Text(
-                                                                    '입력',
-                                                                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18, color: Color(0xFF555555)),
-                                                                  ),
+                                                                  child: Text('입력', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18, color: Color(0xFF555555))),
                                                                   style: ElevatedButton.styleFrom(
                                                                     padding: EdgeInsets.zero, // 패딩 제거
                                                                     backgroundColor: Colors.white,
@@ -1856,16 +1674,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                     margin: EdgeInsets.only(top: 30),
                                                     // padding: EdgeInsets.symmetric(horizontal: 4),
                                                     child: ElevatedButton(
-                                                      child: Text(
-                                                        '닫기',
-                                                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
-                                                      ),
+                                                      child: Text('닫기', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
                                                       style: ElevatedButton.styleFrom(
                                                         backgroundColor: Color(0xFF007130),
                                                         padding: EdgeInsets.symmetric(vertical: 16),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(16),
-                                                        ),
+                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                                       ),
                                                       onPressed: () {
                                                         Navigator.of(context).pop();
@@ -1882,17 +1695,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Color(0xFFA2BC11),
                                       minimumSize: Size(262, 56),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                     ),
                                     child: Text(
                                       '쌀 칼로리 계산기',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFFFFFF).withOpacity(0.9),
-                                      ),
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFFFFFF).withOpacity(0.9)),
                                     ),
                                   ),
                                 ),
@@ -1937,20 +1744,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                   children: [
                                                     Text(
                                                       '오늘하루',
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.w700,
-                                                        fontSize: constraints.maxWidth > 300 ? 22 : 16,
-                                                        color: Color(0xFFFFFFFF),
-                                                        letterSpacing: -0.02,
-                                                      ),
+                                                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: constraints.maxWidth > 300 ? 22 : 16, color: Color(0xFFFFFFFF), letterSpacing: -0.02),
                                                     ),
                                                     Text(
                                                       '쌀 섭취량 입력',
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.w700,
-                                                        fontSize: constraints.maxWidth > 300 ? 22 : 16,
-                                                        color: Color(0xFFFFFFFF),
-                                                      ),
+                                                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: constraints.maxWidth > 300 ? 22 : 16, color: Color(0xFFFFFFFF)),
                                                     ),
                                                     SizedBox(height: 20),
                                                   ],
@@ -2034,10 +1832,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                                         return Dialog(
                                                                           insetPadding: EdgeInsets.symmetric(horizontal: 24),
                                                                           child: SingleChildScrollView(
-                                                                            // ScrollView 추가
                                                                             child: Container(
-                                                                              // Container 추가
-                                                                              // constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6), // 화면 높이의 80%로 제한
                                                                               child: Column(
                                                                                 mainAxisSize: MainAxisSize.min,
                                                                                 children: [
@@ -2112,10 +1907,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                           margin: EdgeInsets.only(top: 30),
                                                           // padding: EdgeInsets.symmetric(horizontal: 4),
                                                           child: ElevatedButton(
-                                                            child: const Text(
-                                                              '닫기',
-                                                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
-                                                            ),
+                                                            child: const Text('닫기', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
                                                             style: ElevatedButton.styleFrom(
                                                               backgroundColor: Color(0xFF007130),
                                                               padding: EdgeInsets.symmetric(vertical: 16),
@@ -2139,18 +1931,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                 // foregroundColor: Color(0xFF0B8043),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius: BorderRadius.circular(16),
-                                                  side: BorderSide(
-                                                    color: Color(0xFFFFFFFF),
-                                                    width: 2.0, // 테두리 두께
-                                                  ),
+                                                  side: BorderSide(color: Color(0xFFFFFFFF), width: 2.0),
                                                 ),
                                               ),
-                                              child: Text(
-                                                '입력하기',
-                                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFFFFFFFF)),
-                                                softWrap: false,
-                                                overflow: TextOverflow.visible,
-                                              ),
+                                              child: Text('입력하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFFFFFFFF)), softWrap: false, overflow: TextOverflow.visible),
                                             ),
                                           ),
                                         ),
@@ -2185,11 +1969,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                 children: [
                                                   Text(
                                                     '섭취량 추이',
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Color(0xFF555555),
-                                                    ),
+                                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
                                                     softWrap: false,
                                                     overflow: TextOverflow.visible,
                                                   ),
@@ -2214,10 +1994,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             height: 300,
                             padding: EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: AssetImage('images/yellow_back.png'),
-                                fit: BoxFit.cover, // 이미지가 컨테이너를 꽉 채우도록 설정
-                              ),
+                              image: DecorationImage(image: AssetImage('images/yellow_back.png'), fit: BoxFit.cover),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Column(
@@ -2285,10 +2062,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                       Flexible(
                         child: Container(
                           margin: const EdgeInsets.only(left: 16),
-                          constraints: BoxConstraints(
-                            minWidth: 175, // 최소 너비
-                            maxWidth: 300, // 최대 너비 (원하는 값으로 조정 가능)
-                          ),
+                          constraints: const BoxConstraints(minWidth: 175, maxWidth: 300),
                           height: 180, // 적절한 높이 설정
                           child: Card(
                             color: Colors.black, // 검은색 배경
@@ -2298,14 +2072,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   SizedBox(width: 10),
-                                  Text(
+                                  const Text(
                                     '탄수화물\n섭취누적량',
-                                    style: TextStyle(
-                                      color: Color(0xFFFFFFFF),
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.02,
-                                    ),
+                                    style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.02),
                                   ),
                                   Spacer(),
                                   Center(
@@ -2325,22 +2094,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                           backgroundColor: Colors.white,
                                           elevation: 0,
                                           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                          ),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                         ),
-                                        child: Row(
+                                        child: const Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text(
-                                              '섭취량 추이',
-                                              style: TextStyle(
-                                                color: Color(0xFF555555),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
+                                            Text('섭취량 추이', style: TextStyle(color: Color(0xFF555555), fontSize: 14, fontWeight: FontWeight.w600)),
                                             SizedBox(width: 4),
                                             Icon(Icons.bar_chart, color: Colors.green),
                                           ],
@@ -2359,10 +2119,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                       Flexible(
                         child: Container(
                           margin: const EdgeInsets.only(right: 16),
-                          constraints: BoxConstraints(
-                            minWidth: 175, // 최소 너비
-                            maxWidth: 300, // 최대 너비 (원하는 값으로 조정 가능)
-                          ), // 적절한 너비 설정
+                          constraints: BoxConstraints(minWidth: 175, maxWidth: 300), // 적절한 너비 설정
                           height: 180, // 적절한 높이 설정
                           child: Card(
                             color: Colors.grey[700], // 회색 배경
@@ -2372,14 +2129,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   SizedBox(width: 10),
-                                  Text(
+                                  const Text(
                                     '단백질\n섭취누적량',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.02,
-                                    ),
+                                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.02),
                                   ),
                                   Spacer(),
                                   Center(
@@ -2399,22 +2151,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                           backgroundColor: Colors.white,
                                           elevation: 0,
                                           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                          ),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                         ),
-                                        child: Row(
+                                        child: const Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text(
-                                              '섭취량 추이',
-                                              style: TextStyle(
-                                                color: Color(0xFF555555),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
+                                            Text('섭취량 추이', style: TextStyle(color: Color(0xFF555555), fontSize: 14, fontWeight: FontWeight.w600)),
                                             SizedBox(width: 4),
                                             Icon(Icons.bar_chart, color: Colors.green),
                                           ],
@@ -2442,12 +2185,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                         // 섹션 제목
                         Text(
                           '${userData?["userNm"] ?? ""} 님이 오늘 하루 한 끼에',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF000000),
-                            letterSpacing: -0.08,
-                          ),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.08),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2464,11 +2202,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             ),
                             Row(
                               children: [
-                                Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(color: Color(0xFFFABE00), shape: BoxShape.circle),
-                                ),
+                                Container(width: 10, height: 10, decoration: BoxDecoration(color: Color(0xFFFABE00), shape: BoxShape.circle)),
                                 SizedBox(width: 4), // 동그라미와 텍스트 사이 간격
                                 Container(
                                   margin: EdgeInsets.only(right: 8),
@@ -2610,11 +2344,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(color: Color(0xFF00914B), width: 2),
                                   ),
-                                  child: Text(
-                                    '$strRec 추천음식',
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00914B), fontSize: 11, letterSpacing: -0.04),
-                                    textAlign: TextAlign.center,
-                                  ),
+                                  child: Text('$strRec 추천음식', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00914B), fontSize: 11, letterSpacing: -0.04), textAlign: TextAlign.center),
                                 ),
                               ),
                               // Transform.translate(
@@ -2655,27 +2385,15 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                       ),
                                       Expanded(
                                         flex: 2,
-                                        child: Text(
-                                          '중량',
-                                          style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
-                                          textAlign: TextAlign.center,
-                                        ),
+                                        child: Text('중량', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                                       ),
                                       Expanded(
                                         flex: 2,
-                                        child: Text(
-                                          '탄수화물',
-                                          style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
-                                          textAlign: TextAlign.center,
-                                        ),
+                                        child: Text('탄수화물', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                                       ),
                                       Expanded(
                                         flex: 2,
-                                        child: Text(
-                                          '단백질',
-                                          style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
-                                          textAlign: TextAlign.center,
-                                        ),
+                                        child: Text('단백질', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                                       ),
                                       Expanded(flex: 2, child: SizedBox())
                                       // SizedBox(width: 40), // 버튼을 위한 공간
@@ -2718,23 +2436,18 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                               Flexible(
                                 child: RichText(
                                   text: const TextSpan(
-                                    style: TextStyle(
-                                      fontSize: 14.0,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black, // 기본 텍스트 색상
-                                    ),
+                                    style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.black),
                                     children: [
                                       TextSpan(
                                         text: '단백질',
                                         style: TextStyle(color: Color(0xFF9D895B), fontSize: 13, fontWeight: FontWeight.w700),
                                       ),
                                       TextSpan(
-                                        text: '만 먼저 채우고 싶어요!',
-                                        style: TextStyle(
-                                            color: Color(0xFF000000), // 검정색
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600),
-                                      ),
+                                          text: '만 먼저 채우고 싶어요!',
+                                          style: TextStyle(
+                                              color: Color(0xFF000000), // 검정색
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600)),
                                     ],
                                   ),
                                 ),
@@ -2749,10 +2462,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: Color(0xFF9D895B),
-                                      width: 2, // 테두리 두께
-                                    ),
+                                    border: Border.all(color: Color(0xFF9D895B), width: 2),
                                   ),
                                   child: Text(
                                     '$strRec 추천음식',
@@ -2879,10 +2589,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                       avg: gradeAvg.toDouble(),
                                       age: muscleAge,
                                     );
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => PageConnectBLE()),
-                                    );
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => PageConnectBLE()));
                                   },
                                 ),
                               ],
@@ -2894,12 +2601,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                           elevation: 4,
                           margin: const EdgeInsets.fromLTRB(30, 0, 30, 0),
                           color: const Color(0xFF616161),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           child: Container(
-                            //width: 300,
-                            //height: screenHeight / 1200 * 280,
                             padding: const EdgeInsets.all(32),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2909,12 +2612,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 RoundButton(
                                   text: '통계화면',
                                   onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => StatisticsPage(),
-                                      ),
-                                    );
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => StatisticsPage()));
                                   },
                                 ),
                               ],
@@ -2974,23 +2672,16 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
           });
         },
         tabs: <Widget>[
-          Tab(
-            icon: _selectedIndex == 0 ? Image.asset('images/nav_home.png', width: 24, height: 24) : Image.asset('images/nav_home_off.png', width: 24, height: 24),
-            text: "홈",
-          ),
-          Tab(
-            icon: _selectedIndex == 1 ? Image.asset('images/nav_my.png', width: 24, height: 24) : Image.asset('images/nav_my_off.png', width: 24, height: 24),
-            text: "마이페이지",
-          ),
-          Tab(
-            icon: _selectedIndex == 2 ? Image.asset('images/nav_news.png', width: 24, height: 24) : Image.asset('images/nav_news_off.png', width: 24, height: 24),
-            text: "건강뉴스",
-          ),
+          Tab(icon: _selectedIndex == 0 ? Image.asset('images/nav_home.png', width: 24, height: 24) : Image.asset('images/nav_home_off.png', width: 24, height: 24), text: "홈"),
+          Tab(icon: _selectedIndex == 1 ? Image.asset('images/nav_my.png', width: 24, height: 24) : Image.asset('images/nav_my_off.png', width: 24, height: 24), text: "마이페이지"),
+          Tab(icon: _selectedIndex == 2 ? Image.asset('images/nav_news.png', width: 24, height: 24) : Image.asset('images/nav_news_off.png', width: 24, height: 24), text: "건강뉴스"),
         ],
       ),
     );
   }
 
+  //
+  //
   Container tabContainer(BuildContext context, Color tabColor, String tabText) {
     return Container(
       width: MediaQuery.of(context).size.width,
@@ -3070,10 +2761,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                       child: ElevatedButton(
                         onPressed: () {
                           if (_isLogIn) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const Qna()),
-                            );
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const Qna()));
                           } else {
                             _showLoginPrompt();
                           }
@@ -3092,20 +2780,12 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                 ElevatedButton(
                   onPressed: () {
                     if (_isLogIn) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const InputInfoScreen(),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const InputInfoScreen()));
                     } else {
                       _showLoginPrompt();
                     }
                   },
-                  child: const Text(
-                    '나의 건강 정보 입력 및 자동 처방 신청',
-                    style: TextStyle(fontSize: 24), // 글자 크기 2배로 설정
-                  ),
+                  child: const Text('나의 건강 정보 입력 및 자동 처방 신청', style: TextStyle(fontSize: 24)),
                 ),
               ],
             )
@@ -3128,9 +2808,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                             msmtItemData: msmtItemData,
                           ),
                         ),
-                        Expanded(
-                          child: pscpInfoContainer(context, userPscpData),
-                        ),
+                        Expanded(child: pscpInfoContainer(context, userPscpData)),
                       ],
                     )
                   : Container(),
@@ -3157,7 +2835,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       if (result['success'] == true) {
         await _getProfileImage();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('프로필 이미지가 업로드되었습니다.'),
             backgroundColor: Colors.green,
           ),
@@ -3165,7 +2843,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('이미지 업로드에 실패했습니다.'),
           backgroundColor: Colors.red,
         ),
@@ -3215,6 +2893,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
 // 회원 정보 컨테이너
+/*
   Container userInfoContainer(BuildContext context, Map<String, dynamic>? userData) {
     // 함수 시작시 현재 활동량 설정
     currentActivityLevel = userData?["activityLevel"] ?? "LOW";
@@ -3343,9 +3022,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black26, blurRadius: 4),
-                                ],
+                                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
                               ),
                               child: Icon(Icons.edit, size: 20, color: Colors.blue),
                             ),
@@ -3358,9 +3035,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                           height: 120,
                           decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
                           child: Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
+                            child: CircularProgressIndicator(color: Colors.white),
                           ),
                         ),
                     ],
@@ -3385,10 +3060,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                     flex: 3,
                                     child: Text(
                                       '활동량 구분',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                     ),
                                   ),
                                   Expanded(
@@ -3438,14 +3110,14 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                                   userData?["activityLevel"] = value;
                                                 });
                                                 ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
+                                                  const SnackBar(
                                                     content: Text('활동량이 업데이트되었습니다.'),
                                                     backgroundColor: Colors.green,
                                                   ),
                                                 );
                                               } else {
                                                 ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
+                                                  const SnackBar(
                                                     content: Text('활동량 업데이트에 실패했습니다.'),
                                                     backgroundColor: Colors.red,
                                                   ),
@@ -3454,7 +3126,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                             } catch (e) {
                                               print('Error updating activity level: $e');
                                               ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
+                                                const SnackBar(
                                                   content: Text('오류가 발생했습니다. 다시 시도해주세요.'),
                                                   backgroundColor: Colors.red,
                                                 ),
@@ -3479,4 +3151,5 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
             ),
     );
   }
+  */
 }

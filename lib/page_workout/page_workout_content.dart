@@ -1,11 +1,11 @@
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/custom_widget/custom_drawer.dart';
+import 'package:Vincere/component/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/bottomsheet_workout_content.dart';
 import 'package:Vincere/component/progress_donut.dart';
 import 'dart:async';
 import 'package:video_player/video_player.dart';
-import 'package:Vincere/custom_widget/custom_text.dart'; // 추가
+import 'package:Vincere/component/custom_text.dart'; // 추가
 
 class WorkoutContent extends StatefulWidget {
   const WorkoutContent({super.key});

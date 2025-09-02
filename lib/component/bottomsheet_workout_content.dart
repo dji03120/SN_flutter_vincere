@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/custom_widget/custom_text.dart';
+import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/page_workout/page_statistics.dart';
 import 'package:Vincere/page_workout/page_workout_plan.dart';
 

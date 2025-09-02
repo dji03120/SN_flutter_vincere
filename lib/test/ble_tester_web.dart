@@ -15,6 +15,7 @@ class PageConnectBLE extends StatefulWidget {
 }
 
 class _BLEPageState extends State<PageConnectBLE> {
+  // ignore: unused_field
   BluetoothDevice? _device;
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? _notifyChar;
@@ -40,8 +41,10 @@ class _BLEPageState extends State<PageConnectBLE> {
       );
 
       setState(() => _device = device);
+      // ignore: invalid_use_of_visible_for_testing_member
       await device.gatt?.connect();
 
+      // ignore: invalid_use_of_visible_for_testing_member
       final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
       _writeChar = await service?.getCharacteristic(WRITE_UUID);
       _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);

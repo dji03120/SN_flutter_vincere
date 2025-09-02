@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Vincere/custom_widget/custom_button.dart';
-import 'package:Vincere/custom_widget/custom_text.dart';
+import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/page_workout/page_workout_content.dart';
 
 class BottomsheetWorkoutStart extends StatelessWidget {

@@ -2,7 +2,6 @@ import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Vincere/screen/screen_home.dart';
 
 class ScreenHealthInfo extends StatefulWidget {
   final List<Map<String, dynamic>> healthData;
@@ -540,7 +539,6 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
         index += 2; // 두 항목을 처리했으므로 2 증가
       } else {
         int areaidx = index;
-        int areaidx2 = index + 1;
         // 일반적인 항목 처리
         children.add(
           Column(

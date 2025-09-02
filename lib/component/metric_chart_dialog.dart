@@ -44,9 +44,6 @@ class MetricBarGraph extends StatelessWidget {
     // API 데이터를 차트 데이터 형식으로 변환
     final formattedData = chartData.map((item) => {'date': item[strDate], 'value': double.parse(item[strVal].toString())}).toList();
 
-    // 최대값 계산
-    final maxValue = formattedData.map((e) => e['value'] as double).reduce((a, b) => a > b ? a : b);
-
     return Container(
       padding: EdgeInsets.all(8),
       child: SingleChildScrollView(

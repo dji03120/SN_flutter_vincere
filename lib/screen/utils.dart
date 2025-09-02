@@ -687,3 +687,61 @@ class RiceWeightInput extends StatelessWidget {
     );
   }
 }
+
+// 정보 행을 만드는 헬퍼 메서드
+Widget _buildInfoRow({
+  required String label,
+  required String value,
+  required BoxConstraints constraints,
+}) {
+  return Container(
+    width: double.infinity,
+    padding: EdgeInsets.symmetric(
+      horizontal: constraints.maxWidth < 400 ? 4 : 8,
+      vertical: constraints.maxWidth < 400 ? 2 : 4,
+    ),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.grey[300]!),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: constraints.maxWidth < 400 ? 12 : 14,
+            color: Colors.grey[600],
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: constraints.maxWidth < 400 ? 12 : 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// 건강 정보 위젯 추출
+Widget _buildHealthInfo(String label, List<Map<String, dynamic>> data, String code, String unit) {
+  return Row(
+    children: [
+      Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      SizedBox(width: 4),
+      Text(
+          data
+                  .firstWhere(
+                    (item) => item['MSMT_ITEM_CD'] == code,
+                    orElse: () => {'MSMT_VALUE': '--', 'MSMT_UNIT': unit},
+                  )['MSMT_VALUE']
+                  ?.toString() ??
+              '--',
+          style: TextStyle(fontSize: 12)),
+      Text(unit),
+    ],
+  );
+}
