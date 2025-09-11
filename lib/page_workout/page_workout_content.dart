@@ -1,8 +1,11 @@
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
+import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/bottomsheet_workout_content.dart';
 import 'package:Vincere/component/progress_donut.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:video_player/video_player.dart';
 import 'package:Vincere/component/custom_text.dart'; // 추가
@@ -33,7 +36,7 @@ class Component3State extends State<WorkoutContent> {
   }
 
   void _startProgress() {
-    const step = 0.03; // 1%씩 증가
+    const step = 0.001; // 1%씩 증가
     Duration interval = Duration(milliseconds: 100); // 0.1초 간격
 
     _timer = Timer.periodic(interval, (timer) {
@@ -60,6 +63,7 @@ class Component3State extends State<WorkoutContent> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: const Header(),
       drawer: CustomDrawer(isLogin: true),
@@ -73,19 +77,22 @@ class Component3State extends State<WorkoutContent> {
               SizedBox(height: screenHeight * 0.04),
               TextTitle(text: '동작 A : example'),
               SizedBox(height: screenHeight * 0.06),
-              FutureBuilder(
-                future: _initializeVideoPlayerFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    _startProgress();
-                    return AspectRatio(
-                      aspectRatio: _videoController.value.aspectRatio,
-                      child: VideoPlayer(_videoController),
-                    );
-                  } else {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                },
+              Container(
+                margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                child: FutureBuilder(
+                  future: _initializeVideoPlayerFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      _startProgress();
+                      return AspectRatio(
+                        aspectRatio: _videoController.value.aspectRatio,
+                        child: VideoPlayer(_videoController),
+                      );
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
               ),
               Align(
                 alignment: Alignment.centerLeft,

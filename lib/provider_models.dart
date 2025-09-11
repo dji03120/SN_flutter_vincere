@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WorkoutModel extends ChangeNotifier {
   List<String> _workouts = [];
   int _currentWorkout = 0;
+  WebBluetoothRemoteGATTCharacteristic? _writeChar;
+  WebBluetoothRemoteGATTCharacteristic? _notifyChar;
 
   List<String> get workouts => _workouts;
   int get currentWorkout => _currentWorkout;
+  WebBluetoothRemoteGATTCharacteristic? get writeChar => _writeChar;
+  WebBluetoothRemoteGATTCharacteristic? get notifyChar => _notifyChar;
+
+  void set_write_char(WebBluetoothRemoteGATTCharacteristic writeChar) {
+    _writeChar = writeChar;
+    print(writeChar);
+  }
+
+  void set_notify_char(WebBluetoothRemoteGATTCharacteristic notifyChar) {
+    _notifyChar = notifyChar;
+    print(notifyChar);
+  }
 
   void set_workouts(List<String> workouts) {
     _workouts = workouts;

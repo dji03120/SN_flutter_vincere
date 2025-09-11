@@ -40,17 +40,10 @@ class _BLEHomePageState extends State<BLEHomePage> {
     // control
     'mode1': '000B0900020000',
     'mode2': '000B0900020001',
-    'run': '000B09010100',
-    'stop': '000B09020100',
-    'intense_up': '000C09030100',
-    'intense_dw': '000C09040100',
-    'pause': '000C09050100',
-    'continue': '000C09060100',
-    'duration_up': '000C09070100',
-    'duration_dw': '000C09080100',
-
-    // notification
-    'noti_health': '000B0CF70100',
+    'run': '000B09000101',
+    'stop': '000B09000102',
+    'intense_up': '000C09000103',
+    'intense_dw': '000C09000104',
   };
 
   /// BLE 장치 스캔
@@ -181,11 +174,7 @@ class _BLEHomePageState extends State<BLEHomePage> {
                   children: [
                     DropdownButton<String>(
                       value: selectedCommandKey,
-                      items: messageDict.keys
-                          .map(
-                            (key) => DropdownMenuItem(value: key, child: Text(key)),
-                          )
-                          .toList(),
+                      items: messageDict.keys.map((key) => DropdownMenuItem(value: key, child: Text(key))).toList(),
                       onChanged: (value) {
                         setState(() {
                           selectedCommandKey = value!;

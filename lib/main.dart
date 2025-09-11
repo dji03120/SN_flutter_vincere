@@ -23,9 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Vincere App',
-      theme: ThemeData(
-        fontFamily: 'NotoSansKR',
-      ),
+      theme: ThemeData(fontFamily: 'NotoSansKR'),
       home: const LoginScreen(),
       locale: const Locale('ko', 'KR'), // 기본 로케일을 한국어로
       supportedLocales: const [

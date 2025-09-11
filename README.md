@@ -19,6 +19,7 @@ samples, guidance on mobile development, and a full API reference.
 
 
 flutter build web
+flutter build web --release
 
 cd build/web
 python -m http.server 8080

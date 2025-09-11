@@ -1,21 +1,22 @@
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 
+import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
 
 final bluetooth = FlutterWebBluetooth.instance;
 
-class PageConnectBLE extends StatefulWidget {
-  const PageConnectBLE({super.key});
+class WebBleTest extends StatefulWidget {
+  const WebBleTest({super.key});
 
   @override
-  State<PageConnectBLE> createState() => _BLEPageState();
+  State<WebBleTest> createState() => _BLEPageState();
 }
 
-class _BLEPageState extends State<PageConnectBLE> {
-  // ignore: unused_field
+class _BLEPageState extends State<WebBleTest> {
   BluetoothDevice? _device;
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? _notifyChar;
@@ -26,6 +27,32 @@ class _BLEPageState extends State<PageConnectBLE> {
   static const WRITE_UUID = "0000fe41-8e22-4541-9d4c-21edae82ed19";
   static const NOTIFY_UUID = "0000fe42-8e22-4541-9d4c-21edae82ed19";
 
+  // 드롭다운 항목 정의
+  final Map<String, String> _commands = {
+    "mode1 시작": "000B0900020000", //100hz
+    "mode2 시작": "000B0900020001", //60hz
+    "일시정지": "000B09000105",
+    "다시시작": "000B09000106",
+    "종료": "000B09000102",
+    '': '',
+    "강도 +": "000B09000103",
+    "강도 -": "000B09000104",
+    "펄스 +": "000B09000107",
+    "펄스 -": "000B09000108",
+    "info": "000B08010100",
+    "battery": "000B08020100",
+    // 1등급 - 15min 100hz 강도 1ma
+    // 솔루션 통계 - 리포트 - 무료 운동시간, 유로 칼로리, 운동효과 구체적
+    // 인터벌 pulse up down
+    // log ma 확인
+  };
+
+  double _voltage = 50; // 0~10 V
+  double _frequency = 50; // 0~10000 Hz
+  double _temperature = 30; // 10~48
+
+  String? _selectedCommand;
+
   @override
   void initState() {
     super.initState();
@@ -35,23 +62,20 @@ class _BLEPageState extends State<PageConnectBLE> {
   Future<void> _scanAndConnect() async {
     try {
       final device = await bluetooth.requestDevice(
-        RequestOptionsBuilder.acceptAllDevices(
+        RequestOptionsBuilder(
+          [RequestFilterBuilder(namePrefix: "VINCERE")],
           optionalServices: [SERVICE_UUID],
         ),
       );
-
       setState(() => _device = device);
-      // ignore: invalid_use_of_visible_for_testing_member
       await device.gatt?.connect();
 
-      // ignore: invalid_use_of_visible_for_testing_member
       final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
       _writeChar = await service?.getCharacteristic(WRITE_UUID);
       _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
 
       if (_notifyChar != null) {
         await _notifyChar!.startNotifications();
-        print('Notifications started: $_notifyChar');
         js_util.callMethod(_notifyChar!, 'addEventListener', [
           'characteristicvaluechanged',
           js_util.allowInterop((event) {
@@ -71,7 +95,7 @@ class _BLEPageState extends State<PageConnectBLE> {
           }),
         ]);
       }
-
+      _sendCommand("000C0E050100"); // 초기화 인증
       setState(() => _log += "연결 성공!\n");
     } catch (e) {
       setState(() => _log += "연결 실패: $e\n");
@@ -80,40 +104,11 @@ class _BLEPageState extends State<PageConnectBLE> {
 
   Future<void> _sendCommand(String hexCommand) async {
     if (_writeChar == null) return;
-
     final commandBytes = buildCommand(hexCommand);
-
     await _writeChar!.writeValueWithoutResponse(commandBytes);
-
     setState(() {
       _log += "명령 전송: ${bytesToHex(commandBytes)}\n";
     });
-  }
-
-  Uint8List buildCommand(String hex) {
-    final bytes = hexStringToBytes(hex);
-    int checksum = 0;
-    for (var b in bytes) {
-      checksum ^= b;
-    }
-    final result = Uint8List(bytes.length + 1);
-    result.setAll(0, bytes);
-    result[bytes.length] = checksum;
-    return result;
-  }
-
-  Uint8List hexStringToBytes(String hex) {
-    final cleanHex = hex.replaceAll(' ', '');
-    final length = cleanHex.length ~/ 2;
-    final result = Uint8List(length);
-    for (var i = 0; i < length; i++) {
-      result[i] = int.parse(cleanHex.substring(i * 2, i * 2 + 2), radix: 16);
-    }
-    return result;
-  }
-
-  String bytesToHex(Uint8List bytes) {
-    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
   @override
@@ -132,22 +127,69 @@ class _BLEPageState extends State<PageConnectBLE> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                final hex = _hexController.text.trim();
-                if (hex.isNotEmpty) {
-                  _sendCommand(hex);
+            SizedBox(height: 10),
+            RoundButton(
+                text: "전송",
+                onPressed: () {
+                  _sendCommand(_hexController.text);
+                }),
+            SizedBox(height: 10),
+            DropdownButton<String>(
+              hint: const Text("명령 선택"),
+              value: _selectedCommand,
+              isExpanded: true,
+              items: _commands.keys.map((label) {
+                return DropdownMenuItem(value: label, child: Text(label));
+              }).toList(),
+              onChanged: (value) {
+                setState(() => _selectedCommand = value);
+                if (value != null) {
+                  _sendCommand(_commands[value]!);
                 }
               },
-              child: const Text("명령 전송"),
             ),
-            const SizedBox(height: 20),
+            Text("Voltage: ${(_voltage / 10).toStringAsFixed(1)} V"),
+            Slider(
+                value: _voltage,
+                min: 0,
+                max: 100,
+                divisions: 100,
+                label: "${(_voltage / 10).toStringAsFixed(1)} V",
+                onChanged: (value) {
+                  setState(() => _voltage = value);
+                  _sendCommand(setVoltage(value.toInt()));
+                }),
+            // Frequency Slider
+            Text("Frequency: ${_frequency.toStringAsFixed(0)} Hz"),
+            Slider(
+                value: _frequency,
+                min: 0,
+                max: 300,
+                divisions: 100,
+                label: "${_frequency.toStringAsFixed(0)} Hz",
+                onChanged: (value) {
+                  setState(() => _frequency = value);
+                  _sendCommand(setFrequency(value.toInt()));
+                }),
+            // Temperature Slider
+            Text("Temperature: ${_temperature.toStringAsFixed(0)} °C"),
+            Slider(
+                value: _temperature,
+                min: 10,
+                max: 70,
+                divisions: 60,
+                label: "${_temperature.toStringAsFixed(0)} °C",
+                onChanged: (value) {
+                  setState(() => _temperature = value);
+                  _sendCommand(setTemperature(value.toInt()));
+                }),
+            const SizedBox(height: 10),
             Expanded(
               child: SingleChildScrollView(
                 child: Text(_log, style: const TextStyle(fontSize: 16)),
               ),
             ),
+            const SizedBox(height: 10),
           ],
         ),
       ),

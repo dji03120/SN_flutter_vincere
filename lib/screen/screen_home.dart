@@ -1,4 +1,5 @@
-import 'package:Vincere/page_ble_device/page_ble_connect.dart';
+import 'package:Vincere/page_ble_device/page_connect_ble.dart';
+import 'package:Vincere/test/page_select_test.dart';
 import 'package:Vincere/component/card_muscle_result.dart';
 import 'package:Vincere/component/custom_button.dart';
 import 'package:Vincere/component/custom_text.dart';
@@ -2589,7 +2590,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                       avg: gradeAvg.toDouble(),
                                       age: muscleAge,
                                     );
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => PageConnectBLE()));
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => PageConnectBle()));
                                   },
                                 ),
                               ],

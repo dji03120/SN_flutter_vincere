@@ -1,5 +1,6 @@
 import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/page_account/screen_update_pswd.dart';
+import 'package:Vincere/test/page_select_test.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Vincere/export/screens.dart';
@@ -156,6 +157,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           _buildListTileUser(context, 'Q&A', const Qna(), widget.isLogin),
           _buildListTileUser(context, '정보 및 기사', const NewsBoard(), widget.isLogin),
           _buildListTileUser(context, '비밀번호 재설정', const UpdatePswd(), widget.isLogin),
+          _buildListTileUser(context, '실험', const PageSelectTest(), widget.isLogin),
         ],
       ),
     );

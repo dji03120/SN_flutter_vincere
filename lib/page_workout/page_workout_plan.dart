@@ -1,4 +1,5 @@
 import 'package:Vincere/component/header.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
@@ -57,10 +58,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                       text: userModel.gradeAvg.toString(),
                       style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
                     ),
-                    const TextSpan(
-                      text: ' 등급',
-                      style: TextStyle(fontSize: 22, color: Color(0xFF000000)),
-                    ),
+                    const TextSpan(text: ' 등급', style: TextStyle(fontSize: 22, color: Color(0xFF000000))),
                   ],
                 ),
               ),
@@ -70,7 +68,12 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                 width: screenWidth * 0.75,
                 child: RoundButton(
                   text: '운동시작',
-                  onPressed: () {
+                  onPressed: () async {
+                    final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
+
+                    // set mode intensity
+                    await sendCommand(workoutModel.writeChar, ble_commands["mode1"]!); // mode1
+                    await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => WorkoutStart()),

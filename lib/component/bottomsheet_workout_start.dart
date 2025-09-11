@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Vincere/component/custom_button.dart';
 import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/page_workout/page_workout_content.dart';
+import 'package:Vincere/provider_models.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 
 class BottomsheetWorkoutStart extends StatelessWidget {
   const BottomsheetWorkoutStart({super.key});
@@ -9,20 +12,20 @@ class BottomsheetWorkoutStart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height - 50;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return SafeArea(
       child: Container(
-        width: double.infinity,
+        width: screenWidth,
         height: screenHeight * 0.3,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Color.fromARGB(255, 111, 163, 27),
-          borderRadius: const BorderRadius.only(
+          borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
         ),
         child: SingleChildScrollView(
-          // 내부 내용 스크롤 가능하게
           child: Padding(
             padding: const EdgeInsets.all(30),
             child: Column(
@@ -33,11 +36,16 @@ class BottomsheetWorkoutStart extends StatelessWidget {
                 SizedBox(height: screenHeight * 0.04),
                 RoundButton(
                   text: "운동시작",
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => WorkoutContent()),
-                    );
+                  onPressed: () async {
+                    final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
+                    if (workoutModel.writeChar != null) {
+                      await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
+                      await sendCommand(workoutModel.writeChar, ble_commands["continue"]!); // 다시시작
+                    } else {
+                      print("writeChar is null, BLE not connected");
+                    }
+                    // 운동 페이지로 이동
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const WorkoutContent()));
                   },
                 ),
               ],

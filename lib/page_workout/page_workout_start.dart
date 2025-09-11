@@ -55,7 +55,7 @@ class Component3State extends State<WorkoutStart> {
               TextLarge(text: '{사진|동영상}과 같이 장치를 부착한 뒤,\n 시작버튼을 눌러주세요'),
               SizedBox(height: screenHeight * 0.03),
               Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                 width: double.infinity,
                 child: _videoController.value.isInitialized
                     ? Stack(

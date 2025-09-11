@@ -1,3 +1,4 @@
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
@@ -74,11 +75,11 @@ class _BottomsheetWorkoutContentState extends State<BottomsheetWorkoutContent> {
 
     final workoutModel = Provider.of<WorkoutModel>(context); // 상태 접근
     return Container(
-      width: double.infinity,
+      width: screenWidth,
       height: screenHeight * 0.3,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Color.fromARGB(255, 111, 163, 27),
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(30),
           topRight: Radius.circular(30),
         ),
@@ -88,7 +89,7 @@ class _BottomsheetWorkoutContentState extends State<BottomsheetWorkoutContent> {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextLarge(text: '전기자극 강도', color: Colors.white),
+                const TextLarge(text: '전기자극 강도', color: Colors.white),
                 SizedBox(height: screenHeight * 0.02),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -119,26 +120,33 @@ class _BottomsheetWorkoutContentState extends State<BottomsheetWorkoutContent> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextLarge(text: '운동이 종료되었습니다', color: Colors.white),
+                const TextLarge(text: '운동이 종료되었습니다', color: Colors.white),
                 SizedBox(height: screenHeight * 0.04),
                 CounterButton(
                   width: screenWidth * 0.75,
                   label: '다음운동',
-                  onPressed: () {
-                    int next_workout_idx = workoutModel.currentWorkout + 1;
-                    if (next_workout_idx >= workoutModel.workouts.length) {
+                  onPressed: () async {
+                    final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
+                    if (workoutModel.writeChar != null) {
+                      await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
+                    } else {
+                      print("writeChar is null, BLE not connected");
+                    }
+                    int nextWorkoutIdx = workoutModel.currentWorkout + 1;
+                    if (nextWorkoutIdx >= workoutModel.workouts.length) {
+                      await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => StatisticsPage(),
+                          builder: (context) => const StatisticsPage(),
                         ),
                       );
                     } else {
-                      workoutModel.set_current_workout(next_workout_idx);
+                      workoutModel.set_current_workout(nextWorkoutIdx);
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => WorkoutPlan(
+                          builder: (context) => const WorkoutPlan(
                             explainText: '다음 운동을 진행하시려면\n 시작버튼을 눌러주세요',
                           ),
                         ),

@@ -1,5 +1,6 @@
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
@@ -26,6 +27,11 @@ class Component3State extends State<SelectMuscle> {
     {'name': '대흉근', 'service_type': '유료'},
     {'name': '대퇴근', 'service_type': '유료'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +74,7 @@ class Component3State extends State<SelectMuscle> {
                     } else {
                       return RoundCheckButton(
                         text: workout['name'],
-                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 15),
+                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                         onChanged: isDisabled
                             ? null
                             : (bool isChecked) {
@@ -112,7 +118,7 @@ class Component3State extends State<SelectMuscle> {
                   borderRadius: 10,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.1),
+              SizedBox(height: screenHeight * 0.03),
             ],
           ),
         ),
