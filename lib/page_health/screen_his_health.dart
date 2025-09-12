@@ -48,14 +48,12 @@ class _HisHealthScreenState extends State<HisHealth> {
       userId = prefs.getString('userId');
 
       ApiService apiService = ApiService();
-      Map<String, dynamic> result =
-          await apiService.fetchGetUserHlthHisInfo(userId!);
+      Map<String, dynamic> result = await apiService.fetchGetUserHlthHisInfo(userId!);
       print('Received data: $result');
 
       if (result.containsKey('listResultMap')) {
         setState(() {
-          _healthData =
-              List<Map<String, dynamic>>.from(result['listResultMap']);
+          _healthData = List<Map<String, dynamic>>.from(result['listResultMap']);
           _groupHealthData();
 
           // 최신 MSMT_SEQ를 찾아 _selectedSeq와 _selectedDate에 설정
@@ -68,8 +66,7 @@ class _HisHealthScreenState extends State<HisHealth> {
 
           if (seqOptions.isNotEmpty) {
             _selectedSeq = seqOptions.first; // 가장 최신 MSMT_SEQ 선택
-            _selectedDate = _formatTimestampToDate(
-                _groupedHealthData[_selectedSeq]!.first['MSMT_DAT']);
+            _selectedDate = _formatTimestampToDate(_groupedHealthData[_selectedSeq]!.first['MSMT_DAT']);
           }
 
           // 최신 MSMT_SEQ에 해당하는 데이터를 필터링
@@ -89,10 +86,8 @@ class _HisHealthScreenState extends State<HisHealth> {
       String date = _formatTimestampToDate(item['MSMT_DAT']);
       if (!_groupedHealthData.containsKey(seq)) {
         _groupedHealthData[seq] = [];
-        print("11111");
       }
       _groupedHealthData[seq]!.add(item);
-      print("22222");
     }
     print("_groupedHealthData 확인 : $_groupedHealthData");
   }
@@ -100,8 +95,7 @@ class _HisHealthScreenState extends State<HisHealth> {
   String _formatTimestampToDate(dynamic timestamp) {
     if (timestamp == null) return '';
     try {
-      var dateTime =
-          DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp.toString()));
+      var dateTime = DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp.toString()));
       return DateFormat('yyyy-MM-dd').format(dateTime);
     } catch (e) {
       return '';
@@ -112,8 +106,7 @@ class _HisHealthScreenState extends State<HisHealth> {
     setState(() {
       _selectedSeq = newValue;
       if (_selectedSeq != null) {
-        _selectedDate = _formatTimestampToDate(
-            _groupedHealthData[_selectedSeq]!.first['MSMT_DAT']);
+        _selectedDate = _formatTimestampToDate(_groupedHealthData[_selectedSeq]!.first['MSMT_DAT']);
       }
       _filteredHealthData = _groupedHealthData[newValue] ?? [];
     });
@@ -129,10 +122,8 @@ class _HisHealthScreenState extends State<HisHealth> {
         int seqB = int.tryParse(b) ?? 0;
 
         // 날짜를 문자열로 변환
-        String dateA =
-            _formatTimestampToDate(_groupedHealthData[a]!.first['MSMT_DAT']);
-        String dateB =
-            _formatTimestampToDate(_groupedHealthData[b]!.first['MSMT_DAT']);
+        String dateA = _formatTimestampToDate(_groupedHealthData[a]!.first['MSMT_DAT']);
+        String dateB = _formatTimestampToDate(_groupedHealthData[b]!.first['MSMT_DAT']);
 
         // MSMT_SEQ 우선 비교
         int seqComparison = seqB.compareTo(seqA); // 내림차순
@@ -169,8 +160,7 @@ class _HisHealthScreenState extends State<HisHealth> {
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Color(0xFF555555), width: 1),
                   ),
-                  alignment:
-                      Alignment.center, // Center alignment for dropdown content
+                  alignment: Alignment.center, // Center alignment for dropdown content
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _selectedSeq,
@@ -187,15 +177,12 @@ class _HisHealthScreenState extends State<HisHealth> {
                         ),
                       ),
                       onChanged: _onSeqChanged,
-                      items: seqOptions
-                          .map<DropdownMenuItem<String>>((String seq) {
-                        String date = _formatTimestampToDate(
-                            _groupedHealthData[seq]!.first['MSMT_DAT']);
+                      items: seqOptions.map<DropdownMenuItem<String>>((String seq) {
+                        String date = _formatTimestampToDate(_groupedHealthData[seq]!.first['MSMT_DAT']);
                         return DropdownMenuItem<String>(
                           value: seq,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0), // 내부 아이템에 패딩 추가
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0), // 내부 아이템에 패딩 추가
                             child: Center(
                               child: Text(
                                 '$seq차   $date',
@@ -211,11 +198,7 @@ class _HisHealthScreenState extends State<HisHealth> {
                           ),
                         );
                       }).toList(),
-                      style: const TextStyle(
-                          fontFamily: 'NotoSansKR',
-                          color: Color(0xFF555555),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontFamily: 'NotoSansKR', color: Color(0xFF555555), fontSize: 16, fontWeight: FontWeight.w500),
                       dropdownColor: Colors.white,
                       isExpanded: true,
                     ),
@@ -250,10 +233,8 @@ class _HisHealthScreenState extends State<HisHealth> {
                           ),
                         ),
                       ),
-                      headingRowColor: MaterialStateProperty.all(
-                          Color(0xFFF5F4F9)), // 헤더 배경색
-                      dataRowColor:
-                          MaterialStateProperty.all(Colors.white), // 데이터 행 배경색
+                      headingRowColor: MaterialStateProperty.all(Color(0xFFF5F4F9)), // 헤더 배경색
+                      dataRowColor: MaterialStateProperty.all(Colors.white), // 데이터 행 배경색
                       headingTextStyle: const TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 15,
@@ -292,8 +273,7 @@ class _HisHealthScreenState extends State<HisHealth> {
                             columns: const [
                               DataColumn(
                                 label: Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 16.0),
+                                  padding: EdgeInsets.symmetric(horizontal: 16.0),
                                   child: Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
@@ -309,8 +289,7 @@ class _HisHealthScreenState extends State<HisHealth> {
                               ),
                               DataColumn(
                                 label: Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 16.0),
+                                  padding: EdgeInsets.symmetric(horizontal: 16.0),
                                   child: Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
@@ -366,8 +345,7 @@ class HealthData extends DataTableSource {
                     ),
                   ),
                   TextSpan(
-                    text:
-                        ' (${_healthData[index]["MSMT_UNIT"]?.toString() ?? ''})',
+                    text: ' (${_healthData[index]["MSMT_UNIT"]?.toString() ?? ''})',
                     style: const TextStyle(
                       fontFamily: 'NotoSansKR',
                       fontWeight: FontWeight.w400,

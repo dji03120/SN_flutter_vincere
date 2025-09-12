@@ -16,7 +16,7 @@ prd = "https://vincerebiohealth.kr/root"
 dev = "http://127.0.0.1:8080"
 url = prd
 
-if 1:
+if 0:
     res = requests.post(f"{url}/app/getWorkoutList.do",json={
         "user_id" : 1,
     })
@@ -30,5 +30,10 @@ if 0:
         "meta_data": {'test':'1234'}
     })
     print(res.content)
-    
+
+if 1:
+    res = requests.post(f"{url}/app/updateWorkoutEndTime.do",json={
+        "user_id" : "1"
+    })
+    print(res.content)
     

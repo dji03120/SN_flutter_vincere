@@ -15,12 +15,10 @@ class WorkoutModel extends ChangeNotifier {
 
   void set_write_char(WebBluetoothRemoteGATTCharacteristic writeChar) {
     _writeChar = writeChar;
-    print(writeChar);
   }
 
   void set_notify_char(WebBluetoothRemoteGATTCharacteristic notifyChar) {
     _notifyChar = notifyChar;
-    print(notifyChar);
   }
 
   void set_workouts(List<String> workouts) {
@@ -48,6 +46,11 @@ class UserModel extends ChangeNotifier {
     if (_userId.isNotEmpty && _password.isNotEmpty) {
       _isLogin = true;
     }
+    notifyListeners();
+  }
+
+  void set_user_id(String userId) {
+    _userId = userId;
     notifyListeners();
   }
 

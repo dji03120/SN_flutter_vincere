@@ -123,6 +123,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   Future<void> _initializeData() async {
     try {
       await _loadSessionData(); // check is login
+      final userModel = Provider.of<UserModel>(context, listen: false); // 상태 접근
+      userModel.set_user_id(userId!);
+
       if (_isLogIn) {
         // 사용자 정보 먼저 로드
         await _getUserInfo();
@@ -245,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     try {
       ApiService apiService = ApiService();
       Map<String, dynamic> result = await apiService.getLastMstmtDte(userId.toString());
-      print("result 확인해야함111 >>> $result");
+      print("_alertLastMstmtDte result >>> $result");
 
       if (result.containsKey('LAST_MSMT_DAT')) {
         setState(() {
@@ -335,7 +338,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         userId.toString(),
         userData?["bym"] ?? '',
       );
-      print("여기 오나???");
       print("result ??? : $result");
       print("userAge ??? : $userAge");
 
@@ -602,7 +604,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       }
 
       userAge = age;
-      print("ageeee : $age");
+      print("age : $age");
 
       return age.toString();
     } catch (e) {
@@ -615,8 +617,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   double calculateEnergy(double stdWeight, String activityLevel) {
     try {
       print("stdWeight : $stdWeight");
-      print("activityLevel : $activityLevel");
-
       if (stdWeight <= 0) {
         print('Invalid standard weight');
         return 0;
@@ -659,15 +659,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     recEnergy = recDailyEnergy / 3; // 한끼 권장 칼로리
     recCarbs = recDailyEnergy / 3 * 0.55; // 탄수화물 일일권장량
     recProtein = recDailyEnergy / 3 * 0.3; // 단백질 일일권장량
-    print("recCarbs : $recCarbs");
-    print("recProtein : $recProtein");
+    print("recCarbs : $recCarbs, recProtein : $recProtein");
 
     // 아침 권장량
     recBreakfastEnergy = recEnergy - breakfastRice * 1.46;
     recBreakfastCarbs = recCarbs - breakfastRice * 1.32;
     recBreakfastProtein = recProtein - breakfastRice * 0.092;
-    print("recBreakfastCarbs 확인 : $recBreakfastCarbs");
-    print("recBreakfastProtein 확인 : $recBreakfastProtein");
+    print("recBreakfastCarbs : $recBreakfastCarbs, recBreakfastProtein : $recBreakfastProtein");
 
     // 점심 권장량
     print("breakfastRice양 확인 : $breakfastRice");
@@ -706,26 +704,20 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       // 일일 에너지 권장량 - 아침/점심/저녁 섭취 칼로리
       dailyCarbsLackCal = recDailyEnergy * 0.55 - (breakfastRice + lunchRice + dinnerRice) * 1.32;
       dailyProteinLackCal = recDailyEnergy * 0.3 - (breakfastRice + lunchRice + dinnerRice) * 0.092;
-
-      print("dailyCarbsLackCal 111 : $dailyCarbsLackCal");
       dailyCarbsLackCal = dailyCarbsLackCal > 0 ? dailyCarbsLackCal.round() as double : 0;
       dailyProteinLackCal = dailyProteinLackCal > 0 ? dailyProteinLackCal.round() as double : 0;
 
-      print("dailyCarbsLackCal : $dailyCarbsLackCal");
-      print("dailyProteinLackCal : $dailyProteinLackCal");
+      print("dailyCarbsLackCal : $dailyCarbsLackCal, dailyProteinLackCal : $dailyProteinLackCal");
     }
 
     checkNegativeValues();
-
-    print("recLunchCarbs 확인 : $recLunchCarbs");
-    print("recLunchProtein 확인 : $recLunchProtein");
+    print("recLunchCarbs 확인 : $recLunchCarbs, recLunchProtein 확인 : $recLunchProtein");
 
     // 저녁 권장량
     // recDinnerCarbs = lunchRice
     // recDinnerCarbs = recCarbs + recBreakfastCarbs/2 + recLunchCarbs - (dinnerRice * 1.32);
     // recDinnerProtein = recProtein + recBreakfastProtein/2 + recLunchProtein - (dinnerRice * 0.092);
-    print("recDinnerCarbs 확인 : $recDinnerCarbs");
-    print("recDinnerProtein 확인 : $recDinnerProtein");
+    print("recDinnerCarbs 확인 : $recDinnerCarbs, recDinnerProtein 확인 : $recDinnerProtein");
 
     return 0;
   }
@@ -748,9 +740,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   // 추천식품을 위한 탄수화물, 단백질 필요 칼로리
   Map<String, int> calculateRecFoodCalories() {
     print("=======섭취량 확인=======");
-    print("아침 : $breakfastRice");
-    print("점심 : $lunchRice");
-    print("저녁 : $dinnerRice");
+    print("아침 : $breakfastRice, 점심 : $lunchRice, 저녁 : $dinnerRice");
 
     if (breakfastRice == 0) {
       foodRecCarbsCal = recBreakfastCarbs;

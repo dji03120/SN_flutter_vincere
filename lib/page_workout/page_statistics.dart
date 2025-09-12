@@ -1,11 +1,13 @@
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/component/header.dart';
+import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:Vincere/component/custom_text.dart';
+import 'dart:convert';
 
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
@@ -18,40 +20,38 @@ class Component4State extends State<StatisticsPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay; // 선택된 날짜
   bool _isHovered = false;
+  ApiService apiService = ApiService();
 
   // 예시 운동 기록 데이터
   final Map<DateTime, Map<String, String>> _exerciseData = {
-    DateTime.utc(2025, 9, 4): {
-      'mode': '수동',
-      'intensity': '중간',
-      'duration': '90min',
-    },
-    DateTime.utc(2025, 9, 5): {
-      'mode': '수동',
-      'intensity': '중간',
-      'duration': '90min',
-    },
-    DateTime.utc(2025, 9, 6): {
-      'mode': '수동',
-      'intensity': '중간',
-      'duration': '90min',
-    },
-    DateTime.utc(2025, 9, 15): {
-      'mode': '능동',
-      'intensity': '높음',
-      'duration': '60min',
-    },
-    DateTime.utc(2025, 9, 20): {
-      'mode': '수동',
-      'intensity': '낮음',
-      'duration': '30min',
-    },
+    DateTime.utc(2025, 9, 4): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
+    DateTime.utc(2025, 9, 5): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
+    DateTime.utc(2025, 9, 6): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
+    DateTime.utc(2025, 9, 15): {'mode': '능동', 'intensity': '높음', 'duration': '60min'},
+    DateTime.utc(2025, 9, 20): {'mode': '수동', 'intensity': '낮음', 'duration': '30min'},
   };
 
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay; // 초기값
+    _async_init();
+  }
+
+  Future<void> _async_init() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    List<dynamic> result = (await apiService.selectWorkout(userModel.userId))['workoutList'];
+    print("${result.length}, ${userModel.userId}");
+
+    for (int i = 0; i < result.length; i++) {
+      DateTime st = DateTime.fromMillisecondsSinceEpoch(result[i]['START_TIME']).toUtc();
+      Map<String, dynamic> temp = jsonDecode(result[i]['META_INFO']);
+      Map<String, String> meta_data = temp.map((key, value) => MapEntry(key, value.toString()));
+
+      _exerciseData[st] = meta_data;
+      print("${userModel.userId}, ${st}, ${meta_data}");
+    }
+    setState(() {});
   }
 
   @override
@@ -90,6 +90,7 @@ class Component4State extends State<StatisticsPage> {
                       focusedDay: _focusedDay,
                       onDaySelected: (selectedDay, focusedDay) {
                         setState(() {
+                          print(exercise);
                           _selectedDay = selectedDay;
                           _focusedDay = focusedDay;
                         });

@@ -126,7 +126,6 @@ class _BottomsheetWorkoutContentState extends State<BottomsheetWorkoutContent> {
                   width: screenWidth * 0.75,
                   label: '다음운동',
                   onPressed: () async {
-                    final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
                     if (workoutModel.writeChar != null) {
                       await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
                     } else {

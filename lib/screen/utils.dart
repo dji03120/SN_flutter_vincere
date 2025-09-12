@@ -351,7 +351,6 @@ Widget buildTableCell(String text, double breakfastRice, double lunchRice, doubl
     numericValue = double.parse(text);
   } catch (e) {
     // text가 숫자로 변환할 수 없는 경우 기본값 0 사용
-    print("숫자로 변환할 수 없는 텍스트입니다: $text");
   }
   Color dotColor;
   Color numberColor;
