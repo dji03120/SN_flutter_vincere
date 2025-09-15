@@ -6,6 +6,7 @@ import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/component/custom_button.dart';
 import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/page_workout/page_workout_start.dart';
+import 'package:Vincere/http/webReq.dart';
 
 class WorkoutPlan extends StatefulWidget {
   final String explainText;
@@ -18,6 +19,7 @@ class WorkoutPlan extends StatefulWidget {
 class WorkoutPlanState extends State<WorkoutPlan> {
   @override
   Widget build(BuildContext context) {
+    ApiService apiService = ApiService();
     final workoutModel = Provider.of<WorkoutModel>(context); // 상태 접근
     final userModel = Provider.of<UserModel>(context); // 상태 접근
     final screenWidth = MediaQuery.of(context).size.width;
@@ -58,7 +60,11 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                       text: userModel.gradeAvg.toString(),
                       style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
                     ),
-                    const TextSpan(text: ' 등급', style: TextStyle(fontSize: 22, color: Color(0xFF000000))),
+                    const TextSpan(text: ' 등급 ', style: TextStyle(fontSize: 22, color: Color(0xFF000000))),
+                    TextSpan(
+                      text: workoutModel.workoutLevel == "mode1" ? "  (급성모드)" : "  (예방모드)",
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
+                    ),
                   ],
                 ),
               ),
@@ -69,10 +75,18 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                 child: RoundButton(
                   text: '운동시작',
                   onPressed: () async {
-                    final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
+                    await apiService.insertWorkout(
+                      userModel.userId,
+                      {
+                        "mode": workoutModel.workoutMode,
+                        "intensity": workoutModel.workoutLevel == "mode1" ? "급성모드" : "예방모드",
+                        "muscle": workoutModel.workouts[workoutModel.currentWorkout],
+                      }, // intensity mode1 100hz, mode2 60hz
+                    );
 
                     // set mode intensity
-                    await sendCommand(workoutModel.writeChar, ble_commands["mode1"]!); // mode1
+                    print(workoutModel.workoutLevel);
+                    await sendCommand(workoutModel.writeChar, ble_commands[workoutModel.workoutLevel]!);
                     await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
                     Navigator.pushReplacement(
                       context,

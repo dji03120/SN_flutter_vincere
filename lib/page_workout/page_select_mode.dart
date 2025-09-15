@@ -27,6 +27,7 @@ class SelectModeState extends State<SelectMode> {
   @override
   Widget build(BuildContext context) {
     final workoutModel = Provider.of<WorkoutModel>(context); // 상태 접근
+    final userModel = Provider.of<UserModel>(context); // 상태 접근
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: const Header(),
@@ -45,13 +46,14 @@ class SelectModeState extends State<SelectMode> {
                   text: 'Passive Mode',
                   margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   onPressed: () {
-                    workoutModel.set_current_workout(0);
+                    workoutModel.set_workout_level(userModel.gradeAvg);
+                    workoutModel.set_workout_mode('passive');
                     workoutModel.set_workouts([
-                      '상완근 10min',
-                      '이두근 10min',
-                      '삼각근 10min',
-                      '대흉근 10min',
-                      '대퇴근 10min',
+                      '상완근',
+                      '이두근',
+                      '삼각근',
+                      '대흉근',
+                      '대퇴근',
                     ]);
                     Navigator.push(
                       context,
@@ -67,13 +69,13 @@ class SelectModeState extends State<SelectMode> {
                   text: 'Active Mode',
                   margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   onPressed: () {
-                    workoutModel.set_current_workout(0);
+                    workoutModel.set_workout_mode('active');
                     workoutModel.set_workouts([
-                      '상완근 10min',
-                      '이두근 10min',
-                      '삼각근 10min',
-                      '대흉근 10min',
-                      '대퇴근 10min',
+                      '상완근',
+                      '이두근',
+                      '삼각근',
+                      '대흉근',
+                      '대퇴근',
                     ]);
                     Navigator.push(
                       context,

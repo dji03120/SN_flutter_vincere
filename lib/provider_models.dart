@@ -7,8 +7,12 @@ class WorkoutModel extends ChangeNotifier {
   int _currentWorkout = 0;
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? _notifyChar;
+  String _workoutMode = "passive";
+  String _workoutLevel = "mode2";
 
   List<String> get workouts => _workouts;
+  String get workoutMode => _workoutMode;
+  String get workoutLevel => _workoutLevel;
   int get currentWorkout => _currentWorkout;
   WebBluetoothRemoteGATTCharacteristic? get writeChar => _writeChar;
   WebBluetoothRemoteGATTCharacteristic? get notifyChar => _notifyChar;
@@ -21,8 +25,21 @@ class WorkoutModel extends ChangeNotifier {
     _notifyChar = notifyChar;
   }
 
+  void set_workout_mode(String workoutMode) {
+    _workoutMode = workoutMode;
+  }
+
+  void set_workout_level(double userGrade) {
+    if (userGrade <= 3) {
+      _workoutLevel = "mode1";
+    } else {
+      _workoutLevel = "mode2";
+    }
+  }
+
   void set_workouts(List<String> workouts) {
     _workouts = workouts;
+    _currentWorkout = 0;
     notifyListeners();
   }
 

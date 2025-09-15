@@ -19,11 +19,11 @@ class StatisticsPage extends StatefulWidget {
 class Component4State extends State<StatisticsPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay; // 선택된 날짜
-  bool _isHovered = false;
+  List<Map<String, dynamic>> _selectedDayDatas = []; // 선택된 날짜
   ApiService apiService = ApiService();
 
   // 예시 운동 기록 데이터
-  final Map<DateTime, Map<String, String>> _exerciseData = {
+  final Map<DateTime, Map<String, dynamic>> _workoutList = {
     DateTime.utc(2025, 9, 4): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
     DateTime.utc(2025, 9, 5): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
     DateTime.utc(2025, 9, 6): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
@@ -44,25 +44,34 @@ class Component4State extends State<StatisticsPage> {
     print("${result.length}, ${userModel.userId}");
 
     for (int i = 0; i < result.length; i++) {
-      DateTime st = DateTime.fromMillisecondsSinceEpoch(result[i]['START_TIME']).toUtc();
-      DateTime ymdt = DateTime.utc(st.year, st.month, st.day);
-      Map<String, dynamic> temp = jsonDecode(result[i]['META_INFO']);
-      Map<String, String> meta_data = temp.map((key, value) => MapEntry(key, value.toString()));
+      try {
+        DateTime st = DateTime.fromMillisecondsSinceEpoch(result[i]['START_TIME']).toUtc();
+        DateTime et = DateTime.fromMillisecondsSinceEpoch(result[i]['END_TIME']).toUtc();
+        DateTime ymdt = DateTime.utc(st.year, st.month, st.day);
+        Map<String, dynamic> temp = jsonDecode(result[i]['META_INFO']);
+        Map<String, String> meta_data = temp.map((key, value) => MapEntry(key, value.toString()));
 
-      _exerciseData[ymdt] = meta_data;
-      print("${userModel.userId}, ${st}, ${meta_data}");
+        Duration duration = et.difference(st);
+        meta_data['duration'] = "${duration.inMinutes}min ${duration.inSeconds % 60}sec";
+
+        _workoutList[ymdt] = meta_data; // calendar data
+        _workoutList[st] = meta_data; // list data
+        print("${userModel.userId}, ${st}, ${meta_data}");
+      } catch (e) {
+        print("db workout log parse error... ");
+      }
     }
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    Set<DateTime> mySelectedDays = _exerciseData.keys.toSet();
+    Set<DateTime> mySelectedDays = _workoutList.keys.toSet();
     final screenHeight = MediaQuery.of(context).size.height - 50;
     final screenWidth = MediaQuery.of(context).size.width;
 
     // 선택된 날짜의 운동 기록 가져오기
-    final exercise = _exerciseData[_selectedDay] ?? {'mode': '-', 'intensity': '-', 'duration': '-'};
+    final exercise = _workoutList[_selectedDay] ?? {'mode': '-', 'intensity': '-', 'duration': '-', 'muscle': '-'};
 
     return Scaffold(
       appBar: const Header(),
@@ -73,7 +82,7 @@ class Component4State extends State<StatisticsPage> {
           color: Color(0xFFf5f4f9),
           child: Column(
             children: [
-              SizedBox(height: screenHeight * 0.1),
+              SizedBox(height: screenHeight * 0.05),
               Card(
                 elevation: 4,
                 margin: const EdgeInsets.fromLTRB(15, 0, 15, 20),
@@ -90,6 +99,14 @@ class Component4State extends State<StatisticsPage> {
                       lastDay: DateTime.utc(2100, 12, 31),
                       focusedDay: _focusedDay,
                       onDaySelected: (selectedDay, focusedDay) {
+                        _selectedDayDatas = [];
+                        List<DateTime> dateKeys = _workoutList.keys.toList();
+                        for (int i = 0; i < dateKeys.length; i++) {
+                          DateTime dateKey = dateKeys[i];
+                          DateTime ymdt = DateTime.utc(dateKey.year, dateKey.month, dateKey.day);
+                          if (ymdt == selectedDay) _selectedDayDatas.add(_workoutList[dateKey]!);
+                        }
+                        print(_selectedDayDatas);
                         setState(() {
                           _selectedDay = selectedDay;
                           _focusedDay = focusedDay;
@@ -121,28 +138,21 @@ class Component4State extends State<StatisticsPage> {
                       calendarBuilders: CalendarBuilders(
                         defaultBuilder: (context, day, focusedDay) {
                           final isHighlighted = mySelectedDays.any((d) => d.year == day.year && d.month == day.month && d.day == day.day);
-                          final isFocused = day.year == _focusedDay.year && day.month == _focusedDay.month && day.day == _focusedDay.day;
 
                           if (isHighlighted) {
                             return Stack(
                               alignment: Alignment.center,
                               children: [
                                 OverflowBox(
-                                  maxWidth: double.infinity,
-                                  child: Container(
-                                    width: screenWidth / 6,
-                                    height: 25,
-                                    decoration: BoxDecoration(
-                                      color: Colors.orangeAccent,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                                Text('${day.day}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    )),
+                                    maxWidth: double.infinity,
+                                    child: Container(
+                                        width: screenWidth / 6,
+                                        height: 25,
+                                        decoration: BoxDecoration(
+                                          color: Colors.orangeAccent,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ))),
+                                Text('${day.day}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                               ],
                             );
                           }
@@ -152,39 +162,46 @@ class Component4State extends State<StatisticsPage> {
                       ),
                     )),
               ),
-              SizedBox(height: screenHeight * 0.02),
-              SizedBox(
-                width: double.infinity,
-                child: MouseRegion(
-                  onEnter: (_) => setState(() => _isHovered = true),
-                  onExit: (_) => setState(() => _isHovered = false),
-                  child: AnimatedScale(
-                    scale: _isHovered ? 1.05 : 1.0,
-                    duration: Duration(milliseconds: 300),
-                    child: Card(
-                      elevation: 4,
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                      color: const Color(0xFFFFFFFF),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(height: 20),
-                          TextLarge(
-                            text: '${_selectedDay?.month}월 ${_selectedDay?.day}일 의 운동 기록',
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _selectedDayDatas.length,
+                  itemBuilder: (context, index) {
+                    final exercise = _selectedDayDatas[index];
+                    return SizedBox(
+                      width: double.infinity,
+                      child: MouseRegion(
+                        child: Card(
+                          elevation: 4,
+                          margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                          color: const Color(0xFFFFFFFF),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          TextMedium(text: '모드 : ${exercise['mode']}'),
-                          TextMedium(text: '강도 : ${exercise['intensity']}'),
-                          TextMedium(text: '운동시간 : ${exercise['duration']}'),
-                          SizedBox(height: 20),
-                        ],
+                          child: Container(
+                            padding: EdgeInsets.fromLTRB(24, 4, 24, 4),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 20),
+                                TextLarge(
+                                  text: '${_selectedDay?.month}월 ${_selectedDay?.day}일',
+                                ),
+                                SizedBox(height: screenHeight * 0.01),
+                                TextMedium(text: '모드 : ${exercise['mode']}'),
+                                TextMedium(text: '근육 : ${exercise['muscle']}'),
+                                TextMedium(text: '강도 : ${exercise['intensity']}'),
+                                TextMedium(text: '시간 : ${exercise['duration']}'),
+                                const SizedBox(height: 20),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
-              ),
+              )
             ],
           ),
         ),

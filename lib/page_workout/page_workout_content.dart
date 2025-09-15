@@ -1,6 +1,7 @@
 import 'package:Vincere/component/custom_button.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
+import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_workout/page_statistics.dart';
 import 'package:Vincere/page_workout/page_workout_plan.dart';
@@ -29,7 +30,8 @@ class Component3State extends State<WorkoutContent> {
   int pulse_value = 0;
   int workout_min = 20;
   int workout_sec = 0;
-  int mlt = 100;
+  int mlt = 10;
+  int step_count = 0;
 
   @override
   void initState() {
@@ -45,19 +47,30 @@ class Component3State extends State<WorkoutContent> {
   }
 
   void _startProgress() {
-    double step = 100 / workout_sec; // 1%씩 증가
-    Duration interval = Duration(milliseconds: 1000); // 0.1초 간격
+    double step = 1 * mlt / workout_sec / 10; // 1%씩 증가
+    Duration interval = const Duration(milliseconds: 100); // 0.1초 간격
+    ApiService apiService = ApiService();
+    final userModel = Provider.of<UserModel>(context, listen: false);
 
     _timer = Timer.periodic(interval, (timer) {
       if (_progress != 0) {
-        print(_progress);
         setState(() {
           _progress -= step;
+          step_count += 1;
           if (_progress <= 0) {
             _progress = 0;
             isWorkoutDone = true;
           }
         });
+
+        // DB update는 await 없이 Future 처리
+        if (step_count % 600 == 599) {
+          apiService.updateWorkoutEnd(userModel.userId).then((_) {
+            print('DB update 완료');
+          }).catchError((e) {
+            print('DB update 실패: $e');
+          });
+        }
       }
     });
   }
@@ -86,9 +99,11 @@ class Component3State extends State<WorkoutContent> {
 
   @override
   Widget build(BuildContext context) {
+    ApiService apiService = ApiService();
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final workoutModel = Provider.of<WorkoutModel>(context);
+    final userModel = Provider.of<UserModel>(context);
 
     return Scaffold(
       appBar: const Header(),
@@ -222,6 +237,7 @@ class Component3State extends State<WorkoutContent> {
                       int nextWorkoutIdx = workoutModel.currentWorkout + 1;
                       if (nextWorkoutIdx >= workoutModel.workouts.length) {
                         await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
+                        await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -230,6 +246,7 @@ class Component3State extends State<WorkoutContent> {
                         );
                       } else {
                         workoutModel.set_current_workout(nextWorkoutIdx);
+                        await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(

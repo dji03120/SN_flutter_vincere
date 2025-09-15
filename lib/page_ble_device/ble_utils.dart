@@ -4,7 +4,7 @@ import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
 
 final Map<String, String> ble_commands = {
   "mode1": "000B0900020000", //100hz
-  "mode2 시작": "000B0900020001", //60hz
+  "mode2": "000B0900020001", //60hz
   "pause": "000B09000105",
   "continue": "000B09000106",
   "stop": "000B09000102",
