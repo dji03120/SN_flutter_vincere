@@ -45,10 +45,11 @@ class Component4State extends State<StatisticsPage> {
 
     for (int i = 0; i < result.length; i++) {
       DateTime st = DateTime.fromMillisecondsSinceEpoch(result[i]['START_TIME']).toUtc();
+      DateTime ymdt = DateTime.utc(st.year, st.month, st.day);
       Map<String, dynamic> temp = jsonDecode(result[i]['META_INFO']);
       Map<String, String> meta_data = temp.map((key, value) => MapEntry(key, value.toString()));
 
-      _exerciseData[st] = meta_data;
+      _exerciseData[ymdt] = meta_data;
       print("${userModel.userId}, ${st}, ${meta_data}");
     }
     setState(() {});
@@ -90,7 +91,6 @@ class Component4State extends State<StatisticsPage> {
                       focusedDay: _focusedDay,
                       onDaySelected: (selectedDay, focusedDay) {
                         setState(() {
-                          print(exercise);
                           _selectedDay = selectedDay;
                           _focusedDay = focusedDay;
                         });

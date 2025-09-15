@@ -1929,47 +1929,21 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                             ),
                                           ),
                                         ),
-                                        Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 2),
-                                          child: SizedBox(
-                                            width: screenWidth * 0.35,
-                                            height: 42,
-                                            child: ElevatedButton(
-                                              onPressed: () {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (BuildContext context) {
-                                                    return MetricChartDialog(
-                                                      title: '쌀 섭취량(g)',
-                                                      code: 'riceIntake',
-                                                      userId: userId,
-                                                    );
-                                                  },
+                                        HomeScreenButton(
+                                          text: '섭취량 추이',
+                                          width: screenWidth * 0.35,
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return MetricChartDialog(
+                                                  title: '쌀 섭취량(g)',
+                                                  code: 'riceIntake',
+                                                  userId: userId,
                                                 );
                                               },
-                                              style: ElevatedButton.styleFrom(
-                                                padding: EdgeInsets.zero,
-                                                backgroundColor: Color(0xFFFFFFFF),
-                                                foregroundColor: Color(0xFF0B8043),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(16),
-                                                ),
-                                              ),
-                                              child: const Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    '섭취량 추이',
-                                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
-                                                    softWrap: false,
-                                                    overflow: TextOverflow.visible,
-                                                  ),
-                                                  SizedBox(width: 4),
-                                                  Icon(Icons.bar_chart, size: 18),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
+                                            );
+                                          },
                                         ),
                                       ],
                                     )
@@ -2069,34 +2043,17 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   ),
                                   Spacer(),
                                   Center(
-                                    child: SizedBox(
+                                    child: HomeScreenButton(
+                                      text: '섭취량 추이',
                                       width: 135,
-                                      height: 42,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return MetricChartDialog(title: '탄수화물 섭취량(g)', code: 'carbsIntake', userId: userId);
-                                            },
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          elevation: 0,
-                                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                        ),
-                                        child: const Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text('섭취량 추이', style: TextStyle(color: Color(0xFF555555), fontSize: 14, fontWeight: FontWeight.w600)),
-                                            SizedBox(width: 4),
-                                            Icon(Icons.bar_chart, color: Colors.green),
-                                          ],
-                                        ),
-                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return MetricChartDialog(title: '탄수화물 섭취량(g)', code: 'carbsIntake', userId: userId);
+                                          },
+                                        );
+                                      },
                                     ),
                                   ),
                                 ],
@@ -2126,34 +2083,17 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   ),
                                   Spacer(),
                                   Center(
-                                    child: SizedBox(
+                                    child: HomeScreenButton(
+                                      text: '섭취량 추이',
                                       width: 135,
-                                      height: 42,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return MetricChartDialog(title: '단백질 섭취량(g)', code: 'proteinIntake', userId: userId);
-                                            },
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          elevation: 0,
-                                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                        ),
-                                        child: const Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text('섭취량 추이', style: TextStyle(color: Color(0xFF555555), fontSize: 14, fontWeight: FontWeight.w600)),
-                                            SizedBox(width: 4),
-                                            Icon(Icons.bar_chart, color: Colors.green),
-                                          ],
-                                        ),
-                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return MetricChartDialog(title: '단백질 섭취량(g)', code: 'proteinIntake', userId: userId);
+                                          },
+                                        );
+                                      },
                                     ),
                                   ),
                                 ],
@@ -2274,7 +2214,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                     children: [
                       Container(
                         margin: const EdgeInsets.only(left: 16, right: 16, top: 36),
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(12.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -2311,13 +2251,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                           text: '탄수화물',
                                           style: TextStyle(
                                               color: Color(0xFF00914B), // 초록색
-                                              fontSize: 13,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.w700)),
                                       TextSpan(
                                           text: '만 먼저 채우고 싶어요!',
                                           style: TextStyle(
                                               color: Color(0xFF000000), // 검정색
-                                              fontSize: 13,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.w600)),
                                     ],
                                   ),
@@ -2431,13 +2371,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                     children: [
                                       TextSpan(
                                         text: '단백질',
-                                        style: TextStyle(color: Color(0xFF9D895B), fontSize: 13, fontWeight: FontWeight.w700),
+                                        style: TextStyle(color: Color(0xFF9D895B), fontSize: 12, fontWeight: FontWeight.w700),
                                       ),
                                       TextSpan(
                                           text: '만 먼저 채우고 싶어요!',
                                           style: TextStyle(
                                               color: Color(0xFF000000), // 검정색
-                                              fontSize: 13,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.w600)),
                                     ],
                                   ),
@@ -2538,81 +2478,111 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                       ),
                     ],
                   ),
-
                   Container(
-                    color: Color(0xFFf5f4f9),
+                    color: const Color(0xFFf5f4f9),
                     child: Column(
                       children: [
-                        SizedBox(height: screenHeight * 0.10),
-                        Align(
+                        Container(
+                          margin: const EdgeInsets.only(left: 16, right: 16, top: 36),
+                          padding: const EdgeInsets.all(12.0),
                           alignment: Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                            child: TextLarge(text: '${userData?["userNm"] ?? ""} 님의 \n운동등급에 따른 운동추천'),
-                          ),
-                        ),
-                        Card(
-                          elevation: 4,
-                          margin: const EdgeInsets.fromLTRB(30, 0, 30, 0),
-                          color: const Color(0xFF616161),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Container(
-                            //width: 300,
-                            //height: screenHeight / 1200 * 280,
-                            padding: const EdgeInsets.all(32),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextLarge(text: '헬스케어 기기 연동', color: Colors.white),
-                                SizedBox(height: screenHeight * 0.04),
-                                RoundButton(
-                                  text: '장치연결',
-                                  onPressed: () async {
-                                    await userModel.set_local_saved_data();
-                                    userModel.set_datas(
-                                      g003: msmt003Grade.toDouble(),
-                                      g008: msmt008Grade.toDouble(),
-                                      g011: msmt011Grade.toDouble(),
-                                      g012: msmt012Grade.toDouble(),
-                                      g013: msmt013Grade.toDouble(),
-                                      avg: gradeAvg.toDouble(),
-                                      age: muscleAge,
-                                    );
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => PageConnectBle()));
-                                  },
-                                ),
-                              ],
+                          child: Text(
+                            '${userData?["userNm"] ?? ""} 님의\n운동등급에 따른 운동추천',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF000000),
                             ),
                           ),
                         ),
-                        SizedBox(height: screenHeight * 0.04),
-                        Card(
-                          elevation: 4,
-                          margin: const EdgeInsets.fromLTRB(30, 0, 30, 0),
-                          color: const Color(0xFF616161),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: Container(
-                            padding: const EdgeInsets.all(32),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextLarge(text: '헬스케어 기기 사용 이력', color: Colors.white),
-                                SizedBox(height: screenHeight * 0.04),
-                                RoundButton(
-                                  text: '통계화면',
-                                  onPressed: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => StatisticsPage()));
-                                  },
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Card(
+                                  elevation: 6,
+                                  color: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          '헬스케어 \n장치 연동',
+                                          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
+                                        ),
+                                        SizedBox(height: screenHeight * 0.03),
+                                        HomeScreenButton(
+                                          text: '장치 연결',
+                                          width: double.infinity,
+                                          onPressed: () async {
+                                            await userModel.set_local_saved_data();
+                                            userModel.set_datas(
+                                              g003: msmt003Grade.toDouble(),
+                                              g008: msmt008Grade.toDouble(),
+                                              g011: msmt011Grade.toDouble(),
+                                              g012: msmt012Grade.toDouble(),
+                                              g013: msmt013Grade.toDouble(),
+                                              avg: gradeAvg.toDouble(),
+                                              age: muscleAge,
+                                            );
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(builder: (context) => PageConnectBle()),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              //const SizedBox(width: 1),
+                              Expanded(
+                                flex: 1,
+                                child: Card(
+                                  elevation: 6,
+                                  color: Colors.lightGreen[800],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          '운동 이력\n',
+                                          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
+                                        ),
+                                        SizedBox(height: screenHeight * 0.03),
+                                        HomeScreenButton(
+                                          text: '통계 보기',
+                                          width: double.infinity,
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(builder: (context) => StatisticsPage()),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
+
                   SizedBox(height: 80)
                 ],
               ),

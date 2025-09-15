@@ -103,3 +103,53 @@ class _RoundCheckButtonState extends State<RoundCheckButton> {
     );
   }
 }
+
+class HomeScreenButton extends StatefulWidget {
+  final String text;
+  final VoidCallback onPressed; // 클릭 시 실행할 함수
+  final double width;
+  const HomeScreenButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.width = double.infinity,
+  });
+  @override
+  State<HomeScreenButton> createState() => _ScreenHomeCardButtonState();
+}
+
+class _ScreenHomeCardButtonState extends State<HomeScreenButton> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 2),
+      child: SizedBox(
+        width: widget.width,
+        height: 42,
+        child: ElevatedButton(
+          onPressed: widget.onPressed,
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            backgroundColor: Color(0xFFFFFFFF),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                widget.text,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
+                softWrap: false,
+                overflow: TextOverflow.visible,
+              ),
+              SizedBox(width: 4),
+              Icon(Icons.bar_chart, color: Colors.green),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
