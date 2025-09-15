@@ -101,7 +101,7 @@ class Component3State extends State<SelectMuscle> {
                     workoutModel.set_workouts(selectedWorkouts);
                     workoutModel.set_current_workout(0);
                     if (selectedWorkouts.length != 0) {
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => WorkoutPlan(

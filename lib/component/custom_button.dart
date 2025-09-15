@@ -7,6 +7,7 @@ class RoundButton extends StatelessWidget {
   final Color color; // 둥근 정도 조절
   final double textSize;
   final EdgeInsets margin;
+  final double height;
 
   const RoundButton({
     super.key,
@@ -15,6 +16,7 @@ class RoundButton extends StatelessWidget {
     this.color = const Color(0xFFFFFFFF),
     this.borderRadius = 30, // 기본값 30
     this.textSize = 20,
+    this.height = 50, // 기본값 30
     this.margin = const EdgeInsets.fromLTRB(10, 0, 10, 5),
   });
 
@@ -24,6 +26,7 @@ class RoundButton extends StatelessWidget {
       margin: margin,
       child: SizedBox(
         width: double.infinity, // 가로 꽉 채우기
+        height: height,
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(

@@ -26,15 +26,26 @@ class TextLarge extends StatelessWidget {
   }
 }
 
-class TextTitle extends StatelessWidget {
+class TextCustom extends StatelessWidget {
   final String text; // 버튼에 표시할 텍스트
   final Color color;
-  const TextTitle({super.key, required this.text, this.color = Colors.black});
+  final double fontSize;
+
+  const TextCustom({
+    super.key,
+    required this.text,
+    this.color = Colors.black,
+    this.fontSize = 22,
+  });
   @override
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+      style: TextStyle(
+        fontSize: fontSize,
+        fontWeight: FontWeight.bold,
+        color: color,
+      ),
     );
   }
 }

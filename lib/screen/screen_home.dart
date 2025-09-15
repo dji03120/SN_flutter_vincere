@@ -1,3 +1,4 @@
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_ble_device/page_connect_ble.dart';
 import 'package:Vincere/test/page_select_test.dart';
 import 'package:Vincere/component/card_muscle_result.dart';
@@ -124,7 +125,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     try {
       await _loadSessionData(); // check is login
       final userModel = Provider.of<UserModel>(context, listen: false); // 상태 접근
+      final workoutModel = Provider.of<WorkoutModel>(context, listen: false); // 상태 접근
       userModel.set_user_id(userId!);
+      await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
 
       if (_isLogIn) {
         // 사용자 정보 먼저 로드
@@ -2229,7 +2232,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
                       // 첫 번째 추천 음식 섹션
                       Container(
-                        margin: EdgeInsets.symmetric(horizontal: 26.0, vertical: 8.0),
+                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey[300]!),
@@ -2251,13 +2254,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                           text: '탄수화물',
                                           style: TextStyle(
                                               color: Color(0xFF00914B), // 초록색
-                                              fontSize: 12,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w700)),
                                       TextSpan(
                                           text: '만 먼저 채우고 싶어요!',
                                           style: TextStyle(
                                               color: Color(0xFF000000), // 검정색
-                                              fontSize: 12,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w600)),
                                     ],
                                   ),
@@ -2351,7 +2354,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
                       // 두 번째 추천 음식 섹션
                       Container(
-                        margin: EdgeInsets.symmetric(horizontal: 26.0, vertical: 8.0),
+                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey[300]!),
@@ -2371,13 +2374,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                     children: [
                                       TextSpan(
                                         text: '단백질',
-                                        style: TextStyle(color: Color(0xFF9D895B), fontSize: 12, fontWeight: FontWeight.w700),
+                                        style: TextStyle(color: Color(0xFF9D895B), fontSize: 13, fontWeight: FontWeight.w700),
                                       ),
                                       TextSpan(
                                           text: '만 먼저 채우고 싶어요!',
                                           style: TextStyle(
                                               color: Color(0xFF000000), // 검정색
-                                              fontSize: 12,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w600)),
                                     ],
                                   ),
