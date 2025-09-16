@@ -1,7 +1,6 @@
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,8 +44,9 @@ class Component4State extends State<StatisticsPage> {
 
     for (int i = 0; i < result.length; i++) {
       try {
-        DateTime st = DateTime.fromMillisecondsSinceEpoch(result[i]['START_TIME']).toUtc();
-        DateTime et = DateTime.fromMillisecondsSinceEpoch(result[i]['END_TIME']).toUtc();
+        print(result[i]);
+        DateTime st = DateTime.fromMillisecondsSinceEpoch(result[i]['START_TIME']); //.toUtc();
+        DateTime et = DateTime.fromMillisecondsSinceEpoch(result[i]['END_TIME']); //.toUtc();
         DateTime ymdt = DateTime.utc(st.year, st.month, st.day);
         Map<String, dynamic> temp = jsonDecode(result[i]['META_INFO']);
         Map<String, String> meta_data = temp.map((key, value) => MapEntry(key, value.toString()));
@@ -69,9 +69,6 @@ class Component4State extends State<StatisticsPage> {
     Set<DateTime> mySelectedDays = _workoutList.keys.toSet();
     final screenHeight = MediaQuery.of(context).size.height - 50;
     final screenWidth = MediaQuery.of(context).size.width;
-
-    // 선택된 날짜의 운동 기록 가져오기
-    final exercise = _workoutList[_selectedDay] ?? {'mode': '-', 'intensity': '-', 'duration': '-', 'muscle': '-'};
 
     return Scaffold(
       appBar: const Header(),

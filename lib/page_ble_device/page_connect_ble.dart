@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
+import 'dart:html' as html; // ← 추가
 
 import 'package:Vincere/component/custom_button.dart';
 import 'package:Vincere/component/custom_text.dart';
@@ -34,6 +35,32 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
 
   bool _isConnecting = false;
   bool _connectFailed = false;
+
+  Future<void> _permissionCheck() async {
+    try {
+      // 브라우저 권한 상태 확인
+      final permissionStatus = await js_util.promiseToFuture(
+        js_util.callMethod(
+          js_util.getProperty(html.window, 'navigator').permissions,
+          'query',
+          [
+            js_util.jsify({"name": "bluetooth"})
+          ],
+        ),
+      );
+      final state = js_util.getProperty(permissionStatus, 'state');
+      print("BLE 권한 상태: $state");
+
+      if (state == 'denied') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("브라우저에서 블루투스 권한을 허용해야 연결할 수 있습니다.")),
+        );
+        return;
+      }
+    } catch (e) {
+      print("권한 확인 실패: $e");
+    }
+  }
 
   Future<void> _scanAndConnect(WorkoutModel workoutModel) async {
     setState(() {
@@ -119,8 +146,8 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final workoutModel = Provider.of<WorkoutModel>(context, listen: false); // 상태 접근
-      // 모델 초기화나 데이터 세팅
+      final workoutModel = Provider.of<WorkoutModel>(context, listen: false); //
+      _permissionCheck();
       _scanAndConnect(workoutModel);
     });
 
@@ -152,7 +179,7 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              SizedBox(height: screenHeight * 0.08),
+              SizedBox(height: screenHeight * 0.04),
               Card(
                 elevation: 4,
                 margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -180,7 +207,7 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
                   ),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.08),
+              SizedBox(height: screenHeight * 0.04),
               if (_connectFailed == true)
                 RoundButton(
                   margin: EdgeInsets.fromLTRB(50, 36, 50, 0),
