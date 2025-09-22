@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
   final String baseUrl = 'https://vincerebiohealth.kr/root'; // 운영
   dynamic header = {'Content-Type': 'application/json'};
-  //final String baseUrl = 'http://127.0.0.1:8080'; //root'; // 로컬
+  // final String baseUrl = 'http://127.0.0.1:8080'; //root'; // 로컬
 
   // 2024-08-21 AJG web 통신용 추가
 

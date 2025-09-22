@@ -3,46 +3,57 @@ import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WorkoutModel extends ChangeNotifier {
-  List<String> _workouts = [];
-  int _currentWorkout = 0;
+  int _pulse_value = 0;
+  int get pulse_value => _pulse_value;
+  void set_pulse_value(int pulse_value) {
+    _pulse_value = pulse_value;
+  }
+
+  int _intense_value = 0;
+  int get intense_value => _intense_value;
+  void set_intense_value(int intense_value) {
+    _intense_value = intense_value;
+  }
+
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
-  WebBluetoothRemoteGATTCharacteristic? _notifyChar;
-  String _workoutMode = "passive";
-  String _workoutLevel = "mode2";
-
-  List<String> get workouts => _workouts;
-  String get workoutMode => _workoutMode;
-  String get workoutLevel => _workoutLevel;
-  int get currentWorkout => _currentWorkout;
   WebBluetoothRemoteGATTCharacteristic? get writeChar => _writeChar;
-  WebBluetoothRemoteGATTCharacteristic? get notifyChar => _notifyChar;
-
   void set_write_char(WebBluetoothRemoteGATTCharacteristic writeChar) {
     _writeChar = writeChar;
   }
 
+  WebBluetoothRemoteGATTCharacteristic? _notifyChar;
+  WebBluetoothRemoteGATTCharacteristic? get notifyChar => _notifyChar;
   void set_notify_char(WebBluetoothRemoteGATTCharacteristic notifyChar) {
     _notifyChar = notifyChar;
   }
 
+  String _workoutMode = "passive";
+  String get workoutMode => _workoutMode;
   void set_workout_mode(String workoutMode) {
     _workoutMode = workoutMode;
   }
 
+  String _workoutLevel = "mode2";
+  String get workoutLevel => _workoutLevel;
   void set_workout_level(double userGrade) {
     if (userGrade <= 3) {
       _workoutLevel = "mode1";
     } else {
       _workoutLevel = "mode2";
     }
+    print(_workoutLevel);
   }
 
+  List<String> _workouts = [];
+  List<String> get workouts => _workouts;
   void set_workouts(List<String> workouts) {
     _workouts = workouts;
     _currentWorkout = 0;
     notifyListeners();
   }
 
+  int _currentWorkout = 0;
+  int get currentWorkout => _currentWorkout;
   void set_current_workout(int idx) {
     _currentWorkout = idx;
     notifyListeners();

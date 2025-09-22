@@ -5,6 +5,7 @@ import 'dart:html' as html; // ← 추가
 import 'package:Vincere/component/custom_button.dart';
 import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/component/header.dart';
+import 'package:Vincere/page_workout/page_select_mode.dart';
 import 'package:Vincere/page_workout/page_select_muscle.dart';
 import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
@@ -119,7 +120,7 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
           );
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => SelectMuscle()),
+            MaterialPageRoute(builder: (context) => SelectMode()),
           );
           break;
         } catch (e) {

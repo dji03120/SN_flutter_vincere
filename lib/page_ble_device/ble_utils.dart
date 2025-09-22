@@ -12,6 +12,7 @@ final Map<String, String> ble_commands = {
   "intense_dw": "000B09000104",
   "pulse_up": "000B09000107",
   "pulse_dw": "000B09000108",
+  "reset": "000B090001F1",
   "info": "000B08010100",
   "battery": "000B08020100",
   // 1등급 - 15min 100hz 강도 1ma

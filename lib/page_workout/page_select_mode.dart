@@ -69,6 +69,7 @@ class SelectModeState extends State<SelectMode> {
                   text: 'Active Mode',
                   margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   onPressed: () {
+                    workoutModel.set_workout_level(userModel.gradeAvg);
                     workoutModel.set_workout_mode('active');
                     workoutModel.set_workouts([
                       '상완근',

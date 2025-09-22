@@ -22,13 +22,7 @@ class Component4State extends State<StatisticsPage> {
   ApiService apiService = ApiService();
 
   // 예시 운동 기록 데이터
-  final Map<DateTime, Map<String, dynamic>> _workoutList = {
-    DateTime.utc(2025, 9, 4): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
-    DateTime.utc(2025, 9, 5): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
-    DateTime.utc(2025, 9, 6): {'mode': '수동', 'intensity': '중간', 'duration': '90min'},
-    DateTime.utc(2025, 9, 15): {'mode': '능동', 'intensity': '높음', 'duration': '60min'},
-    DateTime.utc(2025, 9, 20): {'mode': '수동', 'intensity': '낮음', 'duration': '30min'},
-  };
+  final Map<DateTime, Map<String, dynamic>> _workoutList = {};
 
   @override
   void initState() {
@@ -101,6 +95,7 @@ class Component4State extends State<StatisticsPage> {
                         for (int i = 0; i < dateKeys.length; i++) {
                           DateTime dateKey = dateKeys[i];
                           DateTime ymdt = DateTime.utc(dateKey.year, dateKey.month, dateKey.day);
+                          if ((dateKey.hour == 0) & (dateKey.minute == 0)) continue;
                           if (ymdt == selectedDay) _selectedDayDatas.add(_workoutList[dateKey]!);
                         }
                         print(_selectedDayDatas);

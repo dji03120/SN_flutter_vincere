@@ -30,7 +30,7 @@ class Component3State extends State<WorkoutContent> {
   int pulse_value = 0;
   int workout_min = 20;
   int workout_sec = 0;
-  int mlt = 10;
+  int mlt = 100;
   int step_count = 0;
 
   @override
@@ -230,7 +230,6 @@ class Component3State extends State<WorkoutContent> {
                     text: '다음운동',
                     onPressed: () async {
                       if (workoutModel.writeChar != null) {
-                        await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
                       } else {
                         print("writeChar is null, BLE not connected");
                       }
@@ -245,6 +244,18 @@ class Component3State extends State<WorkoutContent> {
                           ),
                         );
                       } else {
+                        // reset ble value
+                        for (int i = 0; i < intense_value; i++) {
+                          await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+                          intense_value -= 1;
+                          setState(() {});
+                        }
+                        for (int i = 0; i < pulse_value; i++) {
+                          await sendCommand(workoutModel.writeChar, ble_commands["pulse_dw"]!);
+                          pulse_value -= 1;
+                          setState(() {});
+                        }
+                        await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
                         workoutModel.set_current_workout(nextWorkoutIdx);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
