@@ -38,7 +38,7 @@ class SelectModeState extends State<SelectMode> {
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.1),
-              TextLarge(text: '운동 모드를 선택해주세요.'),
+              TextCustom(text: '운동 모드를 선택해주세요.', fontSize: 20),
               SizedBox(height: screenHeight * 0.1),
               SizedBox(
                 height: 100,
@@ -48,13 +48,6 @@ class SelectModeState extends State<SelectMode> {
                   onPressed: () {
                     workoutModel.set_workout_level(userModel.gradeAvg);
                     workoutModel.set_workout_mode('passive');
-                    workoutModel.set_workouts([
-                      '상완근',
-                      '이두근',
-                      '삼각근',
-                      '대흉근',
-                      '대퇴근',
-                    ]);
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => SelectMuscle()),
@@ -71,13 +64,6 @@ class SelectModeState extends State<SelectMode> {
                   onPressed: () {
                     workoutModel.set_workout_level(userModel.gradeAvg);
                     workoutModel.set_workout_mode('active');
-                    workoutModel.set_workouts([
-                      '상완근',
-                      '이두근',
-                      '삼각근',
-                      '대흉근',
-                      '대퇴근',
-                    ]);
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => SelectMuscle()),

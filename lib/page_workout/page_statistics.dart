@@ -176,8 +176,9 @@ class Component4State extends State<StatisticsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 20),
-                                TextLarge(
+                                TextCustom(
                                   text: '${_selectedDay?.month}월 ${_selectedDay?.day}일',
+                                  fontSize: 20,
                                 ),
                                 SizedBox(height: screenHeight * 0.01),
                                 TextMedium(text: '모드 : ${exercise['mode']}'),

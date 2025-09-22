@@ -3,17 +3,87 @@ import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WorkoutModel extends ChangeNotifier {
-  int _pulse_value = 0;
-  int get pulse_value => _pulse_value;
-  void set_pulse_value(int pulse_value) {
-    _pulse_value = pulse_value;
+  // intensity : 1ma -> 16ma : 0.5ma = 1level
+  // ex 6 = 1ma + 6*0.5ma = 4ma
+  final Map<dynamic, dynamic> _muscle_setting_passive = {
+    'scenario1': {
+      1: {
+        'name': '강화모드',
+        '상완근': {'mode': '100hz', 'intensity': 6, 'duration': 3},
+        '삼각근': {'mode': '100hz', 'intensity': 2, 'duration': 3},
+        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 3}
+      },
+      2: {
+        'name': '건강모드',
+        '상완근': {'mode': '100hz', 'intensity': 6, 'duration': 5},
+        '삼각근': {'mode': '100hz', 'intensity': 2, 'duration': 5},
+        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 5}
+      },
+      3: {
+        'name': '예방모드',
+        '상완근': {'mode': '60hz', 'intensity': 5, 'duration': 6},
+        '삼각근': {'mode': '60hz', 'intensity': 2, 'duration': 6},
+        '대퇴근': {'mode': '60hz', 'intensity': 7, 'duration': 6}
+      },
+      4: {
+        'name': '관리모드',
+        '상완근': {'mode': '60hz', 'intensity': 5, 'duration': 5},
+        '삼각근': {'mode': '60hz', 'intensity': 2, 'duration': 5},
+        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 5}
+      },
+      5: {
+        'name': '집중모드',
+        '상완근': {'mode': '60hz', 'intensity': 4, 'duration': 6},
+        '삼각근': {'mode': '60hz', 'intensity': 1, 'duration': 6},
+        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 6}
+      },
+    },
+    'scenario2': {
+      1: {
+        'name': '강화모드',
+        '상완근': {'mode': '100hz', 'intensity': 9, 'duration': 10},
+        '삼각근': {'mode': '100hz', 'intensity': 9, 'duration': 10},
+        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10}
+      },
+      2: {
+        'name': '건강모드',
+        '상완근': {'mode': '100hz', 'intensity': 9, 'duration': 10},
+        '삼각근': {'mode': '100hz', 'intensity': 9, 'duration': 10},
+        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10}
+      },
+      3: {
+        'name': '예방모드',
+        '상완근': {'mode': '60hz', 'intensity': 8, 'duration': 10},
+        '삼각근': {'mode': '60hz', 'intensity': 9, 'duration': 10},
+        '대퇴근': {'mode': '60hz', 'intensity': 12, 'duration': 10}
+      },
+      4: {
+        'name': '관리모드',
+        '상완근': {'mode': '60hz', 'intensity': 7, 'duration': 10},
+        '삼각근': {'mode': '60hz', 'intensity': 8, 'duration': 10},
+        '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10}
+      },
+      5: {
+        'name': '집중모드',
+        '상완근': {'mode': '60hz', 'intensity': 7, 'duration': 10},
+        '삼각근': {'mode': '60hz', 'intensity': 7, 'duration': 10},
+        '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10}
+      },
+    }
+  };
+  Map<String, dynamic> get_workout_config(String muscle_name, int grade) {
+    String workout_name = _muscle_setting_passive['scenario1'][grade]['name'];
+    print(grade);
+    Map<String, dynamic> workout_config1 = _muscle_setting_passive['scenario1'][grade][muscle_name];
+    Map<String, dynamic> workout_config2 = _muscle_setting_passive['scenario2'][grade][muscle_name];
+    return {
+      'name': workout_name,
+      'scenario1': workout_config1,
+      'scenario2': workout_config2,
+    };
   }
 
   int _intense_value = 0;
-  int get intense_value => _intense_value;
-  void set_intense_value(int intense_value) {
-    _intense_value = intense_value;
-  }
 
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? get writeChar => _writeChar;
@@ -36,11 +106,13 @@ class WorkoutModel extends ChangeNotifier {
   String _workoutLevel = "mode2";
   String get workoutLevel => _workoutLevel;
   void set_workout_level(double userGrade) {
-    if (userGrade <= 3) {
-      _workoutLevel = "mode1";
+    int grade = userGrade.toInt();
+    if (grade <= 2) {
+      _workoutLevel = "mode1"; // 100hz
     } else {
-      _workoutLevel = "mode2";
+      _workoutLevel = "mode2"; // 60hz
     }
+
     print(_workoutLevel);
   }
 

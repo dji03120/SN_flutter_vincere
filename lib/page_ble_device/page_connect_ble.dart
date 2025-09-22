@@ -222,10 +222,10 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextLarge(text: "1. 장치의 전원을 켜주세요"),
+                    TextCustom(text: "1. 장치의 전원을 켜주세요", fontSize: 20),
                     SizedBox(height: screenHeight * 0.02),
-                    TextLarge(text: "2. 블루투스를 선택 하신 후에"),
-                    TextLarge(text: "     페어링을 눌러주세요"),
+                    TextCustom(text: "2. 블루투스를 선택 하신 후에", fontSize: 20),
+                    TextCustom(text: "     페어링을 눌러주세요", fontSize: 20),
                   ],
                 )
             ],

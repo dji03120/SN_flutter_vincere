@@ -61,7 +61,10 @@ class _LocationWidgetState extends State<TestGPS> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextLarge(text: _locationMessage),
+            TextCustom(
+              text: _locationMessage,
+              fontSize: 20,
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _getCurrentLocation,

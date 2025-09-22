@@ -25,6 +25,10 @@ class WorkoutPlanState extends State<WorkoutPlan> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
+    Map<String, dynamic> workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
+    print(workoutSetting);
+
     return Scaffold(
       appBar: const Header(),
       body: Container(
@@ -35,7 +39,10 @@ class WorkoutPlanState extends State<WorkoutPlan> {
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.08),
-              TextLarge(text: widget.explainText),
+              TextCustom(
+                text: widget.explainText,
+                fontSize: 20,
+              ),
               SizedBox(height: screenHeight * 0.08),
               // 운동 버튼 리스트
               Expanded(
@@ -62,7 +69,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                     ),
                     const TextSpan(text: ' 등급 ', style: TextStyle(fontSize: 22, color: Color(0xFF000000))),
                     TextSpan(
-                      text: workoutModel.workoutLevel == "mode1" ? "  (급성모드)" : "  (예방모드)",
+                      text: workoutSetting['name'],
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
                     ),
                   ],
@@ -79,7 +86,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                       userModel.userId,
                       {
                         "mode": workoutModel.workoutMode,
-                        "intensity": workoutModel.workoutLevel == "mode1" ? "급성모드" : "예방모드",
+                        "intensity": workoutSetting['name'],
                         "muscle": workoutModel.workouts[workoutModel.currentWorkout],
                       }, // intensity mode1 100hz, mode2 60hz
                     );

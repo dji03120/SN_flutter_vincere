@@ -27,11 +27,13 @@ class Component3State extends State<WorkoutContent> {
   late Future<void> _initializeVideoPlayerFuture;
   bool isWorkoutDone = false;
   int intense_value = 0;
-  int pulse_value = 0;
-  int workout_min = 20;
+  int workout_min = 10;
   int workout_sec = 0;
-  int mlt = 100;
   int step_count = 0;
+  int mlt = 100;
+
+  Map<String, dynamic> workoutSetting = {};
+  int scenario_idx = 1;
 
   @override
   void initState() {
@@ -46,24 +48,54 @@ class Component3State extends State<WorkoutContent> {
     _startProgress();
   }
 
-  void _startProgress() {
-    double step = 1 * mlt / workout_sec / 10; // 1%씩 증가
-    Duration interval = const Duration(milliseconds: 100); // 0.1초 간격
+  void _startProgress() async {
+    double step = 1 * mlt / workout_sec; // 1%씩 증가
+    Duration interval = const Duration(milliseconds: 1000); // 0.1초 간격
     ApiService apiService = ApiService();
     final userModel = Provider.of<UserModel>(context, listen: false);
+    final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
 
-    _timer = Timer.periodic(interval, (timer) {
+    String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
+    workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
+    print(workoutSetting);
+
+    for (int i = 0; i < workoutSetting['scenario1']['intensity']; i++) {
+      intense_value += 1;
+      await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!); // 다시시작
+    }
+
+    _timer = Timer.periodic(interval, (timer) async {
       if (_progress != 0) {
-        setState(() {
-          _progress -= step;
-          step_count += 1;
-          if (_progress <= 0) {
+        _progress -= step;
+        step_count += mlt;
+        print(step_count);
+        if (step_count > workoutSetting['scenario${scenario_idx}']['duration'] * 60) {
+          print(workoutSetting);
+          scenario_idx += 1;
+          try {
+            int intensity_prev = workoutSetting['scenario${scenario_idx - 1}']['intensity'];
+            int intensity_curr = workoutSetting['scenario${scenario_idx}']['intensity'];
+            if (intensity_curr > intensity_prev) {
+              for (int i = 0; i < intensity_curr - intensity_prev; i++) {
+                intense_value += 1;
+                await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
+              }
+            } else {
+              for (int i = 0; i < intensity_curr - intensity_prev; i++) {
+                intense_value -= 1;
+                await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+              }
+            }
+          } catch (e) {
             _progress = 0;
             isWorkoutDone = true;
           }
-        });
-
-        // DB update는 await 없이 Future 처리
+        }
+        if (_progress <= 0) {
+          _progress = 0;
+          isWorkoutDone = true;
+        }
+        // DB update는 await 없이 Future 처리 - 1분마다 갱신
         if (step_count % 600 == 599) {
           apiService.updateWorkoutEnd(userModel.userId).then((_) {
             print('DB update 완료');
@@ -71,6 +103,7 @@ class Component3State extends State<WorkoutContent> {
             print('DB update 실패: $e');
           });
         }
+        setState(() {});
       }
     });
   }
@@ -152,7 +185,7 @@ class Component3State extends State<WorkoutContent> {
       ),
       bottomSheet: Container(
         width: screenWidth,
-        height: screenHeight * 0.3,
+        height: screenHeight * 0.25,
         decoration: const BoxDecoration(
           color: Color.fromARGB(255, 111, 163, 27),
           borderRadius: BorderRadius.only(
@@ -182,49 +215,27 @@ class Component3State extends State<WorkoutContent> {
                         setState(() {});
                       }),
                       const SizedBox(width: 12), // 간격
-                      TextCustom(text: '$intense_value/10', color: Colors.white),
+                      TextCustom(text: '$intense_value/30', color: Colors.white),
                       const SizedBox(width: 12), // 간격
                       controlButton(Icons.add, () async {
                         await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
                         intense_value += 1;
-                        if (intense_value >= 10) intense_value = 10;
+                        if (intense_value >= 30) intense_value = 30;
                         setState(() {});
                       }),
                     ],
                   ),
                   SizedBox(height: screenHeight * 0.02),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const TextCustom(
-                        text: '빈도',
-                        color: Colors.white,
-                        fontSize: 24,
-                      ),
-                      const SizedBox(width: 30), // 간격
-                      controlButton(Icons.remove, () async {
-                        await sendCommand(workoutModel.writeChar, ble_commands["pulse_dw"]!);
-                        pulse_value -= 1;
-                        if (pulse_value <= 0) pulse_value = 0;
-                        setState(() {});
-                      }),
-                      const SizedBox(width: 12), // 간격
-                      TextCustom(text: '$pulse_value/10', color: Colors.white),
-                      const SizedBox(width: 12), // 간격
-                      controlButton(Icons.add, () async {
-                        await sendCommand(workoutModel.writeChar, ble_commands["pulse_up"]!);
-                        pulse_value += 1;
-                        if (intense_value >= 10) intense_value = 10;
-                        setState(() {});
-                      }),
-                    ],
-                  ),
                 ],
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const TextLarge(text: '운동이 종료되었습니다', color: Colors.white),
+                  const TextCustom(
+                    text: '운동이 종료되었습니다',
+                    color: Colors.white,
+                    fontSize: 20,
+                  ),
                   SizedBox(height: screenHeight * 0.04),
                   RoundButton(
                     text: '다음운동',
@@ -245,14 +256,11 @@ class Component3State extends State<WorkoutContent> {
                         );
                       } else {
                         // reset ble value
+                        int intense_value_copy = intense_value;
                         for (int i = 0; i < intense_value; i++) {
                           await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
-                          intense_value -= 1;
-                          setState(() {});
-                        }
-                        for (int i = 0; i < pulse_value; i++) {
-                          await sendCommand(workoutModel.writeChar, ble_commands["pulse_dw"]!);
-                          pulse_value -= 1;
+                          intense_value_copy -= 1;
+                          print('intense ${intense_value_copy}');
                           setState(() {});
                         }
                         await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);

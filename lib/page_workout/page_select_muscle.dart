@@ -21,10 +21,10 @@ class Component3State extends State<SelectMuscle> {
   // 체크박스 항목 목록
   final List<dynamic> workouts = [
     {'name': '상완근', 'service_type': '무료'},
-    {'name': '이두근', 'service_type': '무료'},
     {'name': '삼각근', 'service_type': '무료'},
-    {'name': '대흉근', 'service_type': '유료'},
-    {'name': '대퇴근', 'service_type': '유료'},
+    {'name': '대퇴근', 'service_type': '무료'},
+    {'name': '척추기립근', 'service_type': '유료'},
+    {'name': '대퇴이두근', 'service_type': '유료'},
   ];
 
   @override
@@ -48,10 +48,36 @@ class Component3State extends State<SelectMuscle> {
           color: Color(0xFFf5f4f9),
           child: Column(
             children: [
-              SizedBox(height: screenHeight * 0.08),
-              TextLarge(text: '운동을 수행 할 부위를 선택해주세요'),
-              SizedBox(height: screenHeight * 0.08),
+              SizedBox(height: screenHeight * 0.06),
+              TextCustom(text: '운동을 수행 할 부위를 선택해주세요', fontSize: 20),
+
+              SizedBox(height: screenHeight * 0.03),
               // 체크 버튼들
+              RichText(
+                text: TextSpan(
+                  children: [
+                    if (workoutModel.workoutMode == "passive")
+                      TextSpan(
+                        text: workoutModel.workoutMode,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.lightBlue,
+                        ),
+                      ),
+                    if (workoutModel.workoutMode == "active")
+                      TextSpan(
+                        text: workoutModel.workoutMode,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.red,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.08),
               Expanded(
                 child: ListView.builder(
                   padding: EdgeInsets.zero,

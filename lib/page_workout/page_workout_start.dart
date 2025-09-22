@@ -46,6 +46,11 @@ class Component3State extends State<WorkoutStart> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final workoutModel = Provider.of<WorkoutModel>(context);
+    final userModel = Provider.of<UserModel>(context);
+
+    String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
+    Map<String, dynamic> workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
+
     return Scaffold(
       appBar: const Header(),
       drawer: CustomDrawer(isLogin: true),
@@ -57,10 +62,10 @@ class Component3State extends State<WorkoutStart> {
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.04),
-              TextLarge(text: '{사진|동영상}과 같이 장치를 부착한 뒤,\n 시작버튼을 눌러주세요'),
+              TextCustom(text: '{사진|동영상}과 같이 장치를 부착한 뒤,\n 시작버튼을 눌러주세요', fontSize: 20),
               SizedBox(height: screenHeight * 0.03),
               Container(
-                margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                 width: double.infinity,
                 child: _videoController.value.isInitialized
                     ? Stack(
@@ -104,7 +109,7 @@ class Component3State extends State<WorkoutStart> {
       bottomSheet: SafeArea(
         child: Container(
           width: screenWidth,
-          height: screenHeight * 0.3,
+          height: screenHeight * 0.25,
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 111, 163, 27),
             borderRadius: BorderRadius.only(
@@ -114,13 +119,13 @@ class Component3State extends State<WorkoutStart> {
           ),
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextLarge(text: '남은 운동 개수 : n ', color: Colors.white),
-                  TextLarge(text: '남은 운동 시간 : n Min', color: Colors.white),
-                  SizedBox(height: screenHeight * 0.04),
+                  TextCustom(text: '남은 운동 개수 : n ', color: Colors.white, fontSize: 18),
+                  TextCustom(text: '남은 운동 시간 : n Min', color: Colors.white, fontSize: 18),
+                  SizedBox(height: screenHeight * 0.02),
                   RoundButton(
                     text: "운동시작",
                     onPressed: () async {
