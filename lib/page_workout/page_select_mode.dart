@@ -1,3 +1,4 @@
+import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,7 @@ class SelectModeState extends State<SelectMode> {
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: const Header(),
+      drawer: CustomDrawer(isLogin: true),
       body: Container(
         width: double.infinity,
         child: Container(

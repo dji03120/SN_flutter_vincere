@@ -13,14 +13,14 @@ import 'dart:async';
 import 'package:video_player/video_player.dart';
 import 'package:Vincere/component/custom_text.dart'; // 추가
 
-class WorkoutContent extends StatefulWidget {
-  const WorkoutContent({super.key});
+class WorkoutContentActive extends StatefulWidget {
+  const WorkoutContentActive({super.key});
 
   @override
-  State<WorkoutContent> createState() => Component3State();
+  State<WorkoutContentActive> createState() => Component3State();
 }
 
-class Component3State extends State<WorkoutContent> {
+class Component3State extends State<WorkoutContentActive> {
   double _progress = 1;
   Timer? _timer;
   late VideoPlayerController _videoController; // 동영상 컨트롤러
@@ -30,7 +30,8 @@ class Component3State extends State<WorkoutContent> {
   int workout_min = 10;
   int workout_sec = 0;
   int step_count = 0;
-  int mlt = 100;
+  int mlt = 1;
+  String image_url = '';
 
   Map<String, dynamic> workoutSetting = {};
   int scenario_idx = 1;
@@ -48,6 +49,18 @@ class Component3State extends State<WorkoutContent> {
     _startProgress();
   }
 
+  // --- Divider ---
+  Widget _buildDivider(BuildContext context, {bool isBold = false}) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.88,
+      child: Divider(
+        height: 1,
+        color: const Color(0xFFDDDDDD),
+        thickness: isBold ? 2 : 1,
+      ),
+    );
+  }
+
   void _startProgress() async {
     double step = 1 * mlt / workout_sec; // 1%씩 증가
     Duration interval = const Duration(milliseconds: 1000); // 0.1초 간격
@@ -57,7 +70,8 @@ class Component3State extends State<WorkoutContent> {
 
     String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
     workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
-    print(workoutSetting);
+    image_url = workoutSetting['scenario1']['asset_url'];
+    print('$workoutSetting, $image_url');
 
     for (int i = 0; i < workoutSetting['scenario1']['intensity']; i++) {
       intense_value += 1;
@@ -137,6 +151,7 @@ class Component3State extends State<WorkoutContent> {
     final screenHeight = MediaQuery.of(context).size.height;
     final workoutModel = Provider.of<WorkoutModel>(context);
     final userModel = Provider.of<UserModel>(context);
+    String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
 
     return Scaffold(
       appBar: const Header(),
@@ -149,35 +164,49 @@ class Component3State extends State<WorkoutContent> {
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.04),
-              TextCustom(text: '동작 A : example'),
-              SizedBox(height: screenHeight * 0.06),
-              Container(
-                margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                child: FutureBuilder(
-                  future: _initializeVideoPlayerFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return AspectRatio(
-                        aspectRatio: _videoController.value.aspectRatio,
-                        child: VideoPlayer(_videoController),
-                      );
-                    } else {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                  },
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  child: DonutProgress(
-                    progress: _progress,
-                    strokeWidth: 12,
-                    size: Size(screenWidth * 0.3, screenWidth * 0.3),
-                    centerText: "${(workout_min * _progress).toInt()}min",
+              TextCustom(text: '$currentWorkout $scenario_idx'),
+              SizedBox(height: screenHeight * 0.03),
+              Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    width: double.infinity,
+                    child: _videoController.value.isInitialized
+                        ? Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              AspectRatio(
+                                aspectRatio: _videoController.value.aspectRatio,
+                                child: VideoPlayer(_videoController),
+                              ),
+                              if (!_videoController.value.isPlaying)
+                                IconButton(
+                                  iconSize: 64,
+                                  color: Colors.white70,
+                                  icon: const Icon(Icons.play_circle),
+                                  onPressed: () {
+                                    setState(() {
+                                      _videoController.play();
+                                    });
+                                  },
+                                ),
+                            ],
+                          )
+                        : const Center(child: CircularProgressIndicator()),
                   ),
-                ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                      child: DonutProgress(
+                        progress: _progress,
+                        strokeWidth: 12,
+                        size: Size(screenWidth * 0.3, screenWidth * 0.3),
+                        centerText: "${(workout_min * _progress).toInt()}min",
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -185,7 +214,7 @@ class Component3State extends State<WorkoutContent> {
       ),
       bottomSheet: Container(
         width: screenWidth,
-        height: screenHeight * 0.25,
+        height: 330,
         decoration: const BoxDecoration(
           color: Color.fromARGB(255, 111, 163, 27),
           borderRadius: BorderRadius.only(
@@ -198,10 +227,11 @@ class Component3State extends State<WorkoutContent> {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: screenHeight * 0.02),
+                  SizedBox(height: 10),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      const SizedBox(width: 12), // 간격
                       const TextCustom(
                         text: '세기',
                         color: Colors.white,
@@ -225,7 +255,93 @@ class Component3State extends State<WorkoutContent> {
                       }),
                     ],
                   ),
-                  SizedBox(height: screenHeight * 0.02),
+                  SizedBox(height: 10),
+                  _buildDivider(context),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 12), // 간격
+                      const TextCustom(
+                        text: '시간',
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
+                      const SizedBox(width: 30), // 간격
+                      controlButton(Icons.remove, () async {
+                        await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+                        workout_min -= 1;
+                        if (intense_value <= 0) intense_value = 0;
+                        setState(() {});
+                      }),
+                      const SizedBox(width: 12), // 간격
+                      TextCustom(text: '$workout_min/10', color: Colors.white),
+                      const SizedBox(width: 12), // 간격
+                      controlButton(Icons.add, () async {
+                        await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
+                        workout_min += 1;
+                        if (intense_value >= 30) intense_value = 30;
+                        setState(() {});
+                      }),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  _buildDivider(context),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 12), // 간격
+                      const TextCustom(
+                        text: '모드',
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
+                      const SizedBox(width: 100), // 간격격
+                      TextCustom(text: '60hz', color: Colors.white),
+                    ],
+                  ),
+                  SizedBox(height: 30),
+                  RoundButton(
+                    text: '운동 스킵',
+                    onPressed: () async {
+                      if (workoutModel.writeChar != null) {
+                      } else {
+                        print("writeChar is null, BLE not connected");
+                      }
+                      int nextWorkoutIdx = workoutModel.currentWorkout + 1;
+                      if (nextWorkoutIdx >= workoutModel.workouts.length) {
+                        await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
+                        await apiService.updateWorkoutEnd(userModel.userId);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const StatisticsPage(),
+                          ),
+                        );
+                      } else {
+                        // reset ble value
+                        int intense_value_copy = intense_value;
+                        for (int i = 0; i < intense_value; i++) {
+                          await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+                          intense_value_copy -= 1;
+                          print('intense ${intense_value_copy}');
+                          setState(() {});
+                        }
+                        await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
+                        workoutModel.set_current_workout(nextWorkoutIdx);
+                        await apiService.updateWorkoutEnd(userModel.userId);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WorkoutPlan(
+                              explainText: '다음 운동을 진행하시려면\n 시작버튼을 눌러주세요',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ],
               )
             : Column(
@@ -236,7 +352,7 @@ class Component3State extends State<WorkoutContent> {
                     color: Colors.white,
                     fontSize: 20,
                   ),
-                  SizedBox(height: screenHeight * 0.04),
+                  SizedBox(height: 10),
                   RoundButton(
                     text: '다음운동',
                     onPressed: () async {

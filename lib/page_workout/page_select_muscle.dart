@@ -40,7 +40,7 @@ class Component3State extends State<SelectMuscle> {
 
     return Scaffold(
       appBar: const Header(),
-      drawer: CustomDrawer(isLogin: true),
+      //drawer: CustomDrawer(isLogin: true),
       body: Container(
         width: screenWidth,
         height: screenHeight,
@@ -90,9 +90,15 @@ class Component3State extends State<SelectMuscle> {
                         text: workout['name'],
                         margin: const EdgeInsets.fromLTRB(20, 0, 20, 15),
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('해당 서비스는 유료 모드 입니다. \n관리자에게 요청해주세요.')),
-                          );
+                          if (workoutModel.workoutMode == "active") {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('해당 서비스는 준비 중에 있습니다. \n관리자에게 요청해주세요.')),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('해당 서비스는 유료 모드 입니다. \n관리자에게 요청해주세요.')),
+                            );
+                          }
                         },
                         color: Colors.grey,
                       );

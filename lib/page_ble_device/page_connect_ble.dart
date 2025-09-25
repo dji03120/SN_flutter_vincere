@@ -113,6 +113,7 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
           }
           // get calendar device setting command
           await sendCommand(workoutModel.writeChar, "000C0E050100");
+          await sendCommand(workoutModel.writeChar, ble_commands['pause']!);
           print("connect complete");
           setState(() => _isConnecting = false);
           ScaffoldMessenger.of(context).showSnackBar(

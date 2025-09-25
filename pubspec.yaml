@@ -38,9 +38,11 @@ dependencies:
   # win32: ^3.1.4
   url_launcher: ^6.3.1
   html: ^0.15.0
+  flutter_radar_chart: ^0.2.1
   daum_postcode_search: ^0.0.2
   geolocator: ^14.0.1
   js: ^0.6.5
+  smooth_page_indicator: ^1.0.0  # 최신 버전으로 확인하세요
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +57,7 @@ flutter:
   assets:
     - images/
     - assets/images/
+    - assets/images/workout_elexir/
     - assets/videos/
 
   fonts:

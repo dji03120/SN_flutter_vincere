@@ -1,9 +1,11 @@
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/component/header.dart';
+import 'package:Vincere/component/radar_chart.dart';
 import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:Vincere/component/custom_text.dart';
 import 'dart:convert';
@@ -23,12 +25,19 @@ class Component4State extends State<StatisticsPage> {
 
   // 예시 운동 기록 데이터
   final Map<DateTime, Map<String, dynamic>> _workoutList = {};
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay; // 초기값
     _async_init();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose(); // 여기서 dispose 해야 합니다
+    super.dispose();
   }
 
   Future<void> _async_init() async {
@@ -67,24 +76,25 @@ class Component4State extends State<StatisticsPage> {
     return Scaffold(
       appBar: const Header(),
       drawer: CustomDrawer(isLogin: true),
-      body: Container(
-        width: double.infinity,
+      body: SingleChildScrollView(
         child: Container(
-          color: Color(0xFFf5f4f9),
-          child: Column(
-            children: [
-              SizedBox(height: screenHeight * 0.05),
-              Card(
-                elevation: 4,
-                margin: const EdgeInsets.fromLTRB(15, 0, 15, 20),
-                color: const Color(0xFFFFFFFF),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Container(
+          width: double.infinity,
+          child: Container(
+            color: Color(0xFFf5f4f9),
+            child: Column(
+              children: [
+                SizedBox(height: screenHeight * 0.05),
+                Card(
+                  elevation: 4,
+                  margin: const EdgeInsets.fromLTRB(15, 0, 15, 20),
+                  color: const Color(0xFFFFFFFF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Container(
                     padding: const EdgeInsets.all(20),
                     child: TableCalendar(
-                      rowHeight: 45,
+                      rowHeight: 40,
                       locale: 'ko_KR',
                       firstDay: DateTime.utc(2000, 1, 1),
                       lastDay: DateTime.utc(2100, 12, 31),
@@ -108,7 +118,7 @@ class Component4State extends State<StatisticsPage> {
                       headerStyle: const HeaderStyle(
                         formatButtonVisible: false,
                         titleCentered: true,
-                        headerPadding: EdgeInsets.symmetric(vertical: 12), // 헤더 아래 여백
+                        headerPadding: EdgeInsets.symmetric(vertical: 6), // 헤더 아래 여백
                       ),
                       daysOfWeekHeight: 30, // 요일 영역 높이
                       daysOfWeekStyle: const DaysOfWeekStyle(
@@ -152,8 +162,80 @@ class Component4State extends State<StatisticsPage> {
                           return null; // 기본 빌더로 렌더링
                         },
                       ),
-                    )),
-              ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.05),
+                Card(
+                  elevation: 4,
+                  margin: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+                  color: const Color(0xFFFFFFFF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 335,
+                        child: PageView(
+                          controller: _pageController,
+                          scrollDirection: Axis.horizontal,
+                          children: [
+                            Column(
+                              children: [
+                                SizedBox(height: 30),
+                                TextCustom(text: 'Intensity', fontSize: 22),
+                                SizedBox(height: 20),
+                                Container(
+                                  height: 250,
+                                  child: const RadarChartWidget(
+                                    features: ["상완근", "대퇴근", "삼각근"],
+                                    data: [
+                                      [4, 3, 5],
+                                      [2, 5, 4],
+                                    ],
+                                    colors: [Colors.orangeAccent, Colors.green],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                SizedBox(height: 30),
+                                TextCustom(text: 'Duration', fontSize: 22),
+                                SizedBox(height: 20),
+                                Container(
+                                  height: 250,
+                                  child: const RadarChartWidget(
+                                    features: ["상완근", "대퇴근", "삼각근"],
+                                    data: [
+                                      [3, 4, 2],
+                                      [4, 2, 5],
+                                    ],
+                                    colors: [Colors.blueAccent, Colors.redAccent],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SmoothPageIndicator(
+                        controller: _pageController,
+                        count: 2,
+                        effect: WormEffect(
+                          dotColor: Colors.grey.shade300,
+                          activeDotColor: Colors.orangeAccent,
+                          dotHeight: 10,
+                          dotWidth: 10,
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.05),
+                    ],
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.1),
+                /*
               Expanded(
                 child: ListView.builder(
                   itemCount: _selectedDayDatas.length,
@@ -195,7 +277,9 @@ class Component4State extends State<StatisticsPage> {
                   },
                 ),
               )
-            ],
+              */
+              ],
+            ),
           ),
         ),
       ),

@@ -2,7 +2,8 @@ import 'package:Vincere/component/custom_button.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/page_ble_device/ble_utils.dart';
-import 'package:Vincere/page_workout/page_workout_content.dart';
+import 'package:Vincere/page_workout/page_workout_content_active.dart';
+import 'package:Vincere/page_workout/page_workout_content_passive.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/progress_donut.dart';
@@ -47,9 +48,10 @@ class Component3State extends State<WorkoutStart> {
     final screenHeight = MediaQuery.of(context).size.height;
     final workoutModel = Provider.of<WorkoutModel>(context);
     final userModel = Provider.of<UserModel>(context);
-
     String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
-    Map<String, dynamic> workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
+    Map workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
+    String image_url = workoutSetting['scenario1']['asset_url'];
+    print('$workoutSetting, $image_url');
 
     return Scaffold(
       appBar: const Header(),
@@ -62,46 +64,61 @@ class Component3State extends State<WorkoutStart> {
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.04),
-              TextCustom(text: '{사진|동영상}과 같이 장치를 부착한 뒤,\n 시작버튼을 눌러주세요', fontSize: 20),
+              if (workoutModel.workoutMode == "active") TextCustom(text: '영상과 같이 장치를 부착한 뒤', fontSize: 20),
+              if (workoutModel.workoutMode == "passive") TextCustom(text: '사진과 같이 장치를 부착한 뒤', fontSize: 20),
+              TextCustom(text: '시작버튼을 눌러주세요', fontSize: 20),
               SizedBox(height: screenHeight * 0.03),
-              Container(
-                margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                width: double.infinity,
-                child: _videoController.value.isInitialized
-                    ? Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          AspectRatio(
-                            aspectRatio: _videoController.value.aspectRatio,
-                            child: VideoPlayer(_videoController),
-                          ),
-                          if (!_videoController.value.isPlaying)
-                            IconButton(
-                              iconSize: 64,
-                              color: Colors.white70,
-                              icon: const Icon(Icons.play_circle),
-                              onPressed: () {
-                                setState(() {
-                                  _videoController.play();
-                                });
-                              },
-                            ),
-                        ],
-                      )
-                    : const Center(child: CircularProgressIndicator()),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  child: DonutProgress(
-                    progress: 1,
-                    strokeWidth: 12,
-                    size: Size(screenWidth * 0.3, screenWidth * 0.3),
-                    centerText: "${(20 * 1).toInt()}min",
+              if (workoutModel.workoutMode == 'active')
+                Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+                      width: double.infinity,
+                      child: _videoController.value.isInitialized
+                          ? Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                AspectRatio(
+                                  aspectRatio: _videoController.value.aspectRatio,
+                                  child: VideoPlayer(_videoController),
+                                ),
+                                if (!_videoController.value.isPlaying)
+                                  IconButton(
+                                    iconSize: 64,
+                                    color: Colors.white70,
+                                    icon: const Icon(Icons.play_circle),
+                                    onPressed: () {
+                                      setState(() {
+                                        _videoController.play();
+                                      });
+                                    },
+                                  ),
+                              ],
+                            )
+                          : const Center(child: CircularProgressIndicator()),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                        child: DonutProgress(
+                          progress: 1,
+                          strokeWidth: 12,
+                          size: Size(screenWidth * 0.3, screenWidth * 0.3),
+                          centerText: "${(10 * 1).toInt()}min",
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              if (workoutModel.workoutMode == 'passive')
+                Container(
+                  height: screenHeight * 0.45,
+                  child: Image.asset(
+                    image_url,
+                    fit: BoxFit.contain,
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -136,7 +153,12 @@ class Component3State extends State<WorkoutStart> {
                         print("writeChar is null, BLE not connected");
                       }
                       // 운동 페이지로 이동
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const WorkoutContent()));
+                      if (workoutModel.workoutMode == 'passive') {
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const WorkoutContentPassive()));
+                      }
+                      if (workoutModel.workoutMode == 'active') {
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const WorkoutContentActive()));
+                      }
                     },
                   ),
                 ],

@@ -9,65 +9,65 @@ class WorkoutModel extends ChangeNotifier {
     'scenario1': {
       1: {
         'name': '강화모드',
-        '상완근': {'mode': '100hz', 'intensity': 6, 'duration': 3},
-        '삼각근': {'mode': '100hz', 'intensity': 2, 'duration': 3},
-        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 3}
+        '상완근': {'mode': '100hz', 'intensity': 6, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '100hz', 'intensity': 2, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
       2: {
         'name': '건강모드',
-        '상완근': {'mode': '100hz', 'intensity': 6, 'duration': 5},
-        '삼각근': {'mode': '100hz', 'intensity': 2, 'duration': 5},
-        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 5}
+        '상완근': {'mode': '100hz', 'intensity': 6, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '100hz', 'intensity': 2, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
       3: {
         'name': '예방모드',
-        '상완근': {'mode': '60hz', 'intensity': 5, 'duration': 6},
-        '삼각근': {'mode': '60hz', 'intensity': 2, 'duration': 6},
-        '대퇴근': {'mode': '60hz', 'intensity': 7, 'duration': 6}
+        '상완근': {'mode': '60hz', 'intensity': 5, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '60hz', 'intensity': 2, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '60hz', 'intensity': 7, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
       4: {
         'name': '관리모드',
-        '상완근': {'mode': '60hz', 'intensity': 5, 'duration': 5},
-        '삼각근': {'mode': '60hz', 'intensity': 2, 'duration': 5},
-        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 5}
+        '상완근': {'mode': '60hz', 'intensity': 5, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '60hz', 'intensity': 2, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
       5: {
         'name': '집중모드',
-        '상완근': {'mode': '60hz', 'intensity': 4, 'duration': 6},
-        '삼각근': {'mode': '60hz', 'intensity': 1, 'duration': 6},
-        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 6}
+        '상완근': {'mode': '60hz', 'intensity': 4, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '60hz', 'intensity': 1, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
     },
     'scenario2': {
       1: {
         'name': '강화모드',
-        '상완근': {'mode': '100hz', 'intensity': 9, 'duration': 10},
-        '삼각근': {'mode': '100hz', 'intensity': 9, 'duration': 10},
-        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10}
+        '상완근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
       2: {
         'name': '건강모드',
-        '상완근': {'mode': '100hz', 'intensity': 9, 'duration': 10},
-        '삼각근': {'mode': '100hz', 'intensity': 9, 'duration': 10},
-        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10}
+        '상완근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
       3: {
         'name': '예방모드',
-        '상완근': {'mode': '60hz', 'intensity': 8, 'duration': 10},
-        '삼각근': {'mode': '60hz', 'intensity': 9, 'duration': 10},
-        '대퇴근': {'mode': '60hz', 'intensity': 12, 'duration': 10}
+        '상완근': {'mode': '60hz', 'intensity': 8, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '60hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '60hz', 'intensity': 12, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
       4: {
         'name': '관리모드',
-        '상완근': {'mode': '60hz', 'intensity': 7, 'duration': 10},
-        '삼각근': {'mode': '60hz', 'intensity': 8, 'duration': 10},
-        '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10}
+        '상완근': {'mode': '60hz', 'intensity': 7, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '60hz', 'intensity': 8, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
       },
       5: {
         'name': '집중모드',
-        '상완근': {'mode': '60hz', 'intensity': 7, 'duration': 10},
-        '삼각근': {'mode': '60hz', 'intensity': 7, 'duration': 10},
-        '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10}
+        '상완근': {'mode': '60hz', 'intensity': 7, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
+        '삼각근': {'mode': '60hz', 'intensity': 7, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
+        '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
       },
     }
   };
@@ -82,8 +82,6 @@ class WorkoutModel extends ChangeNotifier {
       'scenario2': workout_config2,
     };
   }
-
-  int _intense_value = 0;
 
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? get writeChar => _writeChar;
