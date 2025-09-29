@@ -17,6 +17,25 @@ class WorkoutPlan extends StatefulWidget {
 }
 
 class WorkoutPlanState extends State<WorkoutPlan> {
+  final ScrollController _scrollController = ScrollController();
+  void _scrollToIndex(int index) {
+    final position = index * 85.0; // 아이템의 높이를 고려 (정확하게 계산 필요)
+    _scrollController.animateTo(
+      position,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToIndex(Provider.of<WorkoutModel>(context, listen: false).currentWorkout);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     ApiService apiService = ApiService();
@@ -25,9 +44,8 @@ class WorkoutPlanState extends State<WorkoutPlan> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
+    String currentWorkout = workoutModel.workoutPlan[workoutModel.currentWorkout];
     Map<String, dynamic> workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
-    print(workoutSetting);
 
     return Scaffold(
       appBar: const Header(),
@@ -43,22 +61,36 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                 text: widget.explainText,
                 fontSize: 20,
               ),
-              SizedBox(height: screenHeight * 0.08),
+              SizedBox(height: screenHeight * 0.06),
               // 운동 버튼 리스트
               Expanded(
                 child: ListView(
-                  children: workoutModel.workouts.asMap().entries.map((entry) {
+                  controller: _scrollController,
+                  children: workoutModel.workoutPlan.asMap().entries.map((entry) {
                     int idx = entry.key;
                     var exercise = entry.value;
-                    return RoundButton(
-                      text: '${idx + 1}. $exercise',
-                      margin: EdgeInsets.fromLTRB(20, 0, 20, 15),
-                      onPressed: () {},
-                      color: (workoutModel.currentWorkout != idx) ? Colors.white : Color(0xFFB3E5FC),
+                    return Container(
+                      height: 70,
+                      margin: EdgeInsets.fromLTRB(30, 0, 30, 15),
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          elevation: 6, // ✅ 그림자 높이
+                          shadowColor: Colors.black.withOpacity(1),
+                          backgroundColor: (workoutModel.currentWorkout != idx) ? Colors.white : Color(0xFFB3E5FC),
+                          foregroundColor: Colors.black, // 글자 검정
+                          textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20), // round 수치
+                          ),
+                        ),
+                        child: Text('${idx + 1}. $exercise'),
+                      ),
                     );
                   }).toList(),
                 ),
               ),
+              SizedBox(height: screenHeight * 0.03),
               const Text('추천 운동 강도', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
               RichText(
                 text: TextSpan(
@@ -76,7 +108,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                 ),
               ),
 
-              SizedBox(height: screenHeight * 0.04),
+              SizedBox(height: screenHeight * 0.03),
               SizedBox(
                 width: screenWidth * 0.75,
                 child: RoundButton(
@@ -87,9 +119,14 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                       {
                         "mode": workoutModel.workoutMode,
                         "intensity": workoutSetting['name'],
-                        "muscle": workoutModel.workouts[workoutModel.currentWorkout],
+                        "muscle": workoutModel.workoutPlan[workoutModel.currentWorkout],
                       }, // intensity mode1 100hz, mode2 60hz
                     );
+                    await apiService.updateWorkoutEnd(userModel.userId).then((_) {
+                      print('DB update 완료');
+                    }).catchError((e) {
+                      print('DB update 실패: $e');
+                    });
 
                     // set mode intensity
                     print(workoutModel.workoutLevel);
@@ -103,7 +140,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                   borderRadius: 10,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.1),
+              SizedBox(height: screenHeight * 0.07),
             ],
           ),
         ),

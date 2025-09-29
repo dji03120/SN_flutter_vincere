@@ -19,7 +19,6 @@ class StatisticsPage extends StatefulWidget {
 
 class Component4State extends State<StatisticsPage> {
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay; // 선택된 날짜
   List<Map<String, dynamic>> _selectedDayDatas = []; // 선택된 날짜
   ApiService apiService = ApiService();
 
@@ -30,7 +29,6 @@ class Component4State extends State<StatisticsPage> {
   @override
   void initState() {
     super.initState();
-    _selectedDay = _focusedDay; // 초기값
     _async_init();
   }
 
@@ -110,7 +108,6 @@ class Component4State extends State<StatisticsPage> {
                         }
                         print(_selectedDayDatas);
                         setState(() {
-                          _selectedDay = selectedDay;
                           _focusedDay = focusedDay;
                         });
                       },
@@ -190,33 +187,31 @@ class Component4State extends State<StatisticsPage> {
                                   height: 250,
                                   child: const RadarChartWidget(
                                     features: ["상완근", "대퇴근", "삼각근"],
+                                    colors: [Colors.orangeAccent, Colors.green],
                                     data: [
                                       [4, 3, 5],
                                       [2, 5, 4],
                                     ],
-                                    colors: [Colors.orangeAccent, Colors.green],
                                   ),
                                 ),
                               ],
                             ),
-                            Column(
-                              children: [
-                                SizedBox(height: 30),
-                                TextCustom(text: 'Duration', fontSize: 22),
-                                SizedBox(height: 20),
-                                Container(
-                                  height: 250,
-                                  child: const RadarChartWidget(
-                                    features: ["상완근", "대퇴근", "삼각근"],
-                                    data: [
-                                      [3, 4, 2],
-                                      [4, 2, 5],
-                                    ],
-                                    colors: [Colors.blueAccent, Colors.redAccent],
-                                  ),
+                            Column(children: [
+                              SizedBox(height: 30),
+                              TextCustom(text: 'Duration', fontSize: 22),
+                              SizedBox(height: 20),
+                              Container(
+                                height: 250,
+                                child: const RadarChartWidget(
+                                  features: ["상완근", "대퇴근", "삼각근"],
+                                  colors: [Colors.blueAccent, Colors.redAccent],
+                                  data: [
+                                    [3, 4, 2],
+                                    [4, 2, 5]
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ]),
                           ],
                         ),
                       ),
@@ -235,49 +230,6 @@ class Component4State extends State<StatisticsPage> {
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.1),
-                /*
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _selectedDayDatas.length,
-                  itemBuilder: (context, index) {
-                    final exercise = _selectedDayDatas[index];
-                    return SizedBox(
-                      width: double.infinity,
-                      child: MouseRegion(
-                        child: Card(
-                          elevation: 4,
-                          margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                          color: const Color(0xFFFFFFFF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Container(
-                            padding: EdgeInsets.fromLTRB(24, 4, 24, 4),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 20),
-                                TextCustom(
-                                  text: '${_selectedDay?.month}월 ${_selectedDay?.day}일',
-                                  fontSize: 20,
-                                ),
-                                SizedBox(height: screenHeight * 0.01),
-                                TextMedium(text: '모드 : ${exercise['mode']}'),
-                                TextMedium(text: '근육 : ${exercise['muscle']}'),
-                                TextMedium(text: '강도 : ${exercise['intensity']}'),
-                                TextMedium(text: '시간 : ${exercise['duration']}'),
-                                const SizedBox(height: 20),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              )
-              */
               ],
             ),
           ),

@@ -125,6 +125,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       final userModel = Provider.of<UserModel>(context, listen: false); // 상태 접근
       final workoutModel = Provider.of<WorkoutModel>(context, listen: false); // 상태 접근
       userModel.set_user_id(userId!);
+      await sendCommand(workoutModel.writeChar, ble_commands["mode2"]!);
       await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
 
       if (_isLogIn) {
@@ -133,6 +134,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         await _getUserHlthInfo();
         await _getMuscleAgeList();
         await _alertLastMstmtDte();
+
+        userModel.set_user_info(userData!);
 
         double stdWeight = 0; // 기본값 설정
         final msmtValue = userHlthData
@@ -218,7 +221,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       if (result.containsKey('listResultMap')) {
         setState(() {
           userHlthData = List<Map<String, dynamic>>.from(result["listResultMap"]);
-          print("_getUserHlthInfo의 userHlthData 확인중 !!!!!! $userHlthData");
+          //print("_getUserHlthInfo의 userHlthData 확인중 !!!!!! $userHlthData");
+          print("_getUserHlthInfo의 userHlthData 확인중 !!!!!!");
 
           // 근육량 계산
           var msmt002Value = double.parse(userHlthData.firstWhere(
@@ -365,9 +369,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
               dynamic itemValue = userGradeData[i]['GRADE'];
 
               print("처리중인 항목 - CD: $itemCd, Value: $itemValue (${itemValue.runtimeType})");
-
-              print("itemCd 확인중 : $itemCd");
-              print("itemValue 확인중 : $itemValue");
 
               if (itemValue != null) {
                 switch (itemCd) {

@@ -1,5 +1,4 @@
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/component/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
@@ -37,6 +36,7 @@ class Component3State extends State<SelectMuscle> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final workoutModel = Provider.of<WorkoutModel>(context); // 상태 접근
+    final userModel = Provider.of<UserModel>(context); // 상태 접근
 
     return Scaffold(
       appBar: const Header(),
@@ -44,99 +44,118 @@ class Component3State extends State<SelectMuscle> {
       body: Container(
         width: screenWidth,
         height: screenHeight,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF5F4F9), Color(0xFFE0E0F0)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Container(
           color: Color(0xFFf5f4f9),
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.06),
-              TextCustom(text: '운동을 수행 할 부위를 선택해주세요', fontSize: 20),
-
-              SizedBox(height: screenHeight * 0.03),
-              // 체크 버튼들
-              RichText(
-                text: TextSpan(
-                  children: [
-                    if (workoutModel.workoutMode == "passive")
-                      TextSpan(
-                        text: workoutModel.workoutMode,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.lightBlue,
-                        ),
-                      ),
-                    if (workoutModel.workoutMode == "active")
-                      TextSpan(
-                        text: workoutModel.workoutMode,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.red,
-                        ),
-                      ),
-                  ],
+              Chip(
+                label: TextCustom(text: workoutModel.workoutMode == "active" ? "Active Mode" : "Passive Mode", color: Colors.white, fontSize: 16),
+                backgroundColor: workoutModel.workoutMode == "active" ? Colors.deepOrangeAccent : Colors.lightBlue,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10), // ← 원하는 값으로 조절 가능 (예: 20~30)
                 ),
               ),
-              SizedBox(height: screenHeight * 0.08),
+              SizedBox(height: screenHeight * 0.015),
+              TextCustom(text: '운동 부위를 선택해주세요', fontSize: 20),
+
+              // 체크 버튼들
+              SizedBox(height: screenHeight * 0.05),
+
               Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: workouts.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
-                    final workout = workouts[index];
+                    var workout = workouts[index];
                     bool isDisabled = workout['service_type'] == '유료';
-                    if (isDisabled) {
-                      return RoundButton(
-                        text: workout['name'],
-                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 15),
-                        onPressed: () {
-                          if (workoutModel.workoutMode == "active") {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('해당 서비스는 준비 중에 있습니다. \n관리자에게 요청해주세요.')),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('해당 서비스는 유료 모드 입니다. \n관리자에게 요청해주세요.')),
-                            );
-                          }
-                        },
-                        color: Colors.grey,
-                      );
-                    } else {
-                      return RoundCheckButton(
-                        text: workout['name'],
-                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                        onChanged: isDisabled
-                            ? null
-                            : (bool isChecked) {
-                                print(workout);
-                                setState(() {
-                                  if (isChecked) {
-                                    selectedWorkouts.add(workout['name']);
-                                  } else {
-                                    selectedWorkouts.remove(workout['name']);
-                                  }
-                                });
-                              },
-                      );
+                    if (userModel.userInfo['authCd'].contains('PAID')) {
+                      isDisabled = false;
                     }
+                    final isSelected = selectedWorkouts.contains(workout['name']);
+
+                    return GestureDetector(
+                      onTap: () {
+                        if (isDisabled) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('해당 서비스는 유료입니다.\n관리자에게 요청해주세요.')),
+                          );
+                        } else {
+                          setState(() {
+                            if (isSelected) {
+                              selectedWorkouts.remove(workout['name']);
+                            } else {
+                              selectedWorkouts.add(workout['name']!);
+                            }
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                        decoration: BoxDecoration(
+                          color: isDisabled
+                              ? Colors.grey.shade300
+                              : isSelected
+                                  ? Colors.lightGreen[100]
+                                  : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              workout['name']!,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: isDisabled ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            Chip(
+                              label: Text(
+                                workout['service_type']!,
+                                style: TextStyle(
+                                  color: isDisabled ? Colors.white : Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              backgroundColor: workout['service_type'] == '유료' ? Colors.orangeAccent : Color(0xFF4CAF50),
+                            )
+                          ],
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
+
+              SizedBox(height: screenHeight * 0.03),
               SizedBox(
                 width: screenWidth / 4 * 3,
                 child: RoundButton(
                   text: '운동시작',
                   onPressed: () {
                     // 선택된 항목 확인 가능
-                    workoutModel.set_workouts(selectedWorkouts);
+                    workoutModel.set_workout_plan(selectedWorkouts);
                     workoutModel.set_current_workout(0);
                     if (selectedWorkouts.length != 0) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => WorkoutPlan(
-                            explainText: '운동 계획이 설정되었습니다.\n준비가 되셨다면 시작버튼을 눌러주세요',
+                            explainText: '운동 계획이 설정되었습니다.',
                           ),
                         ),
                       );
@@ -149,7 +168,7 @@ class Component3State extends State<SelectMuscle> {
                   borderRadius: 10,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.03),
+              SizedBox(height: screenHeight * 0.05),
             ],
           ),
         ),

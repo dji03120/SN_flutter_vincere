@@ -31,9 +31,17 @@ if 0:
     })
     print(res.content)
 
-if 1:
+if 0:
     res = requests.post(f"{url}/app/updateWorkoutEndTime.do",json={
         "user_id" : "1"
+    })
+    print(res.content)
+    
+    
+if 1:
+    res = requests.post(f"{url}/app/updateWorkout.do",json={
+        "user_id" : "tester",
+        "meta_data": {"test":1234}
     })
     print(res.content)
     

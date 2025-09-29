@@ -277,27 +277,17 @@ class FoodRow extends StatelessWidget {
             const SizedBox(width: 16),
 
             // ● 원형 색상 아이콘
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            ),
+            Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
 
             const SizedBox(width: 10),
 
             // 음식 이름
-            Text(
-              name,
-              style: const TextStyle(fontSize: 16, color: Color(0xFF000000), fontWeight: FontWeight.w500),
-            ),
+            Text(name, style: const TextStyle(fontSize: 16, color: Color(0xFF000000), fontWeight: FontWeight.w500)),
 
             const Spacer(),
 
             // "총"
-            const Text(
-              '총',
-              style: TextStyle(fontSize: 14, color: Color(0xFF555555)),
-            ),
+            const Text('총', style: TextStyle(fontSize: 14, color: Color(0xFF555555))),
 
             const SizedBox(width: 10),
 
@@ -310,10 +300,7 @@ class FoodRow extends StatelessWidget {
             const SizedBox(width: 10),
 
             // kcal 단위
-            const Text(
-              'kcal',
-              style: TextStyle(fontSize: 14, color: Color(0xFF555555)),
-            ),
+            const Text('kcal', style: TextStyle(fontSize: 14, color: Color(0xFF555555))),
 
             const SizedBox(width: 5),
 
@@ -742,5 +729,28 @@ Widget _buildHealthInfo(String label, List<Map<String, dynamic>> data, String co
           style: TextStyle(fontSize: 12)),
       Text(unit),
     ],
+  );
+}
+
+Widget buildDivider(BuildContext context, {bool isBold = false}) {
+  return SizedBox(
+    width: MediaQuery.of(context).size.width * 0.88,
+    child: Divider(
+      height: 1,
+      color: const Color(0xFFDDDDDD),
+      thickness: isBold ? 2 : 1,
+    ),
+  );
+}
+
+// --- Dashed Divider ---
+Widget buildDashedDivider(BuildContext context) {
+  return Container(
+    width: MediaQuery.of(context).size.width * 0.88,
+    padding: const EdgeInsets.only(left: 70),
+    child: CustomPaint(
+      painter: DashedLinePainter(color: const Color(0xFFDEDEDE)),
+      size: const Size(double.infinity, 0),
+    ),
   );
 }

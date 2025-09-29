@@ -48,7 +48,7 @@ class Component3State extends State<WorkoutStart> {
     final screenHeight = MediaQuery.of(context).size.height;
     final workoutModel = Provider.of<WorkoutModel>(context);
     final userModel = Provider.of<UserModel>(context);
-    String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
+    String currentWorkout = workoutModel.workoutPlan[workoutModel.currentWorkout];
     Map workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
     String image_url = workoutSetting['scenario1']['asset_url'];
     print('$workoutSetting, $image_url');
@@ -64,10 +64,9 @@ class Component3State extends State<WorkoutStart> {
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.04),
-              if (workoutModel.workoutMode == "active") TextCustom(text: '영상과 같이 장치를 부착한 뒤', fontSize: 20),
-              if (workoutModel.workoutMode == "passive") TextCustom(text: '사진과 같이 장치를 부착한 뒤', fontSize: 20),
-              TextCustom(text: '시작버튼을 눌러주세요', fontSize: 20),
-              SizedBox(height: screenHeight * 0.03),
+              if (workoutModel.workoutMode == "active") const TextCustom(text: '영상과 같이 장치를 부착해주세요', fontSize: 20),
+              if (workoutModel.workoutMode == "passive") const TextCustom(text: '사진과 같이 장치를 부착해주세요', fontSize: 20),
+              SizedBox(height: screenHeight * 0.06),
               if (workoutModel.workoutMode == 'active')
                 Column(
                   children: [
@@ -103,7 +102,7 @@ class Component3State extends State<WorkoutStart> {
                         margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
                         child: DonutProgress(
                           progress: 1,
-                          strokeWidth: 12,
+                          strokeWidth: 10,
                           size: Size(screenWidth * 0.3, screenWidth * 0.3),
                           centerText: "${(10 * 1).toInt()}min",
                         ),
@@ -140,9 +139,8 @@ class Component3State extends State<WorkoutStart> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextCustom(text: '남은 운동 개수 : n ', color: Colors.white, fontSize: 18),
-                  TextCustom(text: '남은 운동 시간 : n Min', color: Colors.white, fontSize: 18),
-                  SizedBox(height: screenHeight * 0.02),
+                  //TextCustom(text: '남은 운동 개수 : ${workoutModel.currentWorkout} ', color: Colors.white, fontSize: 18),
+                  SizedBox(height: screenHeight * 0.04),
                   RoundButton(
                     text: "운동시작",
                     onPressed: () async {

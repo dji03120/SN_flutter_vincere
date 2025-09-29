@@ -78,6 +78,7 @@ class ApiService {
       headers: header,
       body: json.encode({'loginId': id, 'loginPass': password}),
     );
+    print(json.decode(response.body));
 
     return checkResponse(response);
   }
@@ -561,6 +562,20 @@ class ApiService {
         'user_id': user_id,
         'meta_data': meta_data,
         "device_id": "1",
+      }),
+    );
+    return checkResponse(response);
+  }
+
+  // 운동 이력 갱신
+  Future<Map<String, dynamic>> updateWorkout(String user_id, Map<String, dynamic> meta_data) async {
+    print("$user_id, $meta_data");
+    final response = await http.post(
+      Uri.parse('$baseUrl/app/updateWorkout.do'),
+      headers: header,
+      body: json.encode({
+        'user_id': user_id,
+        'meta_data': meta_data,
       }),
     );
     return checkResponse(response);

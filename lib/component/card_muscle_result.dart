@@ -1,4 +1,5 @@
 import 'package:Vincere/component/metric_chart_dialog.dart';
+import 'package:Vincere/screen/utils.dart';
 import 'package:flutter/material.dart';
 
 class MuscleAgeCard extends StatelessWidget {
@@ -35,18 +36,13 @@ class MuscleAgeCard extends StatelessWidget {
               Container(
                 alignment: Alignment.centerLeft,
                 width: MediaQuery.of(context).size.width * 0.6,
-                margin: EdgeInsets.only(
-                  left: MediaQuery.of(context).size.width * 0.06,
-                ),
+                margin: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.06),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       '내 근육 나이',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 10),
                     RichText(
@@ -54,18 +50,11 @@ class MuscleAgeCard extends StatelessWidget {
                         children: [
                           TextSpan(
                             text: muscleAge,
-                            style: const TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF007130),
-                            ),
+                            style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
                           ),
                           const TextSpan(
                             text: ' 세',
-                            style: TextStyle(
-                              fontSize: 22,
-                              color: Color(0xFF000000),
-                            ),
+                            style: TextStyle(fontSize: 22, color: Color(0xFF000000)),
                           ),
                         ],
                       ),
@@ -91,54 +80,24 @@ class MuscleAgeCard extends StatelessWidget {
 
           // ====== 메트릭 리스트 ======
           const SizedBox(height: 16),
-          _buildDivider(context, isBold: true),
-          _buildMetricRow(
-              context, '신체조성', '신체질량지수(BMI)', msmt003Grade, true, 'MSMT_003'),
-          _buildDashedDivider(context),
-          _buildMetricRow(
-              context, '', '체지방률(%)', msmt008Grade, true, 'MSMT_008'),
-          _buildDivider(context),
-          _buildMetricRow(
-              context, '신체기능', '악력(kg)', msmt011Grade, false, 'MSMT_011'),
-          _buildDashedDivider(context),
-          _buildMetricRow(
-              context, '', '걷기(m/sec)', msmt012Grade, false, 'MSMT_012'),
-          _buildDashedDivider(context),
-          _buildMetricRow(
-              context, '', '앉았다 일어나기(횟수)', msmt013Grade, true, 'MSMT_013'),
-          _buildDivider(context, isBold: true),
+          buildDivider(context, isBold: true),
+          _buildMetricRow(context, '신체조성', '신체질량지수(BMI)', msmt003Grade, true, 'MSMT_003'),
+          buildDashedDivider(context),
+          _buildMetricRow(context, '', '체지방률(%)', msmt008Grade, true, 'MSMT_008'),
+          buildDivider(context),
+          _buildMetricRow(context, '신체기능', '악력(kg)', msmt011Grade, false, 'MSMT_011'),
+          buildDashedDivider(context),
+          _buildMetricRow(context, '', '걷기(m/sec)', msmt012Grade, false, 'MSMT_012'),
+          buildDashedDivider(context),
+          _buildMetricRow(context, '', '앉았다 일어나기(횟수)', msmt013Grade, true, 'MSMT_013'),
+          buildDivider(context, isBold: true),
         ],
       ),
     );
   }
 
-  // --- Divider ---
-  Widget _buildDivider(BuildContext context, {bool isBold = false}) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.88,
-      child: Divider(
-        height: 1,
-        color: const Color(0xFF555555),
-        thickness: isBold ? 2 : 1,
-      ),
-    );
-  }
-
-  // --- Dashed Divider ---
-  Widget _buildDashedDivider(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.88,
-      padding: const EdgeInsets.only(left: 70),
-      child: CustomPaint(
-        painter: DashedLinePainter(color: const Color(0xFFDEDEDE)),
-        size: const Size(double.infinity, 0),
-      ),
-    );
-  }
-
   // --- Metric Row ---
-  Widget _buildMetricRow(BuildContext context, String category, String title,
-      int grade, bool isBest, String code) {
+  Widget _buildMetricRow(BuildContext context, String category, String title, int grade, bool isBest, String code) {
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: 0,
@@ -152,22 +111,14 @@ class MuscleAgeCard extends StatelessWidget {
             child: category.isNotEmpty
                 ? Text(
                     category,
-                    style: const TextStyle(
-                      color: Color(0xFF000000),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: const TextStyle(color: Color(0xFF000000), fontSize: 13, fontWeight: FontWeight.w500),
                   )
                 : const SizedBox(),
           ),
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                color: Color(0xFF555555),
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-              ),
+              style: const TextStyle(color: Color(0xFF555555), fontSize: 13, fontWeight: FontWeight.w400),
             ),
           ),
           if (grade == 1)
@@ -177,19 +128,12 @@ class MuscleAgeCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFF00914B),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFF00914B), width: 2),
               ),
               child: const Center(
                 child: Text(
                   'BEST',
-                  style: TextStyle(
-                    color: Color(0xFF007130),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: Color(0xFF007130), fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -199,11 +143,7 @@ class MuscleAgeCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: grade == 1
-                  ? const Color(0xFF00914B)
-                  : (grade == 2
-                      ? const Color(0xFF9D895B)
-                      : const Color(0xFF8D8D8D)),
+              color: grade == 1 ? const Color(0xFF00914B) : (grade == 2 ? const Color(0xFF9D895B) : const Color(0xFF8D8D8D)),
             ),
           ),
           IconButton(
@@ -212,8 +152,7 @@ class MuscleAgeCard extends StatelessWidget {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return MetricChartDialog(
-                      title: title, code: code, userId: userId);
+                  return MetricChartDialog(title: title, code: code, userId: userId);
                 },
               );
             },

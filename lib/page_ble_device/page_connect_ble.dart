@@ -6,7 +6,6 @@ import 'package:Vincere/component/custom_button.dart';
 import 'package:Vincere/component/custom_text.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/page_workout/page_select_mode.dart';
-import 'package:Vincere/page_workout/page_select_muscle.dart';
 import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';

@@ -5,37 +5,47 @@ import 'package:shared_preferences/shared_preferences.dart';
 class WorkoutModel extends ChangeNotifier {
   // intensity : 1ma -> 16ma : 0.5ma = 1level
   // ex 6 = 1ma + 6*0.5ma = 4ma
-  final Map<dynamic, dynamic> _muscle_setting_passive = {
+  final Map<dynamic, dynamic> _muscle_setting = {
     'scenario1': {
       1: {
         'name': '강화모드',
         '상완근': {'mode': '100hz', 'intensity': 6, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '100hz', 'intensity': 2, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 2, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 8, 'duration': 3, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
       2: {
         'name': '건강모드',
         '상완근': {'mode': '100hz', 'intensity': 6, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '100hz', 'intensity': 2, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '100hz', 'intensity': 8, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 2, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 8, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
       3: {
         'name': '예방모드',
         '상완근': {'mode': '60hz', 'intensity': 5, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '60hz', 'intensity': 2, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '60hz', 'intensity': 7, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '60hz', 'intensity': 7, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 2, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 7, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
       4: {
         'name': '관리모드',
         '상완근': {'mode': '60hz', 'intensity': 5, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '60hz', 'intensity': 2, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 2, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 6, 'duration': 5, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
       5: {
         'name': '집중모드',
         '상완근': {'mode': '60hz', 'intensity': 4, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '60hz', 'intensity': 1, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '60hz', 'intensity': 6, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 1, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 6, 'duration': 6, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
     },
     'scenario2': {
@@ -43,39 +53,49 @@ class WorkoutModel extends ChangeNotifier {
         'name': '강화모드',
         '상완근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 13, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
       2: {
         'name': '건강모드',
         '상완근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '100hz', 'intensity': 13, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 12, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
       3: {
         'name': '예방모드',
         '상완근': {'mode': '60hz', 'intensity': 8, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '60hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '60hz', 'intensity': 12, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '60hz', 'intensity': 12, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 9, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 12, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
       4: {
         'name': '관리모드',
         '상완근': {'mode': '60hz', 'intensity': 7, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '60hz', 'intensity': 8, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
-        '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'}
+        '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 8, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 11, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
       5: {
         'name': '집중모드',
         '상완근': {'mode': '60hz', 'intensity': 7, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/상완근.png'},
         '삼각근': {'mode': '60hz', 'intensity': 7, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/삼각근.png'},
         '대퇴근': {'mode': '60hz', 'intensity': 11, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴근.png'},
+        '척추기립근': {'mode': '100hz', 'intensity': 7, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/척추기립근.png'},
+        '대퇴이두근': {'mode': '100hz', 'intensity': 13, 'duration': 10, 'asset_url': 'assets/images/workout_elexir/대퇴이두근.png'}
       },
     }
   };
   Map<String, dynamic> get_workout_config(String muscle_name, int grade) {
-    String workout_name = _muscle_setting_passive['scenario1'][grade]['name'];
+    String workout_name = _muscle_setting['scenario1'][grade]['name'];
     print(grade);
-    Map<String, dynamic> workout_config1 = _muscle_setting_passive['scenario1'][grade][muscle_name];
-    Map<String, dynamic> workout_config2 = _muscle_setting_passive['scenario2'][grade][muscle_name];
+    Map<String, dynamic> workout_config1 = _muscle_setting['scenario1'][grade][muscle_name];
+    Map<String, dynamic> workout_config2 = _muscle_setting['scenario2'][grade][muscle_name];
     return {
       'name': workout_name,
       'scenario1': workout_config1,
@@ -83,24 +103,76 @@ class WorkoutModel extends ChangeNotifier {
     };
   }
 
+  //
+  //
+  //
+  Map<dynamic, dynamic> workoutInfo = {
+    '60hz': {
+      '상완근': {'intensity': 0, 'duration': 0},
+      '삼각근': {'intensity': 0, 'duration': 0},
+      '대퇴근': {'intensity': 0, 'duration': 0}
+    },
+    '100hz': {
+      '상완근': {'intensitySum': 0, 'duration': 0},
+      '삼각근': {'intensitySum': 0, 'duration': 0},
+      '대퇴근': {'intensitySum': 0, 'duration': 0}
+    },
+  };
+  Map<dynamic, dynamic> get_workout_info() {
+    // 오늘 데이터가 조회된다면 조회
+    // 오늘 데이터가 없다면 insert -> 조회
+    return {
+      '60hz': {
+        '상완근': {'intensitySum': 0, 'duration': 0},
+        '삼각근': {'intensitySum': 0, 'duration': 0},
+        '대퇴근': {'intensitySum': 0, 'duration': 0}
+      },
+      '100hz': {
+        '상완근': {'intensitySum': 0, 'duration': 0},
+        '삼각근': {'intensitySum': 0, 'duration': 0},
+        '대퇴근': {'intensitySum': 0, 'duration': 0}
+      },
+    };
+  }
+
+  //
+  //
+  //
+  void update_workout_info(String muscleName, int intensity) {
+    workoutInfo[muscleName]['intensitySum'] += intensity;
+    workoutInfo[muscleName]['duration'] += 1;
+  }
+
+  //
+  //
+  //
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? get writeChar => _writeChar;
   void set_write_char(WebBluetoothRemoteGATTCharacteristic writeChar) {
     _writeChar = writeChar;
   }
 
+  //
+  //
+  //
   WebBluetoothRemoteGATTCharacteristic? _notifyChar;
   WebBluetoothRemoteGATTCharacteristic? get notifyChar => _notifyChar;
   void set_notify_char(WebBluetoothRemoteGATTCharacteristic notifyChar) {
     _notifyChar = notifyChar;
   }
 
+  //
+  //
+  //
   String _workoutMode = "passive";
   String get workoutMode => _workoutMode;
   void set_workout_mode(String workoutMode) {
     _workoutMode = workoutMode;
   }
 
+  //
+  //
+  //
   String _workoutLevel = "mode2";
   String get workoutLevel => _workoutLevel;
   void set_workout_level(double userGrade) {
@@ -114,14 +186,20 @@ class WorkoutModel extends ChangeNotifier {
     print(_workoutLevel);
   }
 
-  List<String> _workouts = [];
-  List<String> get workouts => _workouts;
-  void set_workouts(List<String> workouts) {
-    _workouts = workouts;
+  //
+  //
+  //
+  List<String> _workoutPlan = [];
+  List<String> get workoutPlan => _workoutPlan;
+  void set_workout_plan(List<String> workoutPlan) {
+    _workoutPlan = workoutPlan;
     _currentWorkout = 0;
     notifyListeners();
   }
 
+  //
+  //
+  //
   int _currentWorkout = 0;
   int get currentWorkout => _currentWorkout;
   void set_current_workout(int idx) {
@@ -130,12 +208,13 @@ class WorkoutModel extends ChangeNotifier {
   }
 }
 
+//
+//
+//
 class UserModel extends ChangeNotifier {
   bool _isLogin = false;
-  String _userId = '';
   String _password = '';
   bool get isLogin => _isLogin;
-  String get userId => _userId;
   String get password => _password;
   Future<void> set_local_saved_data() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -147,8 +226,17 @@ class UserModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  String _userId = '';
+  String get userId => _userId;
   void set_user_id(String userId) {
     _userId = userId;
+    notifyListeners();
+  }
+
+  Map<dynamic, dynamic> _userInfo = {};
+  Map<dynamic, dynamic> get userInfo => _userInfo;
+  void set_user_info(Map<dynamic, dynamic> userInfo) {
+    _userInfo = userInfo;
     notifyListeners();
   }
 
@@ -166,8 +254,6 @@ class UserModel extends ChangeNotifier {
   double get msmt011Grade => _msmt011Grade;
   double get msmt012Grade => _msmt012Grade;
   double get msmt013Grade => _msmt013Grade;
-
-  // 여러 값 한 번에 세팅하는 메소드도 가능
   void set_datas({
     double? g003,
     double? g008,

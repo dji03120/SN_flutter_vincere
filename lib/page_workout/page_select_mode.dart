@@ -32,51 +32,53 @@ class SelectModeState extends State<SelectMode> {
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: const Header(),
-      drawer: CustomDrawer(isLogin: true),
-      body: Container(
+      drawer: const CustomDrawer(isLogin: true),
+      body: SizedBox(
         width: double.infinity,
         child: Container(
-          color: Color(0xFFf5f4f9),
+          color: const Color(0xFFf5f4f9),
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.1),
-              TextCustom(text: '운동 모드를 선택해주세요.', fontSize: 20),
+              const TextCustom(text: '운동 모드를 선택해주세요.', fontSize: 20),
               SizedBox(height: screenHeight * 0.1),
-              SizedBox(
-                height: 100,
-                child: RoundButton(
-                  text: 'Passive Mode',
-                  margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  onPressed: () {
-                    workoutModel.set_workout_level(userModel.gradeAvg);
-                    workoutModel.set_workout_mode('passive');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SelectMuscle()),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.04),
-              SizedBox(
-                height: 100,
-                child: RoundButton(
-                  text: 'Active Mode',
-                  margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  onPressed: () {
-                    workoutModel.set_workout_level(userModel.gradeAvg);
-                    workoutModel.set_workout_mode('active');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SelectMuscle()),
-                    );
-                  },
-                ),
-              ),
+              _modeSelectButton(context, workoutModel, userModel, "Passive Mode", "passive"),
+              const SizedBox(height: 30),
+              if (userModel.userInfo['authCd'].contains('PAID')) _modeSelectButton(context, workoutModel, userModel, "Active Mode", "active"),
+              if (userModel.userInfo['authCd'].contains('PAID') == false)
+                SizedBox(
+                    height: 100,
+                    child: RoundButton(
+                        text: 'Active Mode',
+                        color: Colors.grey,
+                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('해당 서비스는 유료입니다.\n관리자에게 요청해주세요.'),
+                            ),
+                          );
+                        })),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _modeSelectButton(BuildContext context, WorkoutModel workoutModel, UserModel userModel, String text, String mode) {
+    return SizedBox(
+        height: 100,
+        child: RoundButton(
+            text: text,
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            onPressed: () {
+              workoutModel.set_workout_level(userModel.gradeAvg);
+              workoutModel.set_workout_mode(mode);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SelectMuscle()),
+              );
+            }));
   }
 }

@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:Vincere/component/progress_donut.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'package:video_player/video_player.dart';
 import 'package:Vincere/component/custom_text.dart'; // 추가
 
 class WorkoutContentPassive extends StatefulWidget {
@@ -23,14 +22,12 @@ class WorkoutContentPassive extends StatefulWidget {
 class Component3State extends State<WorkoutContentPassive> {
   double _progress = 1;
   Timer? _timer;
-  late VideoPlayerController _videoController; // 동영상 컨트롤러
-  late Future<void> _initializeVideoPlayerFuture;
   bool isWorkoutDone = false;
   int intense_value = 0;
   int workout_min = 10;
   int workout_sec = 0;
   int step_count = 0;
-  int mlt = 100;
+  int mlt = 1;
   String image_url = '';
 
   Map<String, dynamic> workoutSetting = {};
@@ -40,23 +37,16 @@ class Component3State extends State<WorkoutContentPassive> {
   void initState() {
     super.initState();
     workout_sec = workout_min * 60;
-
-    // VideoController 초기화
-    _videoController = VideoPlayerController.asset('assets/videos/sample.mp4');
-    _initializeVideoPlayerFuture = _videoController.initialize();
-    _videoController.setLooping(true);
-    _videoController.play();
     _startProgress();
   }
 
   void _startProgress() async {
-    double step = 1 * mlt / workout_sec; // 1%씩 증가
     Duration interval = const Duration(milliseconds: 1000); // 0.1초 간격
     ApiService apiService = ApiService();
     final userModel = Provider.of<UserModel>(context, listen: false);
     final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
 
-    String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
+    String currentWorkout = workoutModel.workoutPlan[workoutModel.currentWorkout];
     workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
     image_url = workoutSetting['scenario1']['asset_url'];
     print('$workoutSetting, $image_url');
@@ -68,9 +58,9 @@ class Component3State extends State<WorkoutContentPassive> {
 
     _timer = Timer.periodic(interval, (timer) async {
       if (_progress != 0) {
-        _progress -= step;
+        _progress = 1 - step_count / workout_sec;
         step_count += mlt;
-        print(step_count);
+
         if (step_count > workoutSetting['scenario${scenario_idx}']['duration'] * 60) {
           print(workoutSetting);
           scenario_idx += 1;
@@ -112,7 +102,6 @@ class Component3State extends State<WorkoutContentPassive> {
 
   @override
   void dispose() {
-    _videoController.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -139,7 +128,7 @@ class Component3State extends State<WorkoutContentPassive> {
     final screenHeight = MediaQuery.of(context).size.height;
     final workoutModel = Provider.of<WorkoutModel>(context);
     final userModel = Provider.of<UserModel>(context);
-    String currentWorkout = workoutModel.workouts[workoutModel.currentWorkout];
+    String currentWorkout = workoutModel.workoutPlan[workoutModel.currentWorkout];
 
     return Scaffold(
       appBar: const Header(),
@@ -212,7 +201,8 @@ class Component3State extends State<WorkoutContentPassive> {
                         print("writeChar is null, BLE not connected");
                       }
                       int nextWorkoutIdx = workoutModel.currentWorkout + 1;
-                      if (nextWorkoutIdx >= workoutModel.workouts.length) {
+                      if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
+                        await sendCommand(workoutModel.writeChar, ble_commands["mode2"]!);
                         await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
@@ -263,7 +253,8 @@ class Component3State extends State<WorkoutContentPassive> {
                         print("writeChar is null, BLE not connected");
                       }
                       int nextWorkoutIdx = workoutModel.currentWorkout + 1;
-                      if (nextWorkoutIdx >= workoutModel.workouts.length) {
+                      if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
+                        await sendCommand(workoutModel.writeChar, ble_commands["mode2"]!);
                         await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
