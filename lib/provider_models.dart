@@ -1,5 +1,10 @@
+import 'dart:convert';
+
+import 'package:Vincere/http/webReq.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
+import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WorkoutModel extends ChangeNotifier {
@@ -106,41 +111,67 @@ class WorkoutModel extends ChangeNotifier {
   //
   //
   //
-  Map<dynamic, dynamic> workoutInfo = {
+  Map<dynamic, dynamic> workoutInfoTemplate = {
     '60hz': {
-      '상완근': {'intensity': 0, 'duration': 0},
-      '삼각근': {'intensity': 0, 'duration': 0},
-      '대퇴근': {'intensity': 0, 'duration': 0}
+      '상완근': {'intensitySum': 0, 'duration': 0, 'type': 'free'},
+      '삼각근': {'intensitySum': 0, 'duration': 0, 'type': 'free'},
+      '대퇴근': {'intensitySum': 0, 'duration': 0, 'type': 'free'},
+      '척추기립근': {'intensitySum': 0, 'duration': 0, 'type': 'paid'},
+      '대퇴이두근': {'intensitySum': 0, 'duration': 0, 'type': 'paid'},
     },
     '100hz': {
-      '상완근': {'intensitySum': 0, 'duration': 0},
-      '삼각근': {'intensitySum': 0, 'duration': 0},
-      '대퇴근': {'intensitySum': 0, 'duration': 0}
+      '상완근': {'intensitySum': 0, 'duration': 0, 'type': 'free'},
+      '삼각근': {'intensitySum': 0, 'duration': 0, 'type': 'free'},
+      '대퇴근': {'intensitySum': 0, 'duration': 0, 'type': 'free'},
+      '척추기립근': {'intensitySum': 0, 'duration': 0, 'type': 'paid'},
+      '대퇴이두근': {'intensitySum': 0, 'duration': 0, 'type': 'paid'},
     },
   };
-  Map<dynamic, dynamic> get_workout_info() {
+  Map<dynamic, dynamic> _workoutInfo = {};
+  Future<Map> get_workout_info(String userId) async {
     // 오늘 데이터가 조회된다면 조회
     // 오늘 데이터가 없다면 insert -> 조회
-    return {
-      '60hz': {
-        '상완근': {'intensitySum': 0, 'duration': 0},
-        '삼각근': {'intensitySum': 0, 'duration': 0},
-        '대퇴근': {'intensitySum': 0, 'duration': 0}
-      },
-      '100hz': {
-        '상완근': {'intensitySum': 0, 'duration': 0},
-        '삼각근': {'intensitySum': 0, 'duration': 0},
-        '대퇴근': {'intensitySum': 0, 'duration': 0}
-      },
-    };
+    ApiService apiService = ApiService();
+    List<dynamic> response = (await apiService.selectWorkoutRecent(userId))['result'];
+
+    if (response.length == 0) {
+      print('new user insert.. today workout info');
+      _workoutInfo = workoutInfoTemplate;
+      await apiService.insertWorkout(userId, _workoutInfo);
+      return _workoutInfo;
+    }
+
+    //
+    Map<dynamic, dynamic> result = response[0];
+    DateTime st = DateTime.fromMillisecondsSinceEpoch(result['START_TIME']); //.toUtc();
+    DateTime now = DateTime.now();
+    print("$st, $now");
+    if ((st.year == now.year) && (st.month == now.month) && (st.day == now.day)) {
+      print('load.. today workout info');
+      final metaRaw = result['META_INFO'];
+      if (metaRaw != null && metaRaw.toString().isNotEmpty) {
+        Map<dynamic, dynamic> temp = jsonDecode(metaRaw);
+        _workoutInfo = temp;
+      }
+    } else {
+      print('insert.. today workout info');
+      _workoutInfo = workoutInfoTemplate;
+      await apiService.insertWorkout(userId, _workoutInfo);
+    }
+    print(_workoutInfo);
+    return _workoutInfo;
   }
 
   //
   //
   //
-  void update_workout_info(String muscleName, int intensity) {
-    workoutInfo[muscleName]['intensitySum'] += intensity;
-    workoutInfo[muscleName]['duration'] += 1;
+  Future<void> update_workout_info(String userId, String muscleName, int intensity) async {
+    String workoutHz = _workoutLevel == 'mode1' ? '100hz' : '60hz';
+    print('asdf');
+    _workoutInfo[workoutHz][muscleName]['intensitySum'] += intensity;
+    _workoutInfo[workoutHz][muscleName]['duration'] += 1;
+    ApiService apiService = ApiService();
+    await apiService.updateWorkout(userId, _workoutInfo);
   }
 
   //

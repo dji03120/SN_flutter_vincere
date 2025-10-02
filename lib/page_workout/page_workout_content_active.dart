@@ -26,7 +26,7 @@ class Component3State extends State<WorkoutContentActive> {
   Timer? _timer;
   late VideoPlayerController _videoController; // 동영상 컨트롤러
   bool isWorkoutDone = false;
-  int intense_value = 0;
+  int intenseValue = 0;
   int workout_min = 10;
   int workout_sec = 0;
   int step_count = 0;
@@ -69,13 +69,27 @@ class Component3State extends State<WorkoutContentActive> {
     final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
 
     //setting workout
-    String currentWorkout = workoutModel.workoutPlan[workoutModel.currentWorkout];
-    workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
+    String currentWorkoutMuscle = workoutModel.workoutPlan[workoutModel.currentWorkout];
+    workoutSetting = workoutModel.get_workout_config(currentWorkoutMuscle, userModel.gradeAvg.toInt());
     image_url = workoutSetting['scenario1']['asset_url'];
     print('$workoutSetting, $image_url');
 
     // start workout timer
     _timer = Timer.periodic(interval, (timer) async {
+      // DB update는 await 없이 Future 처리 - 1분마다 갱신
+      if (step_count % 600 == 0) {
+        print("update db");
+        await workoutModel.update_workout_info(
+          userModel.userId,
+          currentWorkoutMuscle,
+          intenseValue,
+        );
+        await apiService.updateWorkoutEnd(userModel.userId).then((_) {
+          print('DB update 완료');
+        }).catchError((e) {
+          print('DB update 실패: $e');
+        });
+      }
       // timer update
       if (_progress > 0) {
         _progress = 1 - step_count / workout_sec;
@@ -85,14 +99,6 @@ class Component3State extends State<WorkoutContentActive> {
       if (_progress <= 0) {
         _progress = 0;
         isWorkoutDone = true;
-      }
-      // DB update는 await 없이 Future 처리 - 1분마다 갱신
-      if (step_count % 600 == 599) {
-        apiService.updateWorkoutEnd(userModel.userId).then((_) {
-          print('DB update 완료');
-        }).catchError((e) {
-          print('DB update 실패: $e');
-        });
       }
       setState(() {});
     });
@@ -243,17 +249,17 @@ class Component3State extends State<WorkoutContentActive> {
             const SizedBox(width: 30), // 간격
             controlButton(Icons.remove, () async {
               await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
-              intense_value -= 1;
-              if (intense_value <= 0) intense_value = 0;
+              intenseValue -= 1;
+              if (intenseValue <= 0) intenseValue = 0;
               setState(() {});
             }),
             const SizedBox(width: 12), // 간격
-            TextCustom(text: '$intense_value/30', color: Colors.white),
+            TextCustom(text: '$intenseValue/30', color: Colors.white),
             const SizedBox(width: 12), // 간격
             controlButton(Icons.add, () async {
               await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
-              intense_value += 1;
-              if (intense_value >= 30) intense_value = 30;
+              intenseValue += 1;
+              if (intenseValue >= 30) intenseValue = 30;
               setState(() {});
             }),
           ],
@@ -327,8 +333,6 @@ class Component3State extends State<WorkoutContentActive> {
             text: '운동스킵',
             margin: const EdgeInsets.fromLTRB(20, 0, 20, 5),
             onPressed: () async {
-              print('hello');
-              await apiService.updateWorkout(userModel.userId, {'test': '1234'});
               if (workoutModel.writeChar != null) {
               } else {
                 print("writeChar is null, BLE not connected");
@@ -346,8 +350,8 @@ class Component3State extends State<WorkoutContentActive> {
                 );
               } else {
                 // reset ble value
-                int intense_value_copy = intense_value;
-                for (int i = 0; i < intense_value; i++) {
+                int intense_value_copy = intenseValue;
+                for (int i = 0; i < intenseValue; i++) {
                   await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
                   intense_value_copy -= 1;
                   print('intense ${intense_value_copy}');
@@ -401,7 +405,7 @@ class Component3State extends State<WorkoutContentActive> {
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const StatisticsPage()));
             } else {
               // reset ble value
-              for (int i = 0; i < intense_value; i++) {
+              for (int i = 0; i < intenseValue; i++) {
                 await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
                 setState(() {});
               }

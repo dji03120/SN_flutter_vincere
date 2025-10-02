@@ -20,6 +20,9 @@ class StatisticsPage extends StatefulWidget {
 class Component4State extends State<StatisticsPage> {
   DateTime _focusedDay = DateTime.now();
   List<Map<String, dynamic>> _selectedDayDatas = []; // 선택된 날짜
+  List<String> _muscleNames = []; // 선택된 날짜 강도
+  Map<String, List<num>> _muscleIntensity = {}; // 선택된 날짜 강도
+  Map<String, List<num>> _muscleDuration = {}; // 선택된 날짜 실행시간
   ApiService apiService = ApiService();
 
   // 예시 운동 기록 데이터
@@ -47,13 +50,9 @@ class Component4State extends State<StatisticsPage> {
       try {
         print(result[i]);
         DateTime st = DateTime.fromMillisecondsSinceEpoch(result[i]['START_TIME']); //.toUtc();
-        DateTime et = DateTime.fromMillisecondsSinceEpoch(result[i]['END_TIME']); //.toUtc();
         DateTime ymdt = DateTime.utc(st.year, st.month, st.day);
         Map<String, dynamic> temp = jsonDecode(result[i]['META_INFO']);
-        Map<String, String> meta_data = temp.map((key, value) => MapEntry(key, value.toString()));
-
-        Duration duration = et.difference(st);
-        meta_data['duration'] = "${duration.inMinutes}min ${duration.inSeconds % 60}sec";
+        Map<String, dynamic> meta_data = temp.map((key, value) => MapEntry(key, value is String ? jsonDecode(value) : value));
 
         _workoutList[ymdt] = meta_data; // calendar data
         _workoutList[st] = meta_data; // list data
@@ -70,6 +69,7 @@ class Component4State extends State<StatisticsPage> {
     Set<DateTime> mySelectedDays = _workoutList.keys.toSet();
     final screenHeight = MediaQuery.of(context).size.height - 50;
     final screenWidth = MediaQuery.of(context).size.width;
+    final userModel = Provider.of<UserModel>(context);
 
     return Scaffold(
       appBar: const Header(),
@@ -106,7 +106,43 @@ class Component4State extends State<StatisticsPage> {
                           if ((dateKey.hour == 0) & (dateKey.minute == 0)) continue;
                           if (ymdt == selectedDay) _selectedDayDatas.add(_workoutList[dateKey]!);
                         }
-                        print(_selectedDayDatas);
+                        Map<dynamic, dynamic> workoutData = _selectedDayDatas[0];
+                        if (!workoutData.containsKey('60hz')) return;
+                        _muscleIntensity['60hz'] = [];
+                        _muscleIntensity['100hz'] = [];
+                        _muscleDuration['60hz'] = [];
+                        _muscleDuration['100hz'] = [];
+                        _muscleNames = [];
+                        List<String> keys = workoutData['60hz'].keys.toList();
+                        print(keys);
+
+                        for (int i = 0; i < keys.length; i++) {
+                          final muscle = keys[i];
+                          if (workoutData['60hz'][muscle]['type'] == 'paid') {
+                            if (userModel.userInfo['authCd'].contains('PAID') == false) {
+                              continue;
+                            }
+                          }
+
+                          // 안전하게 평균 계산
+                          double intensity60 = workoutData['60hz'][muscle]['intensitySum']?.toDouble() ?? 0.0;
+                          double duration60 = workoutData['60hz'][muscle]['duration']?.toDouble() ?? 0.0;
+                          double avg60hz = duration60 == 0 ? 0.0 : (intensity60 / duration60);
+
+                          double intensity100 = workoutData['100hz'][muscle]['intensitySum']?.toDouble() ?? 0.0;
+                          double duration100 = workoutData['100hz'][muscle]['duration']?.toDouble() ?? 0.0;
+                          double avg100hz = duration100 == 0 ? 0.0 : (intensity100 / duration100);
+
+                          // 리스트에 추가
+                          _muscleIntensity['60hz']!.add(avg60hz);
+                          _muscleIntensity['100hz']!.add(avg100hz);
+                          _muscleDuration['60hz']!.add(duration60);
+                          _muscleDuration['100hz']!.add(duration100);
+                          _muscleNames.add(keys[i]);
+                        }
+
+//
+                        print("$_muscleNames, $_muscleIntensity, $_muscleDuration");
                         setState(() {
                           _focusedDay = focusedDay;
                         });
@@ -163,72 +199,75 @@ class Component4State extends State<StatisticsPage> {
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.05),
-                Card(
-                  elevation: 4,
-                  margin: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-                  color: const Color(0xFFFFFFFF),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 335,
-                        child: PageView(
-                          controller: _pageController,
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            Column(
-                              children: [
+                if (_selectedDayDatas.length != 0)
+                  Card(
+                    elevation: 4,
+                    margin: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+                    color: const Color(0xFFFFFFFF),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 335,
+                          child: PageView(
+                            controller: _pageController,
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              Column(
+                                children: [
+                                  SizedBox(height: 30),
+                                  TextCustom(text: 'Intensity', fontSize: 22),
+                                  SizedBox(height: 20),
+                                  Container(
+                                    height: 250,
+                                    child: RadarChartWidget(
+                                      ticks: [3, 6, 9, 12, 15],
+                                      features: _muscleNames,
+                                      colors: [Colors.orangeAccent, Colors.green],
+                                      data: [
+                                        _muscleIntensity['60hz'] ?? [],
+                                        _muscleIntensity['100hz'] ?? [],
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(children: [
                                 SizedBox(height: 30),
-                                TextCustom(text: 'Intensity', fontSize: 22),
+                                TextCustom(text: 'Duration', fontSize: 22),
                                 SizedBox(height: 20),
                                 Container(
                                   height: 250,
-                                  child: const RadarChartWidget(
-                                    features: ["상완근", "대퇴근", "삼각근"],
-                                    colors: [Colors.orangeAccent, Colors.green],
+                                  child: RadarChartWidget(
+                                    ticks: [3, 6, 9, 12, 15, 20],
+                                    features: _muscleNames,
+                                    colors: [Colors.blueAccent, Colors.redAccent],
                                     data: [
-                                      [4, 3, 5],
-                                      [2, 5, 4],
+                                      _muscleDuration['60hz'] ?? [],
+                                      _muscleDuration['100hz'] ?? [],
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
-                            Column(children: [
-                              SizedBox(height: 30),
-                              TextCustom(text: 'Duration', fontSize: 22),
-                              SizedBox(height: 20),
-                              Container(
-                                height: 250,
-                                child: const RadarChartWidget(
-                                  features: ["상완근", "대퇴근", "삼각근"],
-                                  colors: [Colors.blueAccent, Colors.redAccent],
-                                  data: [
-                                    [3, 4, 2],
-                                    [4, 2, 5]
-                                  ],
-                                ),
-                              ),
-                            ]),
-                          ],
+                              ]),
+                            ],
+                          ),
                         ),
-                      ),
-                      SmoothPageIndicator(
-                        controller: _pageController,
-                        count: 2,
-                        effect: WormEffect(
-                          dotColor: Colors.grey.shade300,
-                          activeDotColor: Colors.orangeAccent,
-                          dotHeight: 10,
-                          dotWidth: 10,
+                        SmoothPageIndicator(
+                          controller: _pageController,
+                          count: 2,
+                          effect: WormEffect(
+                            dotColor: Colors.grey.shade300,
+                            activeDotColor: Colors.orangeAccent,
+                            dotHeight: 10,
+                            dotWidth: 10,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: screenHeight * 0.05),
-                    ],
+                        SizedBox(height: screenHeight * 0.05),
+                      ],
+                    ),
                   ),
-                ),
                 SizedBox(height: screenHeight * 0.1),
               ],
             ),

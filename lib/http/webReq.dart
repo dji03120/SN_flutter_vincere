@@ -554,7 +554,7 @@ class ApiService {
   }
 
   // 운동 등록
-  Future<Map<String, dynamic>> insertWorkout(String user_id, Map<String, dynamic> meta_data) async {
+  Future<Map<dynamic, dynamic>> insertWorkout(String user_id, Map<dynamic, dynamic> meta_data) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/registerWorkout.do'),
       headers: header,
@@ -568,7 +568,7 @@ class ApiService {
   }
 
   // 운동 이력 갱신
-  Future<Map<String, dynamic>> updateWorkout(String user_id, Map<String, dynamic> meta_data) async {
+  Future<Map<dynamic, dynamic>> updateWorkout(String user_id, Map<dynamic, dynamic> meta_data) async {
     print("$user_id, $meta_data");
     final response = await http.post(
       Uri.parse('$baseUrl/app/updateWorkout.do'),
@@ -582,7 +582,7 @@ class ApiService {
   }
 
   // 운동 이력 가져오기
-  Future<Map<String, dynamic>> selectWorkout(String user_id) async {
+  Future<Map<dynamic, dynamic>> selectWorkout(String user_id) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/getWorkoutList.do'),
       headers: header,
@@ -591,8 +591,19 @@ class ApiService {
     return checkResponse(response);
   }
 
+  // 운동 이력 가져오기
+  Future<Map<dynamic, dynamic>> selectWorkoutRecent(String user_id) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/app/selectWorkoutRecent.do'),
+      headers: header,
+      body: json.encode({'user_id': user_id}),
+    );
+    print(response);
+    return checkResponse(response);
+  }
+
   // 운동 종료
-  Future<Map<String, dynamic>> updateWorkoutEnd(String user_id) async {
+  Future<Map<dynamic, dynamic>> updateWorkoutEnd(String user_id) async {
     final response = await http.post(
       Uri.parse('$baseUrl/app/updateWorkoutEndTime.do'),
       headers: header,

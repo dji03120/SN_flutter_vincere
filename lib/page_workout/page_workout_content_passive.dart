@@ -23,7 +23,7 @@ class Component3State extends State<WorkoutContentPassive> {
   double _progress = 1;
   Timer? _timer;
   bool isWorkoutDone = false;
-  int intense_value = 0;
+  int intenseValue = 0;
   int workout_min = 10;
   int workout_sec = 0;
   int step_count = 0;
@@ -46,21 +46,18 @@ class Component3State extends State<WorkoutContentPassive> {
     final userModel = Provider.of<UserModel>(context, listen: false);
     final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
 
-    String currentWorkout = workoutModel.workoutPlan[workoutModel.currentWorkout];
-    workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
+    String currentWorkoutMuscle = workoutModel.workoutPlan[workoutModel.currentWorkout];
+    workoutSetting = workoutModel.get_workout_config(currentWorkoutMuscle, userModel.gradeAvg.toInt());
     image_url = workoutSetting['scenario1']['asset_url'];
     print('$workoutSetting, $image_url');
 
     for (int i = 0; i < workoutSetting['scenario1']['intensity']; i++) {
-      intense_value += 1;
+      intenseValue += 1;
       await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!); // 다시시작
     }
 
     _timer = Timer.periodic(interval, (timer) async {
       if (_progress != 0) {
-        _progress = 1 - step_count / workout_sec;
-        step_count += mlt;
-
         if (step_count > workoutSetting['scenario${scenario_idx}']['duration'] * 60) {
           print(workoutSetting);
           scenario_idx += 1;
@@ -69,12 +66,12 @@ class Component3State extends State<WorkoutContentPassive> {
             int intensity_curr = workoutSetting['scenario${scenario_idx}']['intensity'];
             if (intensity_curr > intensity_prev) {
               for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-                intense_value += 1;
+                intenseValue += 1;
                 await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
               }
             } else {
               for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-                intense_value -= 1;
+                intenseValue -= 1;
                 await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
               }
             }
@@ -88,13 +85,21 @@ class Component3State extends State<WorkoutContentPassive> {
           isWorkoutDone = true;
         }
         // DB update는 await 없이 Future 처리 - 1분마다 갱신
-        if (step_count % 600 == 599) {
-          apiService.updateWorkoutEnd(userModel.userId).then((_) {
+        if (step_count % 600 == 0) {
+          print("update db");
+          await workoutModel.update_workout_info(
+            userModel.userId,
+            currentWorkoutMuscle,
+            intenseValue,
+          );
+          await apiService.updateWorkoutEnd(userModel.userId).then((_) {
             print('DB update 완료');
           }).catchError((e) {
             print('DB update 실패: $e');
           });
         }
+        _progress = 1 - step_count / workout_sec;
+        step_count += mlt;
         setState(() {});
       }
     });
@@ -213,8 +218,8 @@ class Component3State extends State<WorkoutContentPassive> {
                         );
                       } else {
                         // reset ble value
-                        int intense_value_copy = intense_value;
-                        for (int i = 0; i < intense_value; i++) {
+                        int intense_value_copy = intenseValue;
+                        for (int i = 0; i < intenseValue; i++) {
                           await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
                           intense_value_copy -= 1;
                           print('intense ${intense_value_copy}');
@@ -265,8 +270,8 @@ class Component3State extends State<WorkoutContentPassive> {
                         );
                       } else {
                         // reset ble value
-                        int intense_value_copy = intense_value;
-                        for (int i = 0; i < intense_value; i++) {
+                        int intense_value_copy = intenseValue;
+                        for (int i = 0; i < intenseValue; i++) {
                           await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
                           intense_value_copy -= 1;
                           print('intense ${intense_value_copy}');

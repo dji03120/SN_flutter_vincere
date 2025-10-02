@@ -121,12 +121,12 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   // 새로운 초기화 메서드
   Future<void> _initializeData() async {
     try {
-      await _loadSessionData(); // check is login
       final userModel = Provider.of<UserModel>(context, listen: false); // 상태 접근
       final workoutModel = Provider.of<WorkoutModel>(context, listen: false); // 상태 접근
-      userModel.set_user_id(userId!);
+      await _loadSessionData(); // check is login
       await sendCommand(workoutModel.writeChar, ble_commands["mode2"]!);
       await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
+      userModel.set_user_id(userId!);
 
       if (_isLogIn) {
         // 사용자 정보 먼저 로드

@@ -114,14 +114,6 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                 child: RoundButton(
                   text: '운동시작',
                   onPressed: () async {
-                    await apiService.insertWorkout(
-                      userModel.userId,
-                      {
-                        "mode": workoutModel.workoutMode,
-                        "intensity": workoutSetting['name'],
-                        "muscle": workoutModel.workoutPlan[workoutModel.currentWorkout],
-                      }, // intensity mode1 100hz, mode2 60hz
-                    );
                     await apiService.updateWorkoutEnd(userModel.userId).then((_) {
                       print('DB update 완료');
                     }).catchError((e) {

@@ -30,6 +30,7 @@ class SelectModeState extends State<SelectMode> {
     final workoutModel = Provider.of<WorkoutModel>(context); // 상태 접근
     final userModel = Provider.of<UserModel>(context); // 상태 접근
     final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: const Header(),
       drawer: const CustomDrawer(isLogin: true),
@@ -52,7 +53,8 @@ class SelectModeState extends State<SelectMode> {
                         text: 'Active Mode',
                         color: Colors.grey,
                         margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                        onPressed: () {
+                        onPressed: () async {
+                          await workoutModel.get_workout_info(userModel.userId);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('해당 서비스는 유료입니다.\n관리자에게 요청해주세요.'),
@@ -72,7 +74,8 @@ class SelectModeState extends State<SelectMode> {
         child: RoundButton(
             text: text,
             margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            onPressed: () {
+            onPressed: () async {
+              await workoutModel.get_workout_info(userModel.userId);
               workoutModel.set_workout_level(userModel.gradeAvg);
               workoutModel.set_workout_mode(mode);
               Navigator.push(

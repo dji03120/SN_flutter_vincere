@@ -18,7 +18,13 @@ url = prd
 
 if 0:
     res = requests.post(f"{url}/app/getWorkoutList.do",json={
-        "user_id" : 1,
+        "user_id" : "tester",
+    })
+    print(res.content)
+
+if 1:
+    res = requests.post(f"{url}/app/selectWorkoutRecent.do",json={
+        "user_id" : "tester",
     })
     print(res.content)
 
@@ -38,7 +44,7 @@ if 0:
     print(res.content)
     
     
-if 1:
+if 0:
     res = requests.post(f"{url}/app/updateWorkout.do",json={
         "user_id" : "tester",
         "meta_data": {"test":1234}

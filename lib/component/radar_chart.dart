@@ -11,7 +11,7 @@ class RadarChartWidget extends StatelessWidget {
     super.key,
     required this.features,
     required this.data,
-    this.ticks = const [1, 2, 3, 4, 5],
+    this.ticks = const [6, 12, 18, 24, 30],
     this.colors = const [Colors.orangeAccent],
   });
 
