@@ -68,7 +68,6 @@ class Component4State extends State<StatisticsPage> {
   Widget build(BuildContext context) {
     Set<DateTime> mySelectedDays = _workoutList.keys.toSet();
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
     final userModel = Provider.of<UserModel>(context);
 
     return Scaffold(
@@ -178,15 +177,8 @@ class Component4State extends State<StatisticsPage> {
           ),
           calendarStyle: const CalendarStyle(
             cellMargin: EdgeInsets.symmetric(horizontal: 3, vertical: 4), // 셀 간격
-            todayDecoration: BoxDecoration(
-              color: Colors.orangeAccent, // 오늘 날짜 배경 색상
-              shape: BoxShape.circle, // 원 형태
-            ),
-            todayTextStyle: const TextStyle(
-              fontSize: 10, // 평일 글자 크기
-              fontWeight: FontWeight.bold,
-              color: Colors.white, // 오늘 날짜 글자 색상
-            ),
+            todayDecoration: BoxDecoration(color: Colors.orangeAccent, shape: BoxShape.circle),
+            todayTextStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           calendarBuilders: CalendarBuilders(
             defaultBuilder: (context, day, focusedDay) {

@@ -56,9 +56,7 @@ class SelectModeState extends State<SelectMode> {
                         onPressed: () async {
                           await workoutModel.get_workout_info(userModel.userId);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('해당 서비스는 유료입니다.\n관리자에게 요청해주세요.'),
-                            ),
+                            const SnackBar(content: Text('해당 서비스는 유료입니다.\n관리자에게 요청해주세요.')),
                           );
                         })),
             ],
@@ -78,10 +76,7 @@ class SelectModeState extends State<SelectMode> {
               await workoutModel.get_workout_info(userModel.userId);
               workoutModel.set_workout_level(userModel.gradeAvg);
               workoutModel.set_workout_mode(mode);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SelectMuscle()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SelectMuscle()));
             }));
   }
 }

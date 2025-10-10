@@ -68,36 +68,33 @@ class Component3State extends State<WorkoutContentActive> {
     final userModel = Provider.of<UserModel>(context, listen: false);
     final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
 
+    //
     //setting workout
-    String currentWorkoutMuscle = workoutModel.workoutPlan[workoutModel.currentWorkout];
-    workoutSetting = workoutModel.get_workout_config(currentWorkoutMuscle, userModel.gradeAvg.toInt());
+    String muscleName = workoutModel.workoutPlan[workoutModel.currentWorkout];
+    workoutSetting = workoutModel.get_workout_config(muscleName, userModel.gradeAvg.toInt());
     image_url = workoutSetting['scenario1']['asset_url'];
     print('$workoutSetting, $image_url');
 
+    //
     // start workout timer
     _timer = Timer.periodic(interval, (timer) async {
-      // DB update는 await 없이 Future 처리 - 1분마다 갱신
       if (step_count % 60 == 0) {
-        print("update db");
-        await workoutModel.update_workout_info(
-          userModel.userId,
-          currentWorkoutMuscle,
-          intenseValue,
-        );
+        print("update db"); // DB update는 await 없이 Future 처리 - 1분마다 갱신
+        await workoutModel.update_workout_info(userModel.userId, muscleName, intenseValue);
         await apiService.updateWorkoutEnd(userModel.userId).then((_) {
           print('DB update 완료');
         }).catchError((e) {
           print('DB update 실패: $e');
         });
       }
-      // timer update
+
       if (_progress > 0) {
-        _progress = 1 - step_count / workout_sec;
+        _progress = 1 - step_count / workout_sec; // timer update
         step_count += mlt;
       }
-      // end of workout
+
       if (_progress <= 0) {
-        _progress = 0;
+        _progress = 0; // end of workout
         isWorkoutDone = true;
       }
       setState(() {});

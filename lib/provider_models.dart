@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:Vincere/http/webReq.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
-import 'package:path/path.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WorkoutModel extends ChangeNotifier {

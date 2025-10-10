@@ -113,10 +113,7 @@ class Component3State extends State<WorkoutStart> {
               if (workoutModel.workoutMode == 'passive')
                 Container(
                   height: screenHeight * 0.45,
-                  child: Image.asset(
-                    image_url,
-                    fit: BoxFit.contain,
-                  ),
+                  child: Image.asset(image_url, fit: BoxFit.contain),
                 ),
             ],
           ),

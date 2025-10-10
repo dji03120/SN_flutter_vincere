@@ -60,16 +60,13 @@ class Component3State extends State<SelectMuscle> {
                 label: TextCustom(text: workoutModel.workoutMode == "active" ? "Active Mode" : "Passive Mode", color: Colors.white, fontSize: 16),
                 backgroundColor: workoutModel.workoutMode == "active" ? Colors.deepOrangeAccent : Colors.lightBlue,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10), // ← 원하는 값으로 조절 가능 (예: 20~30)
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               SizedBox(height: screenHeight * 0.015),
               TextCustom(text: '운동 부위를 선택해주세요', fontSize: 20),
 
               // 체크 버튼들
               SizedBox(height: screenHeight * 0.05),
-
               Expanded(
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -78,9 +75,7 @@ class Component3State extends State<SelectMuscle> {
                   itemBuilder: (context, index) {
                     var workout = workouts[index];
                     bool isDisabled = workout['service_type'] == '유료';
-                    if (userModel.userInfo['authCd'].contains('PAID')) {
-                      isDisabled = false;
-                    }
+                    if (userModel.userInfo['authCd'].contains('PAID')) isDisabled = false;
                     final isSelected = selectedWorkouts.contains(workout['name']);
 
                     return GestureDetector(
@@ -91,11 +86,8 @@ class Component3State extends State<SelectMuscle> {
                           );
                         } else {
                           setState(() {
-                            if (isSelected) {
-                              selectedWorkouts.remove(workout['name']);
-                            } else {
-                              selectedWorkouts.add(workout['name']!);
-                            }
+                            if (isSelected == true) selectedWorkouts.remove(workout['name']);
+                            if (isSelected == false) selectedWorkouts.add(workout['name']!);
                           });
                         }
                       },
@@ -108,29 +100,23 @@ class Component3State extends State<SelectMuscle> {
                                   ? Colors.lightGreen[100]
                                   : Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-                          ],
+                          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              workout['name']!,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: isDisabled ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            Chip(
-                              label: Text(
-                                workout['service_type']!,
+                            Text(workout['name']!,
                                 style: TextStyle(
-                                  color: isDisabled ? Colors.white : Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDisabled ? Colors.white : Colors.black87,
+                                )),
+                            Chip(
+                              label: Text(workout['service_type']!,
+                                  style: TextStyle(
+                                    color: isDisabled ? Colors.white : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  )),
                               backgroundColor: workout['service_type'] == '유료' ? Colors.orangeAccent : Color(0xFF4CAF50),
                             )
                           ],
@@ -152,13 +138,10 @@ class Component3State extends State<SelectMuscle> {
                     workoutModel.set_current_workout(0);
                     if (selectedWorkouts.length != 0) {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => WorkoutPlan(
-                            explainText: '운동 계획이 설정되었습니다.',
-                          ),
-                        ),
-                      );
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WorkoutPlan(explainText: '운동 계획이 설정되었습니다.'),
+                          ));
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('운동을 한 개 이상 선택해주세요')),

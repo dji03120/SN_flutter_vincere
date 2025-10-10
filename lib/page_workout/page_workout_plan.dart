@@ -57,10 +57,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.08),
-              TextCustom(
-                text: widget.explainText,
-                fontSize: 20,
-              ),
+              TextCustom(text: widget.explainText, fontSize: 20),
               SizedBox(height: screenHeight * 0.06),
               // 운동 버튼 리스트
               Expanded(
@@ -124,10 +121,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                     print(workoutModel.workoutLevel);
                     await sendCommand(workoutModel.writeChar, ble_commands[workoutModel.workoutLevel]!);
                     await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => WorkoutStart()),
-                    );
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => WorkoutStart()));
                   },
                   borderRadius: 10,
                 ),

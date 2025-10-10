@@ -19,6 +19,9 @@ class WorkoutContentPassive extends StatefulWidget {
   State<WorkoutContentPassive> createState() => Component3State();
 }
 
+//
+//
+//
 class Component3State extends State<WorkoutContentPassive> {
   double _progress = 1;
   Timer? _timer;
@@ -29,7 +32,6 @@ class Component3State extends State<WorkoutContentPassive> {
   int step_count = 0;
   int mlt = 1;
   String image_url = '';
-
   Map<String, dynamic> workoutSetting = {};
   int scenario_idx = 1;
 
@@ -40,14 +42,16 @@ class Component3State extends State<WorkoutContentPassive> {
     _startProgress();
   }
 
+  // providar, restful api, blutooth가 결합되어 번거로움
   void _startProgress() async {
     Duration interval = const Duration(milliseconds: 1000); // 0.1초 간격
     ApiService apiService = ApiService();
     final userModel = Provider.of<UserModel>(context, listen: false);
     final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
 
-    String currentWorkoutMuscle = workoutModel.workoutPlan[workoutModel.currentWorkout];
-    workoutSetting = workoutModel.get_workout_config(currentWorkoutMuscle, userModel.gradeAvg.toInt());
+    String userId = userModel.userId;
+    String muscleName = workoutModel.workoutPlan[workoutModel.currentWorkout];
+    workoutSetting = workoutModel.get_workout_config(muscleName, userModel.gradeAvg.toInt());
     image_url = workoutSetting['scenario1']['asset_url'];
     print('$workoutSetting, $image_url');
 
@@ -66,13 +70,13 @@ class Component3State extends State<WorkoutContentPassive> {
             int intensity_curr = workoutSetting['scenario${scenario_idx}']['intensity'];
             if (intensity_curr > intensity_prev) {
               for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-                intenseValue += 1;
                 await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
+                intenseValue += 1;
               }
             } else {
               for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-                intenseValue -= 1;
                 await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+                intenseValue -= 1;
               }
             }
           } catch (e) {
@@ -87,12 +91,8 @@ class Component3State extends State<WorkoutContentPassive> {
         // DB update는 await 없이 Future 처리 - 1분마다 갱신
         if (step_count % 600 == 0) {
           print("update db");
-          await workoutModel.update_workout_info(
-            userModel.userId,
-            currentWorkoutMuscle,
-            intenseValue,
-          );
-          await apiService.updateWorkoutEnd(userModel.userId).then((_) {
+          await workoutModel.update_workout_info(userId, muscleName, intenseValue);
+          await apiService.updateWorkoutEnd(userId).then((_) {
             print('DB update 완료');
           }).catchError((e) {
             print('DB update 실패: $e');
@@ -105,27 +105,16 @@ class Component3State extends State<WorkoutContentPassive> {
     });
   }
 
+  //
+  //
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
   }
 
-  Widget controlButton(IconData iconData, VoidCallback onTap) {
-    return Material(
-      color: Colors.white,
-      shape: const StadiumBorder(),
-      child: InkWell(
-        customBorder: const StadiumBorder(),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Icon(iconData, color: Colors.black, size: 30),
-        ),
-      ),
-    );
-  }
-
+  //
+  //
   @override
   Widget build(BuildContext context) {
     ApiService apiService = ApiService();
@@ -160,10 +149,7 @@ class Component3State extends State<WorkoutContentPassive> {
                     child: Center(
                       child: SizedBox(
                         height: screenHeight * 0.35,
-                        child: Image.asset(
-                          image_url,
-                          fit: BoxFit.contain,
-                        ),
+                        child: Image.asset(image_url, fit: BoxFit.contain),
                       ),
                     ),
                   ),
@@ -205,6 +191,7 @@ class Component3State extends State<WorkoutContentPassive> {
                       } else {
                         print("writeChar is null, BLE not connected");
                       }
+                      //
                       int nextWorkoutIdx = workoutModel.currentWorkout + 1;
                       if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
                         await sendCommand(workoutModel.writeChar, ble_commands["mode2"]!);
@@ -216,6 +203,7 @@ class Component3State extends State<WorkoutContentPassive> {
                             builder: (context) => const StatisticsPage(),
                           ),
                         );
+                        //
                       } else {
                         // reset ble value
                         int intense_value_copy = intenseValue;
@@ -225,6 +213,7 @@ class Component3State extends State<WorkoutContentPassive> {
                           print('intense ${intense_value_copy}');
                           setState(() {});
                         }
+                        //
                         await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
                         workoutModel.set_current_workout(nextWorkoutIdx);
                         await apiService.updateWorkoutEnd(userModel.userId);
@@ -244,11 +233,7 @@ class Component3State extends State<WorkoutContentPassive> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const TextCustom(
-                    text: '운동이 종료되었습니다',
-                    color: Colors.white,
-                    fontSize: 20,
-                  ),
+                  const TextCustom(text: '운동이 종료되었습니다', color: Colors.white, fontSize: 20),
                   SizedBox(height: screenHeight * 0.02),
                   RoundButton(
                     text: '다음운동',
@@ -264,10 +249,9 @@ class Component3State extends State<WorkoutContentPassive> {
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const StatisticsPage(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const StatisticsPage()),
                         );
+                        //
                       } else {
                         // reset ble value
                         int intense_value_copy = intenseValue;
@@ -288,6 +272,7 @@ class Component3State extends State<WorkoutContentPassive> {
                             ),
                           ),
                         );
+                        //
                       }
                     },
                   ),
