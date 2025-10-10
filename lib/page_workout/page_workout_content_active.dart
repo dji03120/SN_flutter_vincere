@@ -77,7 +77,7 @@ class Component3State extends State<WorkoutContentActive> {
     // start workout timer
     _timer = Timer.periodic(interval, (timer) async {
       // DB update는 await 없이 Future 처리 - 1분마다 갱신
-      if (step_count % 600 == 0) {
+      if (step_count % 60 == 0) {
         print("update db");
         await workoutModel.update_workout_info(
           userModel.userId,

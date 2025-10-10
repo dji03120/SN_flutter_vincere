@@ -15,11 +15,6 @@ final Map<String, String> ble_commands = {
   "reset": "000B090001F1",
   "info": "000B08010100",
   "battery": "000B08020100",
-  // 1등급 - 15min 100hz 강도 1ma
-  // 솔루션 통계 - 리포트 - 무료 운동시간
-  //             유로 칼로리, 운동효과 구체적
-  // 인터벌 pulse up down
-  // log ma 확인
 };
 
 String setFrequency(int value) {

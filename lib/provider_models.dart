@@ -167,10 +167,10 @@ class WorkoutModel extends ChangeNotifier {
   //
   Future<void> update_workout_info(String userId, String muscleName, int intensity) async {
     String workoutHz = _workoutLevel == 'mode1' ? '100hz' : '60hz';
-    print('asdf');
     _workoutInfo[workoutHz][muscleName]['intensitySum'] += intensity;
     _workoutInfo[workoutHz][muscleName]['duration'] += 1;
     ApiService apiService = ApiService();
+    print(_workoutInfo);
     await apiService.updateWorkout(userId, _workoutInfo);
   }
 
