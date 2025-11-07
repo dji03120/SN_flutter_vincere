@@ -2,11 +2,10 @@ import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 import 'dart:html' as html; // ← 추가
 
-import 'package:Vincere/component/custom_button.dart';
-import 'package:Vincere/component/custom_text.dart';
+import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/page_workout/page_select_mode.dart';
-import 'package:Vincere/page_ble_device/ble_utils.dart';
+import 'package:Vincere/page_elexir_workout/page_select_mode.dart';
+import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
@@ -23,6 +22,7 @@ class PageConnectBle extends StatefulWidget {
 }
 
 class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderStateMixin {
+  // ignore: unused_field
   BluetoothDevice? _device;
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? _notifyChar;
@@ -32,10 +32,11 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
 
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-
-  bool _isConnecting = false;
   bool _connectFailed = false;
 
+  //
+  //
+  //
   Future<void> _permissionCheck() async {
     try {
       // 브라우저 권한 상태 확인
@@ -62,9 +63,11 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
     }
   }
 
+  //
+  //
+  //
   Future<void> _scanAndConnect(WorkoutModel workoutModel) async {
     setState(() {
-      _isConnecting = true;
       _connectFailed = false;
     });
 
@@ -77,10 +80,13 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
       );
       setState(() => _device = device);
 
+      // 연결 3회 시도 -> 재시도 버튼
       for (int i = 0; i < 3; i++) {
         try {
+          // ignore: invalid_use_of_visible_for_testing_member
           await device.gatt?.connect();
 
+          // ignore: invalid_use_of_visible_for_testing_member
           final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
           _writeChar = await service?.getCharacteristic(WRITE_UUID);
           _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
@@ -110,17 +116,18 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
               }),
             ]);
           }
-          // get calendar device setting command
+
+          // get calendar device : 장치 초기화 커멘드 (필수) -> 정지
           await sendCommand(workoutModel.writeChar, "000C0E050100");
           await sendCommand(workoutModel.writeChar, ble_commands['pause']!);
           print("connect complete");
-          setState(() => _isConnecting = false);
+          setState(() {});
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('디바이스가 연결되었습니다.')),
+            const SnackBar(content: Text('디바이스가 연결되었습니다.')),
           );
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => SelectMode()),
+            MaterialPageRoute(builder: (context) => const SelectMode()),
           );
           break;
         } catch (e) {
@@ -128,7 +135,6 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
           if (i == 2) {
             setState(() {
               _connectFailed = true;
-              _isConnecting = false;
             });
           }
         }
@@ -137,11 +143,13 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
       print("connect fail");
       setState(() {
         _connectFailed = true;
-        _isConnecting = false;
       });
     }
   }
 
+  //
+  //
+  //
   @override
   void initState() {
     super.initState();
@@ -152,23 +160,28 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
       _scanAndConnect(workoutModel);
     });
 
-    // 애니메이션 컨트롤러 초기화
+    // 커지고 작아지는 이미지
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat(reverse: true); // 반복 + 뒤로 되돌리기
-
+    )..repeat(reverse: true);
     _scaleAnimation = Tween<double>(begin: 0.97, end: 1.03).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
 
+  //
+  //
+  //
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
+  //
+  //
+  //
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -193,17 +206,15 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.asset(
-                        'assets/images/image_ble_2.png',
-                        fit: BoxFit.contain,
-                      ),
+                      Image.asset('assets/images/image_ble_2.png', fit: BoxFit.contain),
                       const SizedBox(height: 16),
                       ScaleTransition(
-                          scale: _scaleAnimation,
-                          child: Image.asset(
-                            'assets/images/image_ble_1.png',
-                            fit: BoxFit.contain,
-                          )),
+                        scale: _scaleAnimation,
+                        child: Image.asset(
+                          'assets/images/image_ble_1.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ],
                   ),
                 ),

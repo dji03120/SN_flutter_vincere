@@ -1,16 +1,15 @@
-import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/page_ble_device/ble_utils.dart';
-import 'package:Vincere/page_workout/page_statistics.dart';
-import 'package:Vincere/page_workout/page_workout_plan.dart';
+import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_elexir_workout/page_statistics.dart';
+import 'package:Vincere/page_elexir_workout/page_workout_plan.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/progress_donut.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'package:Vincere/component/custom_text.dart'; // 추가
 
 class WorkoutContentPassive extends StatefulWidget {
   const WorkoutContentPassive({super.key});
@@ -42,66 +41,82 @@ class Component3State extends State<WorkoutContentPassive> {
     _startProgress();
   }
 
+  //
+  //
   // providar, restful api, blutooth가 결합되어 번거로움
   void _startProgress() async {
-    Duration interval = const Duration(milliseconds: 1000); // 0.1초 간격
+    Duration interval = const Duration(milliseconds: 1000);
     ApiService apiService = ApiService();
     final userModel = Provider.of<UserModel>(context, listen: false);
     final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
 
+    //
+    //setting workout
     String userId = userModel.userId;
     String muscleName = workoutModel.workoutPlan[workoutModel.currentWorkout];
     workoutSetting = workoutModel.get_workout_config(muscleName, userModel.gradeAvg.toInt());
     image_url = workoutSetting['scenario1']['asset_url'];
     print('$workoutSetting, $image_url');
 
+    //
+    // 운동 강도 초기 세팅
     for (int i = 0; i < workoutSetting['scenario1']['intensity']; i++) {
       intenseValue += 1;
       await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!); // 다시시작
     }
 
+    //
+    // start workout timer
     _timer = Timer.periodic(interval, (timer) async {
-      if (_progress != 0) {
-        if (step_count > workoutSetting['scenario${scenario_idx}']['duration'] * 60) {
-          print(workoutSetting);
-          scenario_idx += 1;
-          try {
-            int intensity_prev = workoutSetting['scenario${scenario_idx - 1}']['intensity'];
-            int intensity_curr = workoutSetting['scenario${scenario_idx}']['intensity'];
-            if (intensity_curr > intensity_prev) {
-              for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-                await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
-                intenseValue += 1;
-              }
-            } else {
-              for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-                await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
-                intenseValue -= 1;
-              }
-            }
-          } catch (e) {
-            _progress = 0;
-            isWorkoutDone = true;
-          }
+      if (step_count % 60 == 0) {
+        print("update db"); // DB update는 await 없이 Future 처리 - 1분마다 갱신
+        await workoutModel.update_workout_info(userId, muscleName, intenseValue);
+        await apiService.updateWorkoutEnd(userId).then((_) {
+          print('DB update 완료');
+        }).catchError((e) {
+          print('DB update 실패: $e');
+        });
+      }
+
+      //
+      // check next workout time
+      if (step_count > workoutSetting['scenario${scenario_idx}']['duration'] * 60) {
+        print(workoutSetting);
+        scenario_idx += 1;
+        if (!workoutSetting.containsKey('scenario$scenario_idx')) {
+          // workoutSetting에 다음 시나리오가 없을 경우 운동 완료로 취급
+          _progress = 0; // end of workout
+          isWorkoutDone = true;
         }
-        if (_progress <= 0) {
+        // 운동강도 갱신
+        try {
+          int intensity_prev = workoutSetting['scenario${scenario_idx - 1}']['intensity'];
+          int intensity_curr = workoutSetting['scenario${scenario_idx}']['intensity'];
+          if (intensity_curr > intensity_prev) {
+            for (int i = 0; i < intensity_curr - intensity_prev; i++) {
+              await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
+              intenseValue += 1;
+            }
+          } else {
+            for (int i = 0; i < intensity_curr - intensity_prev; i++) {
+              await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+              intenseValue -= 1;
+            }
+          }
+        } catch (e) {
           _progress = 0;
           isWorkoutDone = true;
         }
-        // DB update는 await 없이 Future 처리 - 1분마다 갱신
-        if (step_count % 600 == 0) {
-          print("update db");
-          await workoutModel.update_workout_info(userId, muscleName, intenseValue);
-          await apiService.updateWorkoutEnd(userId).then((_) {
-            print('DB update 완료');
-          }).catchError((e) {
-            print('DB update 실패: $e');
-          });
-        }
-        _progress = 1 - step_count / workout_sec;
-        step_count += mlt;
-        setState(() {});
       }
+
+      // update progress
+      if (_progress <= 0) {
+        _progress = 0; // end of workout
+        isWorkoutDone = true;
+      }
+      _progress = 1 - step_count / workout_sec;
+      step_count += mlt;
+      setState(() {});
     });
   }
 
@@ -125,6 +140,7 @@ class Component3State extends State<WorkoutContentPassive> {
     String currentWorkout = workoutModel.workoutPlan[workoutModel.currentWorkout];
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F4F9),
       appBar: const Header(),
       drawer: CustomDrawer(isLogin: true),
       body: Container(

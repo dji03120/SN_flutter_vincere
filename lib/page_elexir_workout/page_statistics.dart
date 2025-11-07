@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:Vincere/component/custom_text.dart';
+import 'package:Vincere/component/custom_widget.dart';
 import 'dart:convert';
 
 class StatisticsPage extends StatefulWidget {
@@ -71,6 +71,7 @@ class Component4State extends State<StatisticsPage> {
     final userModel = Provider.of<UserModel>(context);
 
     return Scaffold(
+        backgroundColor: const Color(0xFFF5F4F9),
         appBar: const Header(),
         drawer: CustomDrawer(isLogin: true),
         body: SingleChildScrollView(

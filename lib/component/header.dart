@@ -35,6 +35,7 @@ class _HeaderState extends State<Header> {
       password = prefs.getString('password');
       if (userId != null && password != null) {
         _isLogin = true;
+        if (_isLogin) {}
         _getUserInfo();
       }
     });
@@ -103,25 +104,13 @@ class _HeaderState extends State<Header> {
         children: [
           const SizedBox(height: 20),
           // 첫 번째 행: 로고와 이름
-          Row(
-            children: [
-              Image.asset(
-                'images/top_logo.png',
-                // width: 118,
-                // height: 18,
-                fit: BoxFit.contain,
-              ),
-            ],
-          ),
+          Row(children: [Image.asset('images/top_logo.png', fit: BoxFit.contain)]),
           const SizedBox(height: 4),
           // 두 번째 행: 환영 메시지
           if (userId != null)
             Text(
               '안녕하세요. ${userNm}님',
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
           const SizedBox(height: 20),
         ],
@@ -151,11 +140,7 @@ class _HeaderState extends State<Header> {
               ),
               child: Text(
                 userId != null ? '로그아웃' : '로그인',
-                style: const TextStyle(
-                  color: Color(0xFF555555),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: const TextStyle(color: Color(0xFF555555), fontSize: 12, fontWeight: FontWeight.w900),
               ),
             ),
           ),

@@ -1,4 +1,4 @@
-import 'package:Vincere/component/custom_text.dart';
+import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';

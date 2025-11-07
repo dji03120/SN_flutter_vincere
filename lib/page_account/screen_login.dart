@@ -1,11 +1,9 @@
-import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/export/screens.dart';
-import 'package:Vincere/page_account/screen_find_id.dart';
-import 'package:Vincere/page_account/screen_find_pswd.dart';
+import 'package:Vincere/page_account/screen_find_account.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart' show ChangeNotifierProvider, Provider;
+//import 'package:provider/provider.dart' show ChangeNotifierProvider, Provider;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,7 +16,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController idController = TextEditingController();
   TextEditingController pwController = TextEditingController();
-  bool _isObscure = true;
+  //bool _isObscure = true;
 
   // 로그인 처리
   Future<void> _login(BuildContext context) async {

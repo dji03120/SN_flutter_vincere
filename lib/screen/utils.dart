@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:html/dom.dart' as dom;
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart'; // 링크를 열기 위한 패키지
 
 class HtmlUtils {
@@ -753,4 +754,18 @@ Widget buildDashedDivider(BuildContext context) {
       size: const Size(double.infinity, 0),
     ),
   );
+}
+
+Future<Map<String, dynamic>> loadSessionData() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  final String? userId = prefs.getString('userId');
+  final String? password = prefs.getString('password');
+  final bool isLoggedIn = (userId != null && password != null);
+
+  return {
+    'userId': userId,
+    'password': password,
+    'isLogin': isLoggedIn,
+  };
 }

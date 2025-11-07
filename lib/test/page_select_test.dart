@@ -3,8 +3,7 @@ import 'package:Vincere/test/ble_tester_web.dart';
 import 'package:Vincere/test/gps_tester.dart';
 import 'package:Vincere/test/gyro_tester.dart';
 import 'package:flutter/material.dart';
-import 'package:Vincere/component/custom_button.dart';
-import 'package:Vincere/page_workout/page_select_mode.dart';
+import 'package:Vincere/component/custom_widget.dart';
 
 class PageSelectTest extends StatefulWidget {
   const PageSelectTest({super.key});
@@ -14,10 +13,6 @@ class PageSelectTest extends StatefulWidget {
 }
 
 class _BLEPageState extends State<PageSelectTest> {
-  static const SERVICE_UUID = "0000fe40-cc7a-482a-984a-7f2ed5b3e58f";
-  static const WRITE_UUID = "0000fe41-8e22-4541-9d4c-21edae82ed19";
-  static const NOTIFY_UUID = "0000fe42-8e22-4541-9d4c-21edae82ed19";
-
   @override
   void initState() {
     super.initState();

@@ -91,6 +91,7 @@ class MuscleAgeCard extends StatelessWidget {
           buildDashedDivider(context),
           _buildMetricRow(context, '', '앉았다 일어나기(횟수)', msmt013Grade, true, 'MSMT_013'),
           buildDivider(context, isBold: true),
+          const SizedBox(height: 16),
         ],
       ),
     );

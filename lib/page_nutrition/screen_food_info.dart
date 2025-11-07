@@ -21,7 +21,7 @@ class _FoodInfoScreenState extends State<FoodInfo> {
   @override
   void initState() {
     super.initState();
-    _loadSessionData().then((_){
+    _loadSessionData().then((_) {
       _getFoodInfo();
     });
   }
@@ -32,7 +32,7 @@ class _FoodInfoScreenState extends State<FoodInfo> {
     setState(() {
       userId = prefs.getString('userId');
       password = prefs.getString('password');
-      if(userId != null && password != null){
+      if (userId != null && password != null) {
         _isLogIn = true;
       }
     });
@@ -69,13 +69,7 @@ class _FoodInfoScreenState extends State<FoodInfo> {
               height: 50,
               child: const Padding(
                 padding: EdgeInsets.fromLTRB(20, 15, 0, 0),
-                child: Text(
-                  '식품별 영양 정보',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontSize: 20,
-                  ),
-                ),
+                child: Text('식품별 영양 정보', textAlign: TextAlign.left, style: TextStyle(fontSize: 20)),
               ),
             ),
             Container(
@@ -93,28 +87,8 @@ class _FoodInfoScreenState extends State<FoodInfo> {
                   columnSpacing: 50.0,
                   showFirstLastButtons: true,
                   columns: const [
-                    DataColumn(
-                      label: Expanded(
-                        flex: 1,
-                        child: Center(
-                          child: Text(
-                            "식품명",
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        flex: 3,
-                        child: Center(
-                          child: Text(
-                            "영양 정보",
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ),
+                    DataColumn(label: Expanded(flex: 1, child: Center(child: Text("식품명", textAlign: TextAlign.center)))),
+                    DataColumn(label: Expanded(flex: 3, child: Center(child: Text("영양 정보", textAlign: TextAlign.center)))),
                   ],
                 ),
               ),

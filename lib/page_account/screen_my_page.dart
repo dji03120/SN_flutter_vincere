@@ -1,5 +1,4 @@
 import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/component/header.dart';
 import 'package:Vincere/page_account/screen_kakao_address.dart';
 import 'package:Vincere/page_account/screen_update_pswd.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +22,7 @@ class MyPage extends StatefulWidget {
 
 class _MyPageState extends State<MyPage> {
   String? currentActivityLevel = "";
+  // ignore: unused_field
   XFile? _profileImage;
   bool _isLoading = false;
   String? _profileImageUrl; // 프로필 이미지 URL 저장용 변수
@@ -867,7 +867,7 @@ class _MyPageState extends State<MyPage> {
       ),
     );
   }
-
+/*
   Widget _editProfileButton(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -945,6 +945,7 @@ class _MyPageState extends State<MyPage> {
       ),
     );
   }
+  */
 
   Future<void> _getProfileImage() async {
     try {

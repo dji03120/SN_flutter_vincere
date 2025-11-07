@@ -1,5 +1,4 @@
 import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/screen/screen_home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Vincere/export/screens.dart';
@@ -21,7 +20,7 @@ class _QnaScreenState extends State<Qna> {
   String? password;
   bool _isLogIn = false;
   List<Map<String, dynamic>> _qnaData = [];
-  int _selectedIndex = 0; // 현재 선택된 탭 인덱스
+  //int _selectedIndex = 0; // 현재 선택된 탭 인덱스
 
   @override
   void initState() {
@@ -61,6 +60,7 @@ class _QnaScreenState extends State<Qna> {
     }
   }
 
+/*
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -82,7 +82,7 @@ class _QnaScreenState extends State<Qna> {
         );
       }
     });
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -99,16 +99,12 @@ class _QnaScreenState extends State<Qna> {
               child: SizedBox(
                 width: MediaQuery.of(context).size.width,
                 child: const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                  child: Text(
-                    'Q&A',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                    padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                    child: Text(
+                      'Q&A',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                    )),
               ),
             ),
           ),
@@ -116,182 +112,104 @@ class _QnaScreenState extends State<Qna> {
             width: double.infinity,
             color: Colors.white,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   const SizedBox(height: 30), // 버튼 위 간격
                   SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const regQnA()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Color(0xFF555555),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
-                          side: const BorderSide(color: Color(0xFF555555)),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            '질문 등록하기',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF555555)),
+                      height: 48,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const regQnA()));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Color(0xFF555555),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.0),
+                              side: const BorderSide(color: Color(0xFF555555)),
+                            ),
                           ),
-                          SizedBox(width: 10),
-                          Image.asset(
-                            'images/arrow_botton_mini_right.png', // 경로
-                            width: 10, // 너비 설정
-                            //height: 7, // 높이 설정
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            const Text('질문 등록하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF555555))),
+                            SizedBox(width: 10),
+                            Image.asset('images/arrow_botton_mini_right.png', width: 10),
+                          ]))),
                   const SizedBox(height: 30), // 버튼 아래 간격
-                ],
-              ),
-            ),
+                ])),
           ),
           const Divider(color: Color(0xFFEDEDED), thickness: 1, height: 1),
           Expanded(
             child: _qnaData.isEmpty
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        RichText(
-                          text: const TextSpan(
-                            children: [
-                              TextSpan(
-                                text: '작성된 ',
-                                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500),
-                              ),
-                              TextSpan(
-                                text: 'Q&A 문의글',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              TextSpan(
-                                text: '이 없습니다.',
-                                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      RichText(
+                          text: const TextSpan(children: [
+                        TextSpan(text: '작성된 ', style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500)),
+                        TextSpan(text: 'Q&A 문의글', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.black)),
+                        TextSpan(text: '이 없습니다.', style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500)),
+                      ])),
+                    ]),
                   )
                 : ListView.builder(
                     itemCount: _qnaData.length,
                     itemBuilder: (context, index) {
                       final rowData = _qnaData[index];
-                      return Column(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => QnaView(qnaData: rowData),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0), // 내부 패딩 추가
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 0),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      flex: 3,
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(height: 24),
-                                          Text(
-                                            rowData['title'] ?? '',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
-                                          SizedBox(height: 14),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                rowData['ansRegId'] == null || rowData['ansRegId'] == '' ? '미답변' : '답변완료',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: rowData['ansRegId'] == null || rowData['ansRegId'] == '' ? Color(0xFF555555) : const Color(0xFF00914B),
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              if (rowData['regDtm'] != null)
-                                                Row(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 8.0), // 좌우 패딩 추가
-                                                      child: Container(
-                                                        height: 12,
-                                                        width: 1,
-                                                        color: Color(0xFF555555),
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      rowData['regDtm'],
-                                                      style: const TextStyle(fontSize: 14, color: Color(0xFF555555), fontWeight: FontWeight.w500),
-                                                    ),
-                                                  ],
-                                                ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 24),
-                                        ],
+                      Color grey = const Color(0xFF555555);
+                      return Column(children: [
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => QnaView(qnaData: rowData)));
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0), // 내부 패딩 추가
+                            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFEDEDED), width: 1))),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 0),
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Expanded(
+                                    flex: 3,
+                                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                      SizedBox(height: 24),
+                                      Text(
+                                        rowData['title'] ?? '',
+                                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
                                       ),
-                                    ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                      SizedBox(height: 14),
+                                      Row(
                                         children: [
                                           Text(
-                                            rowData['date'] ?? '',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey,
+                                            rowData['ansRegId'] == null || rowData['ansRegId'] == '' ? '미답변' : '답변완료',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: rowData['ansRegId'] == null || rowData['ansRegId'] == '' ? grey : const Color(0xFF00914B),
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
+                                          if (rowData['regDtm'] != null)
+                                            Row(
+                                              children: [
+                                                Padding(padding: const EdgeInsets.symmetric(horizontal: 8.0), child: Container(height: 12, width: 1, color: grey)),
+                                                Text(rowData['regDtm'], style: TextStyle(fontSize: 14, color: grey, fontWeight: FontWeight.w500)),
+                                              ],
+                                            ),
                                         ],
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                      SizedBox(height: 24),
+                                    ])),
+                                Expanded(
+                                    flex: 2,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [Text(rowData['date'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey))],
+                                    )),
+                              ]),
                             ),
                           ),
-                        ],
-                      );
-                    },
-                  ),
+                        ),
+                      ]);
+                    }),
           ),
         ],
       ),

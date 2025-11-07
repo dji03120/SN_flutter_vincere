@@ -21,6 +21,7 @@ class _HisHealthScreenState extends State<HisHealth> {
   String? password;
   bool _isLogIn = false;
   String? _selectedSeq;
+  // ignore: unused_field
   String? _selectedDate;
 
   @override
@@ -83,6 +84,7 @@ class _HisHealthScreenState extends State<HisHealth> {
 
     for (var item in _healthData) {
       String seq = item['MSMT_SEQ'].toString();
+      // ignore: unused_local_variable
       String date = _formatTimestampToDate(item['MSMT_DAT']);
       if (!_groupedHealthData.containsKey(seq)) {
         _groupedHealthData[seq] = [];

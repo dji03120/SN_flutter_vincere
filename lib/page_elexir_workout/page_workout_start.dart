@@ -1,16 +1,15 @@
-import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
-import 'package:Vincere/page_ble_device/ble_utils.dart';
-import 'package:Vincere/page_workout/page_workout_content_active.dart';
-import 'package:Vincere/page_workout/page_workout_content_passive.dart';
+import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_elexir_workout/page_workout_content_active.dart';
+import 'package:Vincere/page_elexir_workout/page_workout_content_passive.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/progress_donut.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:video_player/video_player.dart';
-import 'package:Vincere/component/custom_text.dart'; // 추가
 
 class WorkoutStart extends StatefulWidget {
   const WorkoutStart({super.key});
@@ -54,6 +53,7 @@ class Component3State extends State<WorkoutStart> {
     print('$workoutSetting, $image_url');
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F4F9),
       appBar: const Header(),
       drawer: CustomDrawer(isLogin: true),
       body: Container(

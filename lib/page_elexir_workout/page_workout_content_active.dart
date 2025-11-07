@@ -1,10 +1,10 @@
-import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/page_ble_device/ble_utils.dart';
-import 'package:Vincere/page_workout/page_statistics.dart';
-import 'package:Vincere/page_workout/page_workout_plan.dart';
+import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_elexir_workout/page_statistics.dart';
+import 'package:Vincere/page_elexir_workout/page_workout_plan.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/screen/utils.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,7 @@ import 'package:Vincere/component/progress_donut.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:video_player/video_player.dart';
-import 'package:Vincere/component/custom_text.dart'; // 추가
+import 'package:Vincere/component/custom_widget.dart';
 
 class WorkoutContentActive extends StatefulWidget {
   const WorkoutContentActive({super.key});
@@ -63,13 +63,14 @@ class Component3State extends State<WorkoutContentActive> {
   //
   // timer
   void _startProgress() async {
-    Duration interval = const Duration(milliseconds: 1000); // 0.1초 간격
+    Duration interval = const Duration(milliseconds: 1000);
     ApiService apiService = ApiService();
     final userModel = Provider.of<UserModel>(context, listen: false);
     final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
 
     //
     //setting workout
+    String userId = userModel.userId;
     String muscleName = workoutModel.workoutPlan[workoutModel.currentWorkout];
     workoutSetting = workoutModel.get_workout_config(muscleName, userModel.gradeAvg.toInt());
     image_url = workoutSetting['scenario1']['asset_url'];
@@ -80,19 +81,16 @@ class Component3State extends State<WorkoutContentActive> {
     _timer = Timer.periodic(interval, (timer) async {
       if (step_count % 60 == 0) {
         print("update db"); // DB update는 await 없이 Future 처리 - 1분마다 갱신
-        await workoutModel.update_workout_info(userModel.userId, muscleName, intenseValue);
-        await apiService.updateWorkoutEnd(userModel.userId).then((_) {
+        await workoutModel.update_workout_info(userId, muscleName, intenseValue);
+        await apiService.updateWorkoutEnd(userId).then((_) {
           print('DB update 완료');
         }).catchError((e) {
           print('DB update 실패: $e');
         });
       }
 
-      if (_progress > 0) {
-        _progress = 1 - step_count / workout_sec; // timer update
-        step_count += mlt;
-      }
-
+      _progress = 1 - step_count / workout_sec; // progress update
+      step_count += mlt;
       if (_progress <= 0) {
         _progress = 0; // end of workout
         isWorkoutDone = true;
@@ -124,6 +122,7 @@ class Component3State extends State<WorkoutContentActive> {
     String currentWorkout = workoutModel.workoutPlan[workoutModel.currentWorkout];
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F4F9),
       appBar: const Header(),
       drawer: const CustomDrawer(isLogin: true),
       body: Stack(children: [

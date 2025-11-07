@@ -153,3 +153,27 @@ class _ScreenHomeCardButtonState extends State<HomeScreenButton> {
     );
   }
 }
+
+class TextCustom extends StatelessWidget {
+  final String text; // 버튼에 표시할 텍스트
+  final Color color;
+  final double fontSize;
+
+  const TextCustom({
+    super.key,
+    required this.text,
+    this.color = Colors.black,
+    this.fontSize = 22,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: fontSize,
+        fontWeight: FontWeight.bold,
+        color: color,
+      ),
+    );
+  }
+}

@@ -1,11 +1,10 @@
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/page_ble_device/ble_utils.dart';
+import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/component/custom_button.dart';
-import 'package:Vincere/component/custom_text.dart';
-import 'package:Vincere/page_workout/page_workout_start.dart';
+import 'package:Vincere/component/custom_widget.dart';
+import 'package:Vincere/page_elexir_workout/page_workout_start.dart';
 import 'package:Vincere/http/webReq.dart';
 
 class WorkoutPlan extends StatefulWidget {
@@ -48,6 +47,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
     Map<String, dynamic> workoutSetting = workoutModel.get_workout_config(currentWorkout, userModel.gradeAvg.toInt());
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F4F9),
       appBar: const Header(),
       body: Container(
         width: screenWidth,

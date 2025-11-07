@@ -1,664 +1,413 @@
+import 'package:Vincere/component/custom_drawer.dart';
+import 'package:Vincere/component/radar_chart.dart';
 import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:html';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 
 class ScreenHealthInfo extends StatefulWidget {
-  final List<Map<String, dynamic>> healthData;
-  final List<Map<String, dynamic>> msmtItemData; // final 변수 선언
-  final Future healthInfoItemsFuture; // 추가
-  final String? userId; // 추가
-  final Function initializeData; // 추가
+  final dynamic healthData; // 사용자 건강 데이터
+  final Future<dynamic> healthInfoItemsFuture; // 건강 정보 항목 Future
+  final String? userId; // 사용자 ID
+  final Function initializeData; // 초기화 함수
+  final dynamic msmtItemData; // 측정 항목 데이터
 
   const ScreenHealthInfo({
-    Key? key,
-    List<Map<String, dynamic>>? healthData, // optional로 변경
-    List<Map<String, dynamic>>? msmtItemData, // optional 파라미터 추가
+    super.key,
+    required this.healthData,
     required this.healthInfoItemsFuture,
     required this.userId,
     required this.initializeData,
-  })  : this.healthData = healthData ?? const [], // 기본값 빈 리스트 설정
-        this.msmtItemData = msmtItemData ?? const [], // 기본값 빈 리스트로 초기화
-        super(key: key);
+    required this.msmtItemData,
+  });
 
   @override
-  _ScreenHealthInfoState createState() => _ScreenHealthInfoState();
+  State<ScreenHealthInfo> createState() => _ScreenHealthInfo();
 }
 
-class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
-  late List<Map<String, dynamic>> _editedHealthData;
-  late List<Map<String, dynamic>> _editMsmtItemData;
-  List<TextEditingController> _controllers = [];
+//
+//
+class _ScreenHealthInfo extends State<ScreenHealthInfo> {
+  final PageController _pageController = PageController();
 
-  @override
-  void initState() {
-    super.initState();
-    // _editedHealthData = List<Map<String, dynamic>>.from(widget.healthData);
-    getDefaultHealthData();
-    // _editedHealthData = widget.healthData.isEmpty
-    //     ? getDefaultHealthData()
-    //     : List<Map<String, dynamic>>.from(widget.healthData);
-    _editedHealthData = getDefaultHealthData();
-    print("widget.healthData 확인 : ${widget.healthData}");
-    print("_editedHealthData:$_editedHealthData");
-    // 각 필드별로 기존 값을 가진 컨트롤러 생성
-    _controllers = List.generate(
-        _editedHealthData.length,
-        (index) => TextEditingController(text: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '' // 기존 값을 초기값으로 설정
-            ));
-  }
+  // 예시 데이터
+  final List<String> _radarNames = ['체지방률', '체지방량', '골격근량', '기초대사량', '체질량지수', '체중'];
+  final Map<String, List<double>> _radarValues = {
+    '1': [50, 60, 70, 80, 60, 70],
+    '2': [60, 70, 80, 90, 70, 80],
+  };
 
   @override
   void dispose() {
-    // 메모리 누수 방지를 위한 컨트롤러 dispose
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
+    _pageController.dispose();
     super.dispose();
-  }
-
-  List<Map<String, dynamic>> getDefaultHealthData() {
-    print("widget.msmtItemData : ${widget.msmtItemData}");
-    print("widget.healthData : ${widget.healthData}");
-
-    _editMsmtItemData = widget.msmtItemData
-        .where((item) => item['USE_YN'] == 'Y') // USE_YN이 Y인 항목만 필터링
-        .map((item) => {'MSMT_ITEM_CD': item['MSMT_ITEM_CD'], 'MSMT_ITEM_NM': item['MSMT_ITEM_NM'], 'MSMT_VALUE': item['MSMT_VALUE'] ?? '', 'MSMT_UNIT': item['MSMT_UNIT'] ?? ''})
-        .toList();
-
-    // widget.healthData 값이 null이면 _editMsmtItemData 초기값 반환,
-    // null이 아닌 경우, widget.healthData 데이터 갯수만큼 반복문 돌려서
-    // _editMsmtItemData에 값 세팅
-
-    // widget.healthData가 null이 아니고 비어있지 않은 경우
-    // ignore: unnecessary_null_comparison
-    if (widget.healthData != null && widget.healthData.isNotEmpty) {
-      // _editMsmtItemData를 순회하면서 healthData의 값으로 업데이트
-      for (var item in _editMsmtItemData) {
-        // healthData에서 matching되는 항목 찾기
-        final healthItem = widget.healthData.firstWhere(
-          (healthItem) => healthItem['MSMT_ITEM_CD'] == item['MSMT_ITEM_CD'],
-          orElse: () => <String, dynamic>{}, // 빈 Map 반환
-        );
-
-        // healthItem이 비어있지 않고 MSMT_VALUE가 있는 경우에만 업데이트
-        if (healthItem.isNotEmpty && healthItem['MSMT_VALUE'] != null) {
-          item['MSMT_VALUE'] = healthItem['MSMT_VALUE'].toString();
-        }
-      }
-    }
-
-    return _editMsmtItemData;
-  }
-
-  double? getValueByCode(List<Map<String, dynamic>> healthData, String code) {
-    final value = healthData.firstWhere(
-      (item) => item['MSMT_ITEM_CD'] == code,
-      orElse: () => {'MSMT_VALUE': null},
-    )['MSMT_VALUE'];
-
-    // value가 String일 경우 double로 변환 시도
-    if (value is String) {
-      return double.tryParse(value);
-    } else if (value is double) {
-      return value;
-    }
-
-    return null; // value가 null이거나 변환에 실패한 경우
-  }
-
-  void updateCalculatedValues(List<Map<String, dynamic>> healthData) {
-    double? height = getValueByCode(healthData, 'MSMT_001');
-    double? weight = getValueByCode(healthData, 'MSMT_002');
-    double? fatPercentage = getValueByCode(healthData, 'MSMT_008');
-
-    if (height != null && weight != null) {
-      double heightInMeters = height / 100;
-      double bmi = weight / (heightInMeters * heightInMeters);
-      double stdWeight = (height - 100) * 0.9;
-
-      // BMI와 표준 체중 값을 업데이트
-      updateValueByCode(healthData, 'MSMT_003', bmi.toStringAsFixed(1));
-      updateValueByCode(healthData, 'MSMT_004', stdWeight.toStringAsFixed(1));
-    }
-
-    if (weight != null && fatPercentage != null) {
-      double fatMass = weight * fatPercentage / 100;
-      double muscleMass = weight - fatMass;
-
-      // 근육량 값을 업데이트
-      updateValueByCode(healthData, 'MSMT_010', muscleMass.toStringAsFixed(1));
-    }
-  }
-
-  void updateValueByCode(List<Map<String, dynamic>> healthData, String code, String value) {
-    final index = healthData.indexWhere((item) => item['MSMT_ITEM_CD'] == code);
-    if (index != -1) {
-      setState(() {
-        healthData[index]['MSMT_VALUE'] = value; // _editedHealthData 업데이트
-        _controllers[index].text = value; // 컨트롤러 동기화
-      });
-    }
-  }
-
-  InputDecoration getInputDecoration(String hint, bool isReadOnly, String? unit) {
-    return InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: const Color(0xFFF8F9FB),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0),
-        borderSide: const BorderSide(
-          color: Color(0xFFEDEDED),
-          width: 1.0,
-        ),
-      ),
-      suffix: unit != null
-          ? Padding(
-              padding: const EdgeInsets.only(right: 0),
-              child: Text(
-                unit,
-                style: const TextStyle(
-                  color: Color(0xFF8D8D8D),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            )
-          : null,
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0),
-        borderSide: const BorderSide(
-          color: Color(0xFFEDEDED),
-          width: 1.0,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0),
-        borderSide: const BorderSide(
-          color: Color(0xFFEDEDED),
-          width: 1.0,
-        ),
-      ),
-      disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0),
-        borderSide: const BorderSide(
-          color: Color(0xFFEDEDED),
-          width: 1.0,
-        ),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      hintStyle: const TextStyle(
-        color: Color(0xFF8D8D8D),
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> children = [];
-    int index = 0;
-
-    TextStyle textStyleFont16w500 = const TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-    );
-
-    children.add(
-      const Padding(
-          padding: const EdgeInsets.only(bottom: 30),
-          child: Text('My 건강정보 입력하기',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ))),
-    );
-    while (index < _editedHealthData.length) {
-      if (index < _editedHealthData.length && _editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_001' && index + 1 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_002') {
-        // 키와 몸무게를 Row로 배치
-        int areaidx = index;
-        int areaidx2 = index + 1;
-        children.add(
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controllers[index], // controller 사용
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
-                      ],
-                      decoration: getInputDecoration(
-                        '',
-                        false,
-                        _editedHealthData[index]['MSMT_UNIT'],
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          print("value:$value");
-                          print("areaidx:$areaidx");
-                          _editedHealthData[areaidx]['MSMT_VALUE'] = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
+    double width = MediaQuery.of(context).size.width;
+    return Scaffold(
+      backgroundColor: Color(0xFFF3F3F3),
+      appBar: const Header(),
+      drawer: const CustomDrawer(isLogin: true),
+      body: SingleChildScrollView(
+        child: Column(children: [
+          Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3), // 그림자 색상
+                    blurRadius: 8, // 흐림 정도
+                    offset: const Offset(0, 4), // 그림자 위치
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controllers[index + 1],
-                      //initialValue: _editedHealthData[index+1]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
-                      ],
-                      decoration: getInputDecoration(
-                        '',
-                        false,
-                        _editedHealthData[index + 1]['MSMT_UNIT'],
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          print("value:$value");
-                          print("index:$index");
-                          _editedHealthData[areaidx2]['MSMT_VALUE'] = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
+              child: _content_radar(context, _radarNames, _radarValues)),
+          SizedBox(height: 25),
+          Card(
+              elevation: 4,
+              margin: const EdgeInsets.symmetric(vertical: 3),
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            ],
-          ),
-        );
-        children.add(const SizedBox(height: 0)); // 간격 수정
-        index += 2; // 두 항목을 처리했으므로 2 증가
-      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_005' && index + 2 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_006' && _editedHealthData[index + 2]['MSMT_ITEM_CD'] == 'MSMT_007') {
-        print("index:$index");
-        int areaidx = index;
-        // 간수치 ALT, AST, ALP를 Row로 배치
-        children.add(const SizedBox(height: 30)); // 간격 수정
-        children.add(
-          Row(
-            children: [
-              for (int i = 0; i < 3; i++) ...[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(_editedHealthData[index + i]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _controllers[index + i],
-                        //initialValue: _editedHealthData[index + i]['MSMT_VALUE']?.toString() ?? '', // index + i로 변경
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
-                        ],
-                        decoration: getInputDecoration(
-                          '',
-                          false,
-                          _editedHealthData[index + i]['MSMT_UNIT'],
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                child: Column(children: [
+                  SizedBox(height: 25),
+                  Container(
+                    width: width * 0.85,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.white, // 버튼 배경색
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.black, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1), // 그림자 색상
+                          blurRadius: 4, // 흐림 정도
+                          offset: const Offset(0, 4), // 그림자 위치
                         ),
-                        onChanged: (value) {
-                          setState(() {
-                            print("value:$value");
-                            print("index:$index");
-                            _editedHealthData[areaidx + i]['MSMT_VALUE'] = value; // index + i로 변경
-                          });
-                        },
+                      ],
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        // 버튼 클릭 시 동작
+                      },
+                      child: const Center(
+                        child: Text(
+                          '나의 건강정보',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 25),
+                  dataRow('Body Fat Percentage (%)', 16.2, 0.60, '평균'),
+                  dataRow('Body Fat Percentage (%)', 16.2, 0.80, '높음'),
+                  dataRow('Body Fat Percentage (%)', 16.2, 0.40, '평균'),
+                  dataRow('Body Fat Percentage (%)', 16.2, 0.91, '높음'),
+                  dataRow('Body Fat Percentage (%)', 16.2, 0.30, '낮음'),
+                  SizedBox(height: 25),
+                ]),
+              )),
+          SizedBox(height: 50),
+        ]),
+      ),
+    );
+  }
+}
+
+Widget _content_radar(context, _radarNames, _radarValues) {
+  double width = MediaQuery.of(context).size.width;
+  return Column(
+    children: [
+      // 프로필 카드
+      Card(
+        color: Colors.black87,
+        margin: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+            topLeft: Radius.circular(0),
+            topRight: Radius.circular(0),
+          ),
+        ),
+        child: Column(
+          children: [
+            // 상단: 버튼
+            SizedBox(height: 25),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(
+                    fixedSize: Size(width * 0.7, 40),
+                    minimumSize: Size.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(color: Color(0xFF92D2B0), width: 2),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min, // 텍스트 + 아이콘 크기만큼
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.bluetooth,
+                        color: Color(0xFF92D2B0),
+                        size: 20,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        '건강정보 측정하기',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF92D2B0),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                if (i < 2) const SizedBox(width: 8), // 두 필드 사이 여백
               ],
-            ],
-          ),
-        );
-        children.add(const SizedBox(height: 0)); // 간격 수정
-        index += 3; // 세 항목을 처리했으므로 index를 3 증가
-      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_010' && index + 1 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_011') {
-        int areaidx = index;
-        int areaidx2 = index + 1;
-        children.add(const SizedBox(height: 30)); // 간격 추가
-        // 근육량과 악력을 Row로 배치
-        children.add(
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controllers[index],
-                      //initialValue: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
-                      ],
-                      enabled: _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_010',
-                      decoration: getInputDecoration(
-                        '',
-                        false,
-                        _editedHealthData[index]['MSMT_UNIT'],
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _editedHealthData[areaidx]['MSMT_VALUE'] = value; // 정확히 index 데이터 참조
-                        });
-                      },
-                    ),
-                  ],
-                ),
+            ),
+            SizedBox(height: 10),
+            Container(
+              width: 312,
+              child: Divider(
+                color: Colors.white.withOpacity(0.15),
+                thickness: 2,
               ),
-              const SizedBox(width: 8), // 두 필드 사이 여백
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controllers[index + 1],
-                      //initialValue: _editedHealthData[index + 1]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
-                      ],
-                      decoration: getInputDecoration(
-                        '',
-                        false,
-                        _editedHealthData[index + 1]['MSMT_UNIT'],
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _editedHealthData[areaidx2]['MSMT_VALUE'] = value; // 정확히 index + 1 데이터 참조
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        children.add(const SizedBox(height: 30)); // Row 밑 간격 추가
-        index += 2; // 두 항목을 처리했으므로 index를 2 증가
-      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_012' && index + 1 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_013') {
-        int areaidx = index;
-        int areaidx2 = index + 1;
-        // 근육량과 악력을 Row로 배치
-        children.add(
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controllers[index],
-                      //initialValue: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '', // index만 참조
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
-                      ],
-                      decoration: getInputDecoration(
-                        '',
-                        false,
-                        _editedHealthData[index]['MSMT_UNIT'],
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _editedHealthData[areaidx]['MSMT_VALUE'] = value; // index만 참조
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8), // 두 필드 사이 여백
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controllers[index + 1],
-                      //initialValue: _editedHealthData[index + 1]['MSMT_VALUE']?.toString() ?? '', // index + 1로 변경
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
-                      ],
-                      decoration: getInputDecoration(
-                        '',
-                        false,
-                        _editedHealthData[index + 1]['MSMT_UNIT'],
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _editedHealthData[areaidx2]['MSMT_VALUE'] = value; // index + 1로 변경
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        children.add(const SizedBox(height: 30)); // Row 밑 간격 추가
-        index += 2; // 두 항목을 처리했으므로 index를 2 증가
-      } else if (_editedHealthData[index]['MSMT_ITEM_CD'] == 'MSMT_014' && index + 1 < _editedHealthData.length && _editedHealthData[index + 1]['MSMT_ITEM_CD'] == 'MSMT_015') {
-        int areaidx = index;
-        int areaidx2 = index + 1;
-        // 혈당과 혈압을 Row로 배치
-        children.add(
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controllers[index],
-                      //initialValue: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
-                      ],
-                      decoration: getInputDecoration(
-                        '',
-                        false,
-                        _editedHealthData[index]['MSMT_UNIT'],
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _editedHealthData[areaidx]['MSMT_VALUE'] = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8), // 두 필드 사이 여백
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_editedHealthData[index + 1]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controllers[index + 1],
-                      //initialValue: _editedHealthData[index + 1]['MSMT_VALUE']?.toString() ?? '',
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d{0,3}(\/\d{0,3})?$'), // 숫자 최대 3자리 + 슬래시 + 숫자 최대 3자리 허용
+            ),
+            SizedBox(height: 15),
+
+            // 하단: Radar
+            SizedBox(
+              height: 300 * 0.8,
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  CustomRadarChart(
+                    features: _radarNames,
+                    data: [40, 50, 80, 70, 30, 50],
+                    sides: _radarNames.length,
+                    graphColors: [Colors.green],
+                    ticks: [33, 66, 100],
+                    size: 300 * 0.78,
+                  ),
+                  CustomRadarChart(
+                    features: _radarNames,
+                    data: [50, 60, 60, 60, 35, 40],
+                    sides: _radarNames.length,
+                    graphColors: [Colors.orangeAccent],
+                    ticks: [33, 66, 100],
+                    size: 300 * 0.78,
+                  ),
+                  Transform.translate(
+                    offset: const Offset(-105, -10),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start, // 좌측 정렬
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(width: 20, height: 3, color: Colors.orangeAccent),
+                            const SizedBox(width: 6),
+                            const Text(
+                              '건강정보(3달 전)',
+                              style: TextStyle(fontSize: 11, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // 텍스트와 막대 간격
+                            Container(width: 20, height: 3, color: Colors.green),
+                            const SizedBox(width: 6),
+                            const Text(
+                              '건강정보(현재)',
+                              style: TextStyle(fontSize: 11, color: Colors.white),
+                            ),
+                          ],
                         ),
                       ],
-                      decoration: getInputDecoration(
-                        '',
-                        false,
-                        _editedHealthData[index + 1]['MSMT_UNIT'],
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _editedHealthData[areaidx2]['MSMT_VALUE'] = value;
-                        });
-                      },
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        children.add(const SizedBox(height: 0)); // Row 밑 간격 추가
-        index += 2; // 두 항목을 처리했으므로 2 증가
-      } else {
-        int areaidx = index;
-        // 일반적인 항목 처리
-        children.add(
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 30), // 간격 수정
-              Text(_editedHealthData[index]['MSMT_ITEM_NM'] ?? '항목명 없음', style: textStyleFont16w500),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _controllers[index],
-                //initialValue: _editedHealthData[index]['MSMT_VALUE']?.toString() ?? '',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')), // 숫자와 소수점만 허용
-                ],
-                enabled: _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_003' && _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_004' && _editedHealthData[index]['MSMT_ITEM_CD'] != 'MSMT_010',
-                decoration: getInputDecoration(
-                  '',
-                  false,
-                  _editedHealthData[index]['MSMT_UNIT'],
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _editedHealthData[areaidx]['MSMT_VALUE'] = value;
-                  });
-                },
-              ),
-            ],
-          ),
-        );
-        index++; // 일반 항목은 1 증가
-      }
-    }
-
-    return Scaffold(
-      appBar: const Header(),
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-          child: Form(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: children,
-            ),
-          ),
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 40, 16, 60),
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: () async {
-              try {
-                updateCalculatedValues(_editedHealthData);
-                final List<Map<String, dynamic>> updateData = _editedHealthData
-                    .map((item) => {
-                          'MSMT_ITEM_CD': item['MSMT_ITEM_CD'],
-                          'MSMT_VALUE': item['MSMT_VALUE'], // 수정된 값만 포함
-                        })
-                    .toList();
-                print("API로 전달할 데이터: $updateData");
-
-                // API 호출
-                ApiService apiService = ApiService();
-                Map<String, dynamic> result = await apiService.updateUserHealthData(
-                  widget.userId!,
-                  updateData,
-                );
-
-                // 결과 처리
-                if (result["result"] > 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('건강정보가 성공적으로 업데이트되었습니다.'),
-                      duration: Duration(seconds: 2),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-
-                  widget.initializeData();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('업데이트 중 오류가 발생했습니다.'),
-                      duration: Duration(seconds: 2),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              } catch (e) {
-                print("저장 중 오류 발생: $e");
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('알 수 없는 오류가 발생했습니다.'),
-                    duration: Duration(seconds: 2),
-                    backgroundColor: Colors.red,
                   ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF007130),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0),
+                ],
               ),
             ),
-            child: const Text(
-              '저장하기',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+            Container(
+              width: 312,
+              child: Divider(
+                color: Colors.white.withOpacity(0.15),
+                thickness: 2,
               ),
             ),
-          ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(left: 30.0, top: 12.0, bottom: 24.0, right: 12.0),
+                  child: _buildHealthMetric('키', 123, 'cm'),
+                ),
+                Container(
+                  height: 74,
+                  child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1, width: 1),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(left: 12.0, top: 12.0, bottom: 24.0, right: 12.0),
+                  child: _buildHealthMetric('몸무게', 12, 'kg'),
+                ),
+                Container(
+                  height: 74,
+                  child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1, width: 1),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(left: 12.0, top: 12.0, bottom: 24.0, right: 30.0),
+                  child: _buildHealthMetric('근육량', 12, 'kg'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
+    ],
+  );
+}
+
+Widget dataRow(String name, double value, double progress, String label) {
+  Color color = Colors.greenAccent;
+  if (progress < 0.33) {
+    color = Colors.blueGrey.withOpacity(0.7);
+  } else if (0.66 <= progress) {
+    color = Colors.orangeAccent;
   }
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 이름 + 수치
+        Row(
+          children: [
+            Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            const Spacer(),
+            Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // 진행률 바 + 구분선 + 레이블
+        Stack(
+          children: [
+            // 배경 바
+            Container(
+              height: 30,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1), // 그림자 색상
+                    blurRadius: 4, // 흐림 정도
+                    offset: const Offset(0, 4), // 그림자 위치
+                  ),
+                ],
+              ),
+            ),
+            // 진행률 바
+            FractionallySizedBox(
+              widthFactor: progress, // 0.0 ~ 1.0
+              child: Container(
+                height: 30,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+            // 3등분 구분선
+            Positioned.fill(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  // 1/3 위치
+                  VerticalDivider(
+                    color: Colors.white,
+                    thickness: 2,
+                    width: 1,
+                  ),
+                  // 2/3 위치
+                  VerticalDivider(
+                    color: Colors.white,
+                    thickness: 2,
+                    width: 1,
+                  ),
+                ],
+              ),
+            ),
+            // 텍스트 라벨
+            Positioned.fill(
+              child: Center(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+// 건강 정보 지표를 위한 새로운 위젯
+Widget _buildHealthMetric(String label, double value, String unit) {
+  return Column(
+    children: [
+      Text(
+        label, // 라벨(키, 몸무게 등) 위치를 위로 이동
+        style: TextStyle(
+          fontSize: 15,
+          color: Color(0xFFFFFF).withOpacity(0.8),
+        ),
+      ),
+      SizedBox(height: 2),
+      Text(
+        // 숫자 값
+        value.toString(),
+        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+      ),
+      SizedBox(height: 2),
+      Text(
+        // 단위(cm, kg 등)만 아래에 표시
+        unit,
+        style: TextStyle(
+          fontSize: 15,
+          color: Color(0xFFFFFF).withOpacity(0.8),
+        ),
+      ),
+    ],
+  );
 }

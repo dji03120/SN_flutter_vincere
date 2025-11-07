@@ -82,7 +82,9 @@ class _SingUpScreenState extends State<SingUpScreen> {
   bool _isAgreed = false; // 체크박스 상태 변수
   bool _validateActivityLevel = false;
 
+  // ignore: unused_field
   String _passWdError = '';
+  // ignore: unused_field
   String _passWdChkError = '';
 
   var currentDropVal = 'M';
@@ -1165,10 +1167,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                         ),
                         child: const Text(
                           '가입하기',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),

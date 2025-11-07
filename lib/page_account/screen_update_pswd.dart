@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:Vincere/export/screens.dart';
 import 'package:Vincere/http/webReq.dart';
 import 'package:Vincere/component/header.dart';
@@ -29,6 +28,7 @@ class _UpdatePswdState extends State<UpdatePswd> {
   bool isConfirmPswdMatchError = false;
 
   @override
+  // ignore: must_call_super
   void initState() {
     _loadSessionData().then((_) {
       if (_isLogIn) {
@@ -61,8 +61,7 @@ class _UpdatePswdState extends State<UpdatePswd> {
       hintText: hint,
       filled: true,
       fillColor: const Color(0xFFF8F9FB),
-      hintStyle: const TextStyle(
-          color: Color(0xFF8D8D8D), fontSize: 16, fontWeight: FontWeight.w400),
+      hintStyle: const TextStyle(color: Color(0xFF8D8D8D), fontSize: 16, fontWeight: FontWeight.w400),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
         borderSide: BorderSide(
@@ -103,10 +102,7 @@ class _UpdatePswdState extends State<UpdatePswd> {
       isConfirmPswdMatchError = newPswdCon.text != confirmPswdCon.text;
     });
 
-    if (isCurrentPswdError ||
-        isNewPswdError ||
-        isConfirmPswdError ||
-        isConfirmPswdMatchError) {
+    if (isCurrentPswdError || isNewPswdError || isConfirmPswdError || isConfirmPswdMatchError) {
       return;
     }
 

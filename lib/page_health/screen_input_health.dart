@@ -16,8 +16,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
   String? userId;
   List<Map<String, dynamic>> msmtPreInfo = [];
   Map<String, TextEditingController> controllers = {};
-  Map<String, String?> originalValues =
-      {}; // Store original values for comparison
+  Map<String, String?> originalValues = {}; // Store original values for comparison
   bool hasPreSavedData = false; // Track if pre-saved health data is available
   bool isDataSaved = false; // Track if new data has been saved successfully
 
@@ -35,16 +34,14 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
     userId = prefs.getString('userId');
 
     ApiService apiService = ApiService();
-    Map<String, dynamic> result =
-        await apiService.fetchMsmtPreInfo(userId.toString());
+    Map<String, dynamic> result = await apiService.fetchMsmtPreInfo(userId.toString());
 
     if (result.containsKey('getMsmtPreInfo')) {
       setState(() {
         msmtPreInfo = List<Map<String, dynamic>>.from(result['getMsmtPreInfo']);
 
         // 데이터가 있는지 체크함 : 데이터가 있으면 N, 없으면 Y
-        String msmtPreInfoNullYn =
-            (result['getMsmtPreInfoNullYn'] ?? '').toString();
+        String msmtPreInfoNullYn = (result['getMsmtPreInfoNullYn'] ?? '').toString();
         if (msmtPreInfoNullYn == 'N') {
           hasPreSavedData = true;
         }
@@ -52,28 +49,23 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
           for (var item in msmtPreInfo)
             if (item['MSMT_ITEM_CD'] != null)
               item['MSMT_ITEM_CD']: TextEditingController(
-                text:
-                    (item['MSMT_VALUE'] ?? '').toString(), // Handle null values
+                text: (item['MSMT_VALUE'] ?? '').toString(), // Handle null values
               )
         };
 
-        originalValues = {
-          for (var item in msmtPreInfo)
-            item['MSMT_ITEM_CD']: item['MSMT_VALUE']?.toString()
-        };
+        originalValues = {for (var item in msmtPreInfo) item['MSMT_ITEM_CD']: item['MSMT_VALUE']?.toString()};
       });
     }
   }
 
   Future<void> _submitData() async {
     // Check for empty fields
+    // ignore: unused_local_variable
     bool hasEmptyFields = false;
 
     for (var item in msmtPreInfo) {
       String? itemCd = item['MSMT_ITEM_CD'];
-      if (itemCd != null &&
-          controllers.containsKey(itemCd) &&
-          (itemCd != 'MSMT_003' && itemCd != 'MSMT_004')) {
+      if (itemCd != null && controllers.containsKey(itemCd) && (itemCd != 'MSMT_003' && itemCd != 'MSMT_004')) {
         String? currentValue = controllers[itemCd]?.text;
 
         if (currentValue == null || currentValue.isEmpty) {
@@ -137,10 +129,10 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
     }
   }
 
+  // ignore: unused_element
   Future<void> _autoPscp() async {
     if (!hasPreSavedData && !isDataSaved) {
-      _showAlertDialog(
-          '오류', '건강 정보를 먼저 저장하거나 조회된 건강 정보가 있어야 자동 처방을 신청할 수 있습니다.');
+      _showAlertDialog('오류', '건강 정보를 먼저 저장하거나 조회된 건강 정보가 있어야 자동 처방을 신청할 수 있습니다.');
       return;
     }
 
@@ -156,8 +148,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
 
     try {
       ApiService apiService = ApiService();
-      Map<String, dynamic> response =
-          await apiService.fetchApplyAutoPscp(userId!);
+      Map<String, dynamic> response = await apiService.fetchApplyAutoPscp(userId!);
       if (response["result"] == 0) {
         _showAlertDialog('자동 처방 신청', '자동 처방 신청을 실패했습니다. 관리자에게 문의해주세요.');
       } else {
@@ -175,9 +166,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
         return AlertDialog(
           title: const Text('자동 처방 신청'),
           content: Text(
-            hasPreSavedData && !isDataSaved
-                ? '기존 건강 정보로 자동 처방을 진행하시겠습니까?'
-                : '신규 건강 정보로 자동 처방을 진행하시겠습니까?',
+            hasPreSavedData && !isDataSaved ? '기존 건강 정보로 자동 처방을 진행하시겠습니까?' : '신규 건강 정보로 자동 처방을 진행하시겠습니까?',
           ),
           actions: <Widget>[
             TextButton(
@@ -228,12 +217,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MyHomePage(
-                            title:
-                                "vincere_App"))); // Close the dialog and navigate to home
+                Navigator.push(context, MaterialPageRoute(builder: (context) => MyHomePage(title: "vincere_App"))); // Close the dialog and navigate to home
               },
               child: const Text('확인'),
             ),
@@ -246,9 +230,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
   // 여기에 _buildFormField 추가
   Widget _buildFormField(Map<String, dynamic> item) {
     String itemCode = item['MSMT_ITEM_CD'] ?? '';
-    bool isCalculatedField =
-        (item['MSMT_ITEM_NM']?.toString() ?? '').contains('신체질량지수') ||
-            (item['MSMT_ITEM_NM']?.toString() ?? '').contains('표준체중');
+    bool isCalculatedField = (item['MSMT_ITEM_NM']?.toString() ?? '').contains('신체질량지수') || (item['MSMT_ITEM_NM']?.toString() ?? '').contains('표준체중');
 
     if (isCalculatedField) {
       return Column(
@@ -299,8 +281,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
               }
 
               // 값이 비어있는 경우 계산된 필드 초기화
-              if ((itemCode == 'MSMT_001' || itemCode == 'MSMT_002') &&
-                  value.isEmpty) {
+              if ((itemCode == 'MSMT_001' || itemCode == 'MSMT_002') && value.isEmpty) {
                 if (controllers['MSMT_003'] != null) {
                   controllers['MSMT_003']!.text = '';
                 }
@@ -335,8 +316,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
                 return newValue;
               }
               if (newValue.text.contains('.')) {
-                if (newValue.text.indexOf('.') !=
-                    newValue.text.lastIndexOf('.')) {
+                if (newValue.text.indexOf('.') != newValue.text.lastIndexOf('.')) {
                   return oldValue;
                 }
               }
@@ -355,10 +335,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
     String? msmt002Value = controllers['MSMT_002']?.text; // 몸무게
 
     // MSMT_001과 MSMT_002가 모두 입력되었는지 확인
-    if (msmt001Value != null &&
-        msmt001Value.isNotEmpty &&
-        msmt002Value != null &&
-        msmt002Value.isNotEmpty) {
+    if (msmt001Value != null && msmt001Value.isNotEmpty && msmt002Value != null && msmt002Value.isNotEmpty) {
       _calculateValue(msmt001Value, msmt002Value).then((result) {
         setState(() {
           // BMI 값 설정
@@ -376,19 +353,13 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
   }
 
   // 여기에 _calculateValue 메서드 추가
-  Future<Map<String, dynamic>> _calculateValue(
-      String height, String weight) async {
+  Future<Map<String, dynamic>> _calculateValue(String height, String weight) async {
     try {
       ApiService apiService = ApiService();
-      Map<String, dynamic> requestData = {
-        'userId': userId,
-        'height': height,
-        'weight': weight
-      };
+      Map<String, dynamic> requestData = {'userId': userId, 'height': height, 'weight': weight};
 
       // API 호출하여 계산된 값 가져오기
-      Map<String, dynamic> result =
-          await apiService.fetchCalculatedValue(requestData);
+      Map<String, dynamic> result = await apiService.fetchCalculatedValue(requestData);
       return {'bmi': result['bmi'], 'stdWeight': result['stdWeight']};
     } catch (e) {
       print('Error calculating value: $e');
@@ -434,8 +405,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
                             data: ThemeData(
                               primaryColor: Colors.grey,
                               inputDecorationTheme: const InputDecorationTheme(
-                                labelStyle: TextStyle(
-                                    color: Colors.black, fontSize: 15.0),
+                                labelStyle: TextStyle(color: Colors.black, fontSize: 15.0),
                               ),
                             ),
                             child: Container(
@@ -445,9 +415,7 @@ class _InputInfoScreenState extends State<InputInfoScreen> {
                                   children: [
                                     Column(
                                       children: [
-                                        for (var item in msmtPreInfo)
-                                          _buildFormField(
-                                              item), // 정의한 _buildFormField 메서드 사용
+                                        for (var item in msmtPreInfo) _buildFormField(item), // 정의한 _buildFormField 메서드 사용
                                       ],
                                     ),
                                   ],

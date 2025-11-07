@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 
-import 'package:Vincere/component/custom_button.dart';
-import 'package:Vincere/page_ble_device/ble_utils.dart';
+import 'package:Vincere/component/custom_widget.dart';
+import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
@@ -17,6 +17,7 @@ class WebBleTest extends StatefulWidget {
 }
 
 class _BLEPageState extends State<WebBleTest> {
+  // ignore: unused_field
   BluetoothDevice? _device;
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? _notifyChar;
@@ -41,10 +42,6 @@ class _BLEPageState extends State<WebBleTest> {
     "펄스 -": "000B09000108",
     "info": "000B08010100",
     "battery": "000B08020100",
-    // 1등급 - 15min 100hz 강도 1ma
-    // 솔루션 통계 - 리포트 - 무료 운동시간, 유로 칼로리, 운동효과 구체적
-    // 인터벌 pulse up down
-    // log ma 확인
   };
 
   double _voltage = 50; // 0~10 V
@@ -148,41 +145,6 @@ class _BLEPageState extends State<WebBleTest> {
                 }
               },
             ),
-            Text("Voltage: ${(_voltage / 10).toStringAsFixed(1)} V"),
-            Slider(
-                value: _voltage,
-                min: 0,
-                max: 100,
-                divisions: 100,
-                label: "${(_voltage / 10).toStringAsFixed(1)} V",
-                onChanged: (value) {
-                  setState(() => _voltage = value);
-                  _sendCommand(setVoltage(value.toInt()));
-                }),
-            // Frequency Slider
-            Text("Frequency: ${_frequency.toStringAsFixed(0)} Hz"),
-            Slider(
-                value: _frequency,
-                min: 0,
-                max: 300,
-                divisions: 100,
-                label: "${_frequency.toStringAsFixed(0)} Hz",
-                onChanged: (value) {
-                  setState(() => _frequency = value);
-                  _sendCommand(setFrequency(value.toInt()));
-                }),
-            // Temperature Slider
-            Text("Temperature: ${_temperature.toStringAsFixed(0)} °C"),
-            Slider(
-                value: _temperature,
-                min: 10,
-                max: 70,
-                divisions: 60,
-                label: "${_temperature.toStringAsFixed(0)} °C",
-                onChanged: (value) {
-                  setState(() => _temperature = value);
-                  _sendCommand(setTemperature(value.toInt()));
-                }),
             const SizedBox(height: 10),
             Expanded(
               child: SingleChildScrollView(

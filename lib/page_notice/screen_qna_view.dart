@@ -51,17 +51,17 @@ class _QnaViewScreenState extends State<QnaView> {
   }
 
   String parseHtmlWithLineBreaks(String htmlString) {
-
     final document = html_parser.parse(htmlString);
 
     String parsedHtml = document.body?.innerHtml
-        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')  // <br> > 줄바꿈
-        .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n')       // </p> > 줄바꿈
-        .replaceAll(RegExp(r'<p.*?>', caseSensitive: false), '')       // <p> > 제거
-        .replaceAll(RegExp(r'&nbsp;', caseSensitive: false), ' ')      // &nbsp; > 공백
-        .replaceAll(RegExp(r'&lt;', caseSensitive: false), '<')        // &lt; > <
-        .replaceAll(RegExp(r'&gt;', caseSensitive: false), '>')        // &gt; > >
-        .replaceAll(RegExp(r'&amp;', caseSensitive: false), '&') ?? ''; // &amp; > &
+            .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n') // <br> > 줄바꿈
+            .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n') // </p> > 줄바꿈
+            .replaceAll(RegExp(r'<p.*?>', caseSensitive: false), '') // <p> > 제거
+            .replaceAll(RegExp(r'&nbsp;', caseSensitive: false), ' ') // &nbsp; > 공백
+            .replaceAll(RegExp(r'&lt;', caseSensitive: false), '<') // &lt; > <
+            .replaceAll(RegExp(r'&gt;', caseSensitive: false), '>') // &gt; > >
+            .replaceAll(RegExp(r'&amp;', caseSensitive: false), '&') ??
+        ''; // &amp; > &
 
     final cleanText = html_parser.parse(parsedHtml).body?.text ?? '';
 
@@ -90,7 +90,6 @@ class _QnaViewScreenState extends State<QnaView> {
           _qnaViewData = Map<String, dynamic>.from(result['myQnA']);
           modiTitleCon.text = _qnaViewData?["title"] ?? '';
           modiContentCon.text = _qnaViewData?["content"] ?? '';
-
         });
       }
     } catch (e) {
@@ -165,7 +164,6 @@ class _QnaViewScreenState extends State<QnaView> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,10 +180,7 @@ class _QnaViewScreenState extends State<QnaView> {
                 child: Text(
                   'Q&A 상세',
                   textAlign: TextAlign.left,
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                 ),
               ),
             ),
@@ -215,41 +210,24 @@ class _QnaViewScreenState extends State<QnaView> {
                                 children: [
                                   TextSpan(
                                     text: '[문의제목] ',
-                                    style: TextStyle(
-                                        color: const Color(0xFF00914B),
-                                        fontFamily: 'NotoSansKR',
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16),
+                                    style: TextStyle(color: const Color(0xFF00914B), fontFamily: 'NotoSansKR', fontWeight: FontWeight.w500, fontSize: 16),
                                   ),
                                   TextSpan(
                                     text: '${_qnaViewData?["title"]}',
-                                    style: TextStyle(
-                                        color: const Color(0xFF000000),
-                                        fontFamily: 'NotoSansKR',
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16),
+                                    style: TextStyle(color: const Color(0xFF000000), fontFamily: 'NotoSansKR', fontWeight: FontWeight.w500, fontSize: 16),
                                   ),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 14),
                             Text(
-                              (_qnaViewData?["regDtm"] != null && _qnaViewData?["regDtm"] is String)
-                                  ? (_qnaViewData?["regDtm"] as String).split(' ')[0]
-                                  : '',
-                              style: TextStyle(
-                                  color: const Color(0xFF8D8D8D),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700),
+                              (_qnaViewData?["regDtm"] != null && _qnaViewData?["regDtm"] is String) ? (_qnaViewData?["regDtm"] as String).split(' ')[0] : '',
+                              style: TextStyle(color: const Color(0xFF8D8D8D), fontSize: 12, fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 24),
                             Text(
                               "${_qnaViewData?["content"] ?? ''}",
-                              style: TextStyle(
-                                  color: const Color(0xFF555555),
-                                  fontFamily: 'NotoSansKR',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400),
+                              style: TextStyle(color: const Color(0xFF555555), fontFamily: 'NotoSansKR', fontSize: 15, fontWeight: FontWeight.w400),
                             ),
                           ],
                         ),
@@ -278,9 +256,7 @@ class _QnaViewScreenState extends State<QnaView> {
                               ),
                               const SizedBox(height: 14),
                               Text(
-                                (_qnaViewData?["ansRegDtm"] != null && _qnaViewData?["ansRegDtm"] is String)
-                                    ? (_qnaViewData?["ansRegDtm"] as String).split(' ')[0]
-                                    : '',
+                                (_qnaViewData?["ansRegDtm"] != null && _qnaViewData?["ansRegDtm"] is String) ? (_qnaViewData?["ansRegDtm"] as String).split(' ')[0] : '',
                                 style: const TextStyle(
                                   fontFamily: 'NotoSansKR',
                                   fontSize: 12,
@@ -352,7 +328,8 @@ class _QnaViewScreenState extends State<QnaView> {
                                   elevation: 0,
                                   padding: EdgeInsets.zero,
                                 ),
-                                child: const Center(  // 텍스트를 정확히 가운데로 정렬
+                                child: const Center(
+                                  // 텍스트를 정확히 가운데로 정렬
                                   child: Text(
                                     '수정하기',
                                     style: TextStyle(
@@ -380,7 +357,8 @@ class _QnaViewScreenState extends State<QnaView> {
                                   elevation: 0,
                                   padding: EdgeInsets.zero,
                                 ),
-                                child: const Center(  // 텍스트를 정확히 가운데로 정렬
+                                child: const Center(
+                                  // 텍스트를 정확히 가운데로 정렬
                                   child: Text(
                                     '삭제하기',
                                     style: TextStyle(
@@ -419,11 +397,7 @@ class _QnaViewScreenState extends State<QnaView> {
                                           children: [
                                             const Text(
                                               '제목',
-                                              style: TextStyle(
-                                                  fontSize: 16.0,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.black
-                                              ),
+                                              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500, color: Colors.black),
                                             ),
                                             const SizedBox(height: 8.0),
                                             TextFormField(
@@ -475,11 +449,7 @@ class _QnaViewScreenState extends State<QnaView> {
                                             const SizedBox(height: 20.0),
                                             const Text(
                                               '문의내용',
-                                              style: TextStyle(
-                                                  fontSize: 16.0,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.black
-                                              ),
+                                              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500, color: Colors.black),
                                             ),
                                             const SizedBox(height: 8.0),
                                             Stack(
@@ -552,10 +522,10 @@ class _QnaViewScreenState extends State<QnaView> {
                                               child: ElevatedButton(
                                                 onPressed: isModifyButtonEnabled
                                                     ? () {
-                                                  title = modiTitleCon.text;
-                                                  content = modiContentCon.text;
-                                                  _modifyQna();
-                                                }
+                                                        title = modiTitleCon.text;
+                                                        content = modiContentCon.text;
+                                                        _modifyQna();
+                                                      }
                                                     : null, // 비활성화 처리
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor: isModifyButtonEnabled
@@ -575,7 +545,6 @@ class _QnaViewScreenState extends State<QnaView> {
                                                   ),
                                                 ),
                                               ),
-
                                             ),
                                           ),
                                         ),
@@ -590,8 +559,7 @@ class _QnaViewScreenState extends State<QnaView> {
                       ),
                     ],
                   ],
-                )
-            ),
+                )),
           ),
         ],
       ),

@@ -1,11 +1,11 @@
-import 'package:Vincere/page_ble_device/ble_utils.dart';
-import 'package:Vincere/page_ble_device/page_connect_ble.dart';
+import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_ble_device/page_connect_elexir.dart';
 import 'package:Vincere/component/card_muscle_result.dart';
-import 'package:Vincere/component/custom_button.dart';
+import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/page_notice/screen_newsboard_list.dart';
-import 'package:Vincere/page_workout/page_statistics.dart';
+import 'package:Vincere/page_elexir_workout/page_statistics.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/screen/utils.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1439,7 +1439,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    margin: const EdgeInsets.only(left: 30.0, top: 24.0, bottom: 24.0, right: 24.0),
+                                    margin: const EdgeInsets.only(left: 30.0, top: 24.0, bottom: 24.0, right: 12.0),
                                     child: _buildHealthMetric('키', userHlthData, 'MSMT_001', 'cm'),
                                   ),
                                   Container(
@@ -1455,7 +1455,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                     child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1, width: 1),
                                   ),
                                   Container(
-                                    margin: const EdgeInsets.only(left: 24.0, top: 24.0, bottom: 24.0, right: 30.0),
+                                    margin: const EdgeInsets.only(left: 12.0, top: 24.0, bottom: 24.0, right: 30.0),
                                     child: _buildHealthMetric('근육량', userHlthData, 'muscleAmt', 'kg'),
                                   ),
                                 ],
@@ -1468,7 +1468,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                   ),
                   // 상단 제목과 나이
 
-                  SizedBox(height: 16),
+                  SizedBox(height: 24),
                   MuscleAgeCard(
                     muscleAge: muscleAge,
                     msmt003Grade: msmt003Grade,
@@ -1478,7 +1478,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                     msmt013Grade: msmt013Grade,
                     userId: userId!,
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 24),
 
                   // 에너지 권장량
                   Container(
