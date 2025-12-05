@@ -1,7 +1,7 @@
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/radar_chart.dart';
-import 'package:Vincere/http/webReq.dart';
+import 'package:Vincere/http/webReqSpring.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

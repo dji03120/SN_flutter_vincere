@@ -43,6 +43,7 @@ dependencies:
   geolocator: ^14.0.1
   js: ^0.6.5
   smooth_page_indicator: ^1.0.0  # 최신 버전으로 확인하세요
+  convert: ^3.1.2
 
 dev_dependencies:
   flutter_test:

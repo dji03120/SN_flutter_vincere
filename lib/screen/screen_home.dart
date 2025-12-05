@@ -1,11 +1,12 @@
-import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_ble_device/page_connect_elexir.dart';
-import 'package:Vincere/component/card_muscle_result.dart';
+import 'package:Vincere/screen/card_muscle_result.dart';
 import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/page_notice/screen_newsboard_list.dart';
 import 'package:Vincere/page_elexir_workout/page_statistics.dart';
+import 'package:Vincere/page_survey/survey_modal.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/screen/utils.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,7 +14,7 @@ import 'package:intl/intl.dart';
 import 'dart:math' show max;
 import 'package:flutter/services.dart';
 
-import 'package:Vincere/http/webReq.dart';
+import 'package:Vincere/http/webReqSpring.dart';
 import 'package:Vincere/export/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -50,6 +51,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
   List<Map<String, dynamic>>? msmtItemData; // 측정항목 정보
 
+  bool _isFoodSectionOpen = false;
+  bool _isExerciseSectionOpen = false;
   bool _isLoading = false;
   XFile? _profileImage;
   String? _profileImageUrl; // 프로필 이미지 URL 저장용 변수 추가
@@ -116,6 +119,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     _tabController.addListener(() => setState(() => _selectedIndex = _tabController.index));
 
     _initializeHealthInfo();
+
+    //WidgetsBinding.instance.addPostFrameCallback((_) {
+    //  showSurveyModal(context); // page_survey.survey_modal.dart
+    //});
   }
 
   // 새로운 초기화 메서드
@@ -124,8 +131,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       final userModel = Provider.of<UserModel>(context, listen: false); // 상태 접근
       final workoutModel = Provider.of<WorkoutModel>(context, listen: false); // 상태 접근
       await _loadSessionData(); // check is login
-      await sendCommand(workoutModel.writeChar, ble_commands["mode2"]!);
-      await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
+      await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
+      await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
       userModel.set_user_id(userId!);
 
       if (_isLogIn) {
@@ -606,8 +613,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       }
 
       userAge = age;
-      print("age : $age");
-
       return age.toString();
     } catch (e) {
       print('Error calculating age: $e');
@@ -1347,7 +1352,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                           ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(0.0),
+                          padding: const EdgeInsets.all(8.0),
                           child: Column(
                             children: [
                               // 상단: 프로필 정보
@@ -1365,9 +1370,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      SizedBox(height: 30),
+                                      SizedBox(height: 24),
                                       Row(
                                         children: [
+                                          SizedBox(width: 10),
                                           Text(
                                             userData?["userNm"] ?? '',
                                             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
@@ -1379,7 +1385,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 10),
+                                      SizedBox(height: 12),
                                       TextButton(
                                         onPressed: () {
                                           if (_isLogIn) {
@@ -1400,7 +1406,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                           }
                                         },
                                         style: TextButton.styleFrom(
-                                          fixedSize: Size(176, 40),
+                                          fixedSize: Size(186, 40),
                                           minimumSize: Size.zero,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(16),
@@ -1411,7 +1417,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                           ),
                                         ),
                                         child: const Text(
-                                          '내 건강정보 업데이트',
+                                          '내 건강정보 자세히보기',
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
@@ -1468,7 +1474,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                   ),
                   // 상단 제목과 나이
 
-                  SizedBox(height: 24),
+                  SizedBox(height: 12),
                   MuscleAgeCard(
                     muscleAge: muscleAge,
                     msmt003Grade: msmt003Grade,
@@ -1478,950 +1484,848 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                     msmt013Grade: msmt013Grade,
                     userId: userId!,
                   ),
-                  SizedBox(height: 24),
+                  SizedBox(height: 12),
 
-                  // 에너지 권장량
-                  Container(
-                    width: max(380, MediaQuery.of(context).size.width),
-                    color: Colors.white, // 흰색 배경 설정
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                      child: Wrap(
-                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        alignment: WrapAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: '${userData?["userNm"] ?? ""}',
-                                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF007130)),
-                                    ),
-                                    const TextSpan(
-                                      text: ' 님의',
-                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF000000)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                width: MediaQuery.of(context).size.width - 40, // padding 고려
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text('일일 에너지 권장량', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF000000))),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(text: '총 ', style: TextStyle(fontSize: 16)),
-                                          TextSpan(
-                                              text: NumberFormat('#,###').format(calculateEnergy(
-                                                      double.tryParse(userHlthData
-                                                                  .firstWhere(
-                                                                    (item) => item['MSMT_ITEM_CD'] == 'MSMT_004',
-                                                                    orElse: () => {'MSMT_VALUE': '0'},
-                                                                  )['MSMT_VALUE']
-                                                                  ?.toString() ??
-                                                              '0') ??
-                                                          0.0,
-                                                      userData?["activityLevel"] ?? "LOW")
-                                                  .round()),
-                                              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF000000))),
-                                          TextSpan(text: ' kcal', style: TextStyle(fontSize: 16)),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(height: 30),
-                              Container(
-                                width: MediaQuery.of(context).size.width - 40, // 좌우 padding(20씩) 고려
-                                child: Center(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      // 칼로리 계산기 다이얼로그 코드
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          TextEditingController intakeController = TextEditingController();
-                                          Map<String, dynamic> calories = {'total': 0, 'carb': 0, 'protein': 0};
-
-                                          return StatefulBuilder(
-                                            builder: (context, setState) {
-                                              return AlertDialog(
-                                                backgroundColor: Color(0xFFFFFFFF),
-                                                insetPadding: EdgeInsets.symmetric(horizontal: 24),
-                                                contentPadding: EdgeInsets.symmetric(horizontal: 24),
-                                                title: Container(
-                                                  margin: EdgeInsets.only(top: 9, bottom: 24),
-                                                  alignment: Alignment.center,
-                                                  child: const Text(
-                                                    '쌀 칼로리 계산',
-                                                    style: TextStyle(color: Color(0xFF000000), letterSpacing: -0.02, fontSize: 22, fontWeight: FontWeight.w700),
-                                                  ),
-                                                ),
-                                                content: SingleChildScrollView(
-                                                  child: Container(
-                                                    width: double.maxFinite,
-                                                    child: Column(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        // 섭취량 입력 Row
-                                                        Row(
-                                                          children: [
-                                                            // 섭취량 입력 필드 (2/3 크기)
-                                                            Expanded(
-                                                              flex: 2,
-                                                              child: SizedBox(
-                                                                height: 54,
-                                                                child: TextField(
-                                                                  controller: intakeController, // 컨트롤러 추가
-                                                                  textAlign: TextAlign.right,
-                                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, height: 1.0),
-                                                                  decoration: const InputDecoration(
-                                                                    filled: true, // 배경색을 적용하기 위해 필요
-                                                                    fillColor: Color(0xFFF5F4F9), // 배경색 설정
-                                                                    enabledBorder: OutlineInputBorder(
-                                                                      borderRadius: BorderRadius.all(Radius.circular(16)),
-                                                                      borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                                                    ),
-                                                                    focusedBorder: OutlineInputBorder(
-                                                                      borderRadius: BorderRadius.all(Radius.circular(16)),
-                                                                      borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
-                                                                    ),
-                                                                    prefixIcon: Padding(
-                                                                      padding: EdgeInsets.only(left: 16),
-                                                                      child: Center(
-                                                                        widthFactor: 1.0,
-                                                                        child: Text('중량', style: TextStyle(color: Color(0xFF000000), fontSize: 18, fontWeight: FontWeight.w500)),
-                                                                      ),
-                                                                    ),
-                                                                    suffixText: ' g ', // 우측에 단위 추가
-                                                                    suffixStyle: TextStyle(color: Color(0xFF555555), fontSize: 16, letterSpacing: -0.04),
-                                                                  ),
-                                                                  keyboardType: TextInputType.number,
-                                                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            SizedBox(width: 8),
-                                                            // 입력 버튼 (1/3 크기)
-                                                            Expanded(
-                                                              flex: 1,
-                                                              child: SizedBox(
-                                                                // SizedBox로 감싸서 높이 제어
-                                                                height: 54, // TextField의 기본 높이
-                                                                child: ElevatedButton(
-                                                                  onPressed: () {
-                                                                    double intake = double.tryParse(intakeController.text) ?? 0;
-                                                                    setState(() {
-                                                                      calories = calculateCalorie(intake);
-                                                                    });
-                                                                  },
-                                                                  child: Text('입력', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18, color: Color(0xFF555555))),
-                                                                  style: ElevatedButton.styleFrom(
-                                                                    padding: EdgeInsets.zero, // 패딩 제거
-                                                                    backgroundColor: Colors.white,
-                                                                    shape: RoundedRectangleBorder(
-                                                                      borderRadius: BorderRadius.circular(16),
-                                                                      side: BorderSide(width: 1, color: Color(0xFF555555)),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        SizedBox(height: 16),
-                                                        // 칼로리 정보 표시
-                                                        Container(
-                                                          width: double.infinity,
-                                                          padding: EdgeInsets.all(12),
-                                                          decoration: BoxDecoration(
-                                                            borderRadius: BorderRadius.circular(16),
-                                                            border: Border.all(color: Color(0xFFEDEDED), width: 1.0),
-                                                          ),
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              SizedBox(height: 8),
-                                                              RiceCaloriesRow(totalCalories: calories['total'], text: '섭취예정 총 칼로리', color: Color(0xFF000000)),
-                                                              SizedBox(height: 12),
-                                                              RiceCaloriesRow(totalCalories: calories['carb'], text: '탄수화물 칼로리', color: Color(0xFF00914B)),
-                                                              SizedBox(height: 12),
-                                                              RiceCaloriesRow(totalCalories: calories['protein'], text: '단백질 칼로리', color: Color(0xFF927E52)),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                                actions: [
-                                                  Container(
-                                                    width: double.infinity,
-                                                    margin: EdgeInsets.only(top: 30),
-                                                    // padding: EdgeInsets.symmetric(horizontal: 4),
-                                                    child: ElevatedButton(
-                                                      child: Text('닫기', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: Color(0xFF007130),
-                                                        padding: EdgeInsets.symmetric(vertical: 16),
-                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                      ),
-                                                      onPressed: () {
-                                                        Navigator.of(context).pop();
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                      );
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFFA2BC11),
-                                      minimumSize: Size(262, 56),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    ),
-                                    child: Text(
-                                      '쌀 칼로리 계산기',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFFFFFF).withOpacity(0.9)),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                  TextButton(
+                    onPressed: () {
+                      setState(() => _isFoodSectionOpen = !_isFoodSectionOpen);
+                    },
+                    child: Text(
+                      _isFoodSectionOpen ? "식단 닫기 ▲" : "식단 열기 ▼",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 22,
                       ),
                     ),
                   ),
+                  // 에너지 권장량
+                  if (_isFoodSectionOpen) ...[
+                    Container(
+                      width: max(380, MediaQuery.of(context).size.width),
+                      color: Colors.white, // 흰색 배경 설정
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                        child: Wrap(
+                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          alignment: WrapAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: '${userData?["userNm"] ?? ""}',
+                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF007130)),
+                                      ),
+                                      const TextSpan(
+                                        text: ' 님의',
+                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF000000)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  width: MediaQuery.of(context).size.width - 40, // padding 고려
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('일일 에너지 권장량', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF000000))),
+                                      RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(text: '총 ', style: TextStyle(fontSize: 16)),
+                                            TextSpan(
+                                                text: NumberFormat('#,###').format(calculateEnergy(
+                                                        double.tryParse(userHlthData
+                                                                    .firstWhere(
+                                                                      (item) => item['MSMT_ITEM_CD'] == 'MSMT_004',
+                                                                      orElse: () => {'MSMT_VALUE': '0'},
+                                                                    )['MSMT_VALUE']
+                                                                    ?.toString() ??
+                                                                '0') ??
+                                                            0.0,
+                                                        userData?["activityLevel"] ?? "LOW")
+                                                    .round()),
+                                                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF000000))),
+                                            TextSpan(text: ' kcal', style: TextStyle(fontSize: 16)),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 30),
+                                Container(
+                                  width: MediaQuery.of(context).size.width - 40, // 좌우 padding(20씩) 고려
+                                  child: Center(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        // 칼로리 계산기 다이얼로그 코드
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            TextEditingController intakeController = TextEditingController();
+                                            Map<String, dynamic> calories = {'total': 0, 'carb': 0, 'protein': 0};
 
-                  // 오늘 히츠 섹션
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                            width: constraints.maxWidth > 300 ? (constraints.maxWidth - 16) : constraints.maxWidth,
-                            height: 200,
+                                            return StatefulBuilder(
+                                              builder: (context, setState) {
+                                                return AlertDialog(
+                                                  backgroundColor: Color(0xFFFFFFFF),
+                                                  insetPadding: EdgeInsets.symmetric(horizontal: 24),
+                                                  contentPadding: EdgeInsets.symmetric(horizontal: 24),
+                                                  title: Container(
+                                                    margin: EdgeInsets.only(top: 9, bottom: 24),
+                                                    alignment: Alignment.center,
+                                                    child: const Text(
+                                                      '쌀 칼로리 계산',
+                                                      style: TextStyle(color: Color(0xFF000000), letterSpacing: -0.02, fontSize: 22, fontWeight: FontWeight.w700),
+                                                    ),
+                                                  ),
+                                                  content: SingleChildScrollView(
+                                                    child: Container(
+                                                      width: double.maxFinite,
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          // 섭취량 입력 Row
+                                                          Row(
+                                                            children: [
+                                                              // 섭취량 입력 필드 (2/3 크기)
+                                                              Expanded(
+                                                                flex: 2,
+                                                                child: SizedBox(
+                                                                  height: 54,
+                                                                  child: TextField(
+                                                                    controller: intakeController, // 컨트롤러 추가
+                                                                    textAlign: TextAlign.right,
+                                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, height: 1.0),
+                                                                    decoration: const InputDecoration(
+                                                                      filled: true, // 배경색을 적용하기 위해 필요
+                                                                      fillColor: Color(0xFFF5F4F9), // 배경색 설정
+                                                                      enabledBorder: OutlineInputBorder(
+                                                                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                                                                        borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
+                                                                      ),
+                                                                      focusedBorder: OutlineInputBorder(
+                                                                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                                                                        borderSide: BorderSide(color: Color(0xFFEDEDED), width: 1),
+                                                                      ),
+                                                                      prefixIcon: Padding(
+                                                                        padding: EdgeInsets.only(left: 16),
+                                                                        child: Center(
+                                                                          widthFactor: 1.0,
+                                                                          child: Text('중량', style: TextStyle(color: Color(0xFF000000), fontSize: 18, fontWeight: FontWeight.w500)),
+                                                                        ),
+                                                                      ),
+                                                                      suffixText: ' g ', // 우측에 단위 추가
+                                                                      suffixStyle: TextStyle(color: Color(0xFF555555), fontSize: 16, letterSpacing: -0.04),
+                                                                    ),
+                                                                    keyboardType: TextInputType.number,
+                                                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              SizedBox(width: 8),
+                                                              // 입력 버튼 (1/3 크기)
+                                                              Expanded(
+                                                                flex: 1,
+                                                                child: SizedBox(
+                                                                  // SizedBox로 감싸서 높이 제어
+                                                                  height: 54, // TextField의 기본 높이
+                                                                  child: ElevatedButton(
+                                                                    onPressed: () {
+                                                                      double intake = double.tryParse(intakeController.text) ?? 0;
+                                                                      setState(() {
+                                                                        calories = calculateCalorie(intake);
+                                                                      });
+                                                                    },
+                                                                    child: Text('입력', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18, color: Color(0xFF555555))),
+                                                                    style: ElevatedButton.styleFrom(
+                                                                      padding: EdgeInsets.zero, // 패딩 제거
+                                                                      backgroundColor: Colors.white,
+                                                                      shape: RoundedRectangleBorder(
+                                                                        borderRadius: BorderRadius.circular(16),
+                                                                        side: BorderSide(width: 1, color: Color(0xFF555555)),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(height: 16),
+                                                          // 칼로리 정보 표시
+                                                          Container(
+                                                            width: double.infinity,
+                                                            padding: EdgeInsets.all(12),
+                                                            decoration: BoxDecoration(
+                                                              borderRadius: BorderRadius.circular(16),
+                                                              border: Border.all(color: Color(0xFFEDEDED), width: 1.0),
+                                                            ),
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                SizedBox(height: 8),
+                                                                RiceCaloriesRow(totalCalories: calories['total'], text: '섭취예정 총 칼로리', color: Color(0xFF000000)),
+                                                                SizedBox(height: 12),
+                                                                RiceCaloriesRow(totalCalories: calories['carb'], text: '탄수화물 칼로리', color: Color(0xFF00914B)),
+                                                                SizedBox(height: 12),
+                                                                RiceCaloriesRow(totalCalories: calories['protein'], text: '단백질 칼로리', color: Color(0xFF927E52)),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    Container(
+                                                      width: double.infinity,
+                                                      margin: EdgeInsets.only(top: 30),
+                                                      // padding: EdgeInsets.symmetric(horizontal: 4),
+                                                      child: ElevatedButton(
+                                                        child: Text('닫기', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Color(0xFF007130),
+                                                          padding: EdgeInsets.symmetric(vertical: 16),
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.of(context).pop();
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          },
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xFFA2BC11),
+                                        minimumSize: Size(262, 56),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                      child: Text(
+                                        '쌀 칼로리 계산기',
+                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFFFFFF).withOpacity(0.9)),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // 오늘 히츠 섹션
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                              width: constraints.maxWidth > 300 ? (constraints.maxWidth - 16) : constraints.maxWidth,
+                              height: 200,
+                              child: Card(
+                                color: Color(0xFF0B8043), // 초록색 배경
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // 좌우 정렬
+                                        children: [
+                                          Expanded(
+                                            // 왼쪽 텍스트 부분
+                                            child: Row(
+                                              children: [
+                                                SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        '오늘하루',
+                                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: constraints.maxWidth > 300 ? 22 : 16, color: Color(0xFFFFFFFF), letterSpacing: -0.02),
+                                                      ),
+                                                      Text(
+                                                        '쌀 섭취량 입력',
+                                                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: constraints.maxWidth > 300 ? 22 : 16, color: Color(0xFFFFFFFF)),
+                                                      ),
+                                                      SizedBox(height: 20),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Image.asset(
+                                            'images/rice_img.png', // 이미지 파일 경로
+                                            width: 90,
+                                            height: 74,
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8),
+                                            child: SizedBox(
+                                              width: screenWidth * 0.35,
+                                              height: 42,
+                                              child: ElevatedButton(
+                                                onPressed: () async {
+                                                  // 섭취량 데이터 조회
+                                                  Map<String, dynamic> currentIntake = await getRiceIntake();
+                                                  print("currentIntake['BREAKFAST'] 확인 : ${currentIntake['BREAKFAST']}");
+
+                                                  // 팝업창 표시
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (BuildContext context) {
+                                                      // 텍스트 입력을 위한 컨트롤러들
+                                                      TextEditingController breakfastController = TextEditingController(text: currentIntake['BREAKFAST']?.toString() ?? '');
+                                                      TextEditingController lunchController = TextEditingController(text: currentIntake['LUNCH']?.toString() ?? '');
+                                                      TextEditingController dinnerController = TextEditingController(text: currentIntake['DINNER']?.toString() ?? '');
+
+                                                      return AlertDialog(
+                                                        insetPadding: EdgeInsets.symmetric(horizontal: 4),
+                                                        contentPadding: EdgeInsets.symmetric(horizontal: 24),
+                                                        titlePadding: EdgeInsets.only(top: 30, bottom: 30, left: 24, right: 24),
+                                                        title: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: [
+                                                            RichText(
+                                                              text: const TextSpan(
+                                                                children: [
+                                                                  TextSpan(
+                                                                    text: '섭취한 쌀의 ',
+                                                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.04),
+                                                                  ),
+                                                                  TextSpan(
+                                                                    text: '총량',
+                                                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF00914B)),
+                                                                  ),
+                                                                  TextSpan(
+                                                                    text: '을 입력해주세요',
+                                                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.04),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 18), // 두 줄 사이의 간격
+                                                            Row(
+                                                              // mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
+                                                              children: [
+                                                                const Text(
+                                                                  '백미,현미,흑미,잡곡 등 종류 상관없음',
+                                                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: Color(0xFF555555)),
+                                                                ),
+                                                                Spacer(), // 남은 공간을 차지하여 우측 정렬 효과를 줌
+                                                                Container(
+                                                                  alignment: Alignment.centerRight,
+                                                                  child: GestureDetector(
+                                                                    onTap: () {
+                                                                      showDialog(
+                                                                        context: context,
+                                                                        builder: (BuildContext context) {
+                                                                          return Dialog(
+                                                                            insetPadding: EdgeInsets.symmetric(horizontal: 24),
+                                                                            child: SingleChildScrollView(
+                                                                              child: Container(
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
+                                                                                    Stack(
+                                                                                      alignment: Alignment.topRight,
+                                                                                      children: [
+                                                                                        // 이미지
+                                                                                        Image.asset('images/rice_calculate_info.png', fit: BoxFit.contain),
+                                                                                        // 닫기 버튼
+                                                                                        Positioned(
+                                                                                          top: 1,
+                                                                                          right: 1,
+                                                                                          child: IconButton(
+                                                                                            icon: Icon(Icons.close),
+                                                                                            onPressed: () {
+                                                                                              Navigator.of(context).pop();
+                                                                                            },
+                                                                                          ),
+                                                                                        ),
+                                                                                      ],
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          );
+                                                                        },
+                                                                      );
+                                                                    },
+                                                                    child: Image.asset('images/question_mark.png', width: 20, height: 20),
+                                                                  ),
+                                                                )
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        content: Container(
+                                                          width: 300,
+                                                          child: Column(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              RiceWeightInput(
+                                                                label: '아침',
+                                                                controller: breakfastController,
+                                                                onSubmit: (amount) {
+                                                                  insertRiceIntake("BREAKFAST", amount);
+                                                                },
+                                                              ),
+                                                              SizedBox(height: 8),
+                                                              RiceWeightInput(
+                                                                label: '점심',
+                                                                controller: lunchController,
+                                                                onSubmit: (amount) {
+                                                                  insertRiceIntake("LUNCH", amount);
+                                                                },
+                                                              ),
+                                                              SizedBox(height: 8),
+                                                              RiceWeightInput(
+                                                                label: '저녁',
+                                                                controller: dinnerController,
+                                                                onSubmit: (amount) {
+                                                                  insertRiceIntake("DINNER", amount);
+                                                                },
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        actions: [
+                                                          Container(
+                                                            width: double.infinity,
+                                                            margin: EdgeInsets.only(top: 30),
+                                                            // padding: EdgeInsets.symmetric(horizontal: 4),
+                                                            child: ElevatedButton(
+                                                              child: const Text('닫기', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor: Color(0xFF007130),
+                                                                padding: EdgeInsets.symmetric(vertical: 16),
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius: BorderRadius.circular(16),
+                                                                ),
+                                                              ),
+                                                              onPressed: () {
+                                                                Navigator.of(context).pop();
+                                                              },
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  padding: EdgeInsets.zero,
+                                                  backgroundColor: Color(0xFF0B8043), // 초록색 배경
+                                                  // foregroundColor: Color(0xFF0B8043),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(16),
+                                                    side: BorderSide(color: Color(0xFFFFFFFF), width: 2.0),
+                                                  ),
+                                                ),
+                                                child: Text('입력하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFFFFFFFF)), softWrap: false, overflow: TextOverflow.visible),
+                                              ),
+                                            ),
+                                          ),
+                                          HomeScreenButton(
+                                            text: '섭취량 추이',
+                                            width: screenWidth * 0.35,
+                                            onPressed: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (BuildContext context) {
+                                                  return MetricChartDialog(
+                                                    title: '쌀 섭취량(g)',
+                                                    code: 'riceIntake',
+                                                    userId: userId,
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // 두 번째 Container
+                            Container(
+                              margin: const EdgeInsets.only(left: 20, right: 20),
+                              width: constraints.maxWidth > 300 ? (constraints.maxWidth - 16) : constraints.maxWidth,
+                              height: 300,
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                image: DecorationImage(image: AssetImage('images/yellow_back.png'), fit: BoxFit.cover),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(bottom: 36),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(height: 10),
+                                        Text(
+                                          '입력한 쌀 섭취량으로 알아보세요!',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          '오늘 먹은 총 칼로리 섭취량',
+                                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // 영양소 정보 rows
+                                  Container(
+                                    width: constraints.maxWidth > 300 ? (constraints.maxWidth - 32) : constraints.maxWidth - 32,
+                                    height: 160,
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFFFF8E1), // 연한 노란색 배경
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 0),
+                                          child: FoodRow(color: Color(0xFF007130), name: '쌀', totalGram: totalRice, kcalRatio: 1.46),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 0),
+                                          child: FoodRow(color: Color(0xFF00914B), name: '탄수화물', totalGram: carbCalories / 4, kcalRatio: 4),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 0),
+                                          child: FoodRow(color: Color(0xFF9D895B), name: '단백질', totalGram: proteinCalories / 4, kcalRatio: 4),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    // 탄수화물/단백질 섭취누적량
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // 탄수화물 카드
+                        Flexible(
+                          child: Container(
+                            margin: const EdgeInsets.only(left: 16),
+                            constraints: const BoxConstraints(minWidth: 175, maxWidth: 300),
+                            height: 180, // 적절한 높이 설정
                             child: Card(
-                              color: Color(0xFF0B8043), // 초록색 배경
+                              color: Colors.black, // 검은색 배경
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(height: 10),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // 좌우 정렬
-                                      children: [
-                                        Expanded(
-                                          // 왼쪽 텍스트 부분
-                                          child: Row(
-                                            children: [
-                                              SizedBox(width: 8),
-                                              Flexible(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      '오늘하루',
-                                                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: constraints.maxWidth > 300 ? 22 : 16, color: Color(0xFFFFFFFF), letterSpacing: -0.02),
-                                                    ),
-                                                    Text(
-                                                      '쌀 섭취량 입력',
-                                                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: constraints.maxWidth > 300 ? 22 : 16, color: Color(0xFFFFFFFF)),
-                                                    ),
-                                                    SizedBox(height: 20),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Image.asset(
-                                          'images/rice_img.png', // 이미지 파일 경로
-                                          width: 90,
-                                          height: 74,
-                                        ),
-                                      ],
+                                    SizedBox(width: 10),
+                                    const Text(
+                                      '탄수화물\n섭취누적량',
+                                      style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.02),
                                     ),
-                                    SizedBox(height: 20),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 8),
-                                          child: SizedBox(
-                                            width: screenWidth * 0.35,
-                                            height: 42,
-                                            child: ElevatedButton(
-                                              onPressed: () async {
-                                                // 섭취량 데이터 조회
-                                                Map<String, dynamic> currentIntake = await getRiceIntake();
-                                                print("currentIntake['BREAKFAST'] 확인 : ${currentIntake['BREAKFAST']}");
-
-                                                // 팝업창 표시
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (BuildContext context) {
-                                                    // 텍스트 입력을 위한 컨트롤러들
-                                                    TextEditingController breakfastController = TextEditingController(text: currentIntake['BREAKFAST']?.toString() ?? '');
-                                                    TextEditingController lunchController = TextEditingController(text: currentIntake['LUNCH']?.toString() ?? '');
-                                                    TextEditingController dinnerController = TextEditingController(text: currentIntake['DINNER']?.toString() ?? '');
-
-                                                    return AlertDialog(
-                                                      insetPadding: EdgeInsets.symmetric(horizontal: 4),
-                                                      contentPadding: EdgeInsets.symmetric(horizontal: 24),
-                                                      titlePadding: EdgeInsets.only(top: 30, bottom: 30, left: 24, right: 24),
-                                                      title: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                                        children: [
-                                                          RichText(
-                                                            text: const TextSpan(
-                                                              children: [
-                                                                TextSpan(
-                                                                  text: '섭취한 쌀의 ',
-                                                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.04),
-                                                                ),
-                                                                TextSpan(
-                                                                  text: '총량',
-                                                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF00914B)),
-                                                                ),
-                                                                TextSpan(
-                                                                  text: '을 입력해주세요',
-                                                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.04),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                          SizedBox(height: 18), // 두 줄 사이의 간격
-                                                          Row(
-                                                            // mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
-                                                            children: [
-                                                              const Text(
-                                                                '백미,현미,흑미,잡곡 등 종류 상관없음',
-                                                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: Color(0xFF555555)),
-                                                              ),
-                                                              Spacer(), // 남은 공간을 차지하여 우측 정렬 효과를 줌
-                                                              Container(
-                                                                alignment: Alignment.centerRight,
-                                                                child: GestureDetector(
-                                                                  onTap: () {
-                                                                    showDialog(
-                                                                      context: context,
-                                                                      builder: (BuildContext context) {
-                                                                        return Dialog(
-                                                                          insetPadding: EdgeInsets.symmetric(horizontal: 24),
-                                                                          child: SingleChildScrollView(
-                                                                            child: Container(
-                                                                              child: Column(
-                                                                                mainAxisSize: MainAxisSize.min,
-                                                                                children: [
-                                                                                  Stack(
-                                                                                    alignment: Alignment.topRight,
-                                                                                    children: [
-                                                                                      // 이미지
-                                                                                      Image.asset('images/rice_calculate_info.png', fit: BoxFit.contain),
-                                                                                      // 닫기 버튼
-                                                                                      Positioned(
-                                                                                        top: 1,
-                                                                                        right: 1,
-                                                                                        child: IconButton(
-                                                                                          icon: Icon(Icons.close),
-                                                                                          onPressed: () {
-                                                                                            Navigator.of(context).pop();
-                                                                                          },
-                                                                                        ),
-                                                                                      ),
-                                                                                    ],
-                                                                                  ),
-                                                                                ],
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                      },
-                                                                    );
-                                                                  },
-                                                                  child: Image.asset('images/question_mark.png', width: 20, height: 20),
-                                                                ),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      content: Container(
-                                                        width: 300,
-                                                        child: Column(
-                                                          mainAxisSize: MainAxisSize.min,
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: [
-                                                            RiceWeightInput(
-                                                              label: '아침',
-                                                              controller: breakfastController,
-                                                              onSubmit: (amount) {
-                                                                insertRiceIntake("BREAKFAST", amount);
-                                                              },
-                                                            ),
-                                                            SizedBox(height: 8),
-                                                            RiceWeightInput(
-                                                              label: '점심',
-                                                              controller: lunchController,
-                                                              onSubmit: (amount) {
-                                                                insertRiceIntake("LUNCH", amount);
-                                                              },
-                                                            ),
-                                                            SizedBox(height: 8),
-                                                            RiceWeightInput(
-                                                              label: '저녁',
-                                                              controller: dinnerController,
-                                                              onSubmit: (amount) {
-                                                                insertRiceIntake("DINNER", amount);
-                                                              },
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      actions: [
-                                                        Container(
-                                                          width: double.infinity,
-                                                          margin: EdgeInsets.only(top: 30),
-                                                          // padding: EdgeInsets.symmetric(horizontal: 4),
-                                                          child: ElevatedButton(
-                                                            child: const Text('닫기', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
-                                                            style: ElevatedButton.styleFrom(
-                                                              backgroundColor: Color(0xFF007130),
-                                                              padding: EdgeInsets.symmetric(vertical: 16),
-                                                              shape: RoundedRectangleBorder(
-                                                                borderRadius: BorderRadius.circular(16),
-                                                              ),
-                                                            ),
-                                                            onPressed: () {
-                                                              Navigator.of(context).pop();
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                padding: EdgeInsets.zero,
-                                                backgroundColor: Color(0xFF0B8043), // 초록색 배경
-                                                // foregroundColor: Color(0xFF0B8043),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(16),
-                                                  side: BorderSide(color: Color(0xFFFFFFFF), width: 2.0),
-                                                ),
-                                              ),
-                                              child: Text('입력하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFFFFFFFF)), softWrap: false, overflow: TextOverflow.visible),
-                                            ),
-                                          ),
-                                        ),
-                                        HomeScreenButton(
-                                          text: '섭취량 추이',
-                                          width: screenWidth * 0.35,
-                                          onPressed: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return MetricChartDialog(
-                                                  title: '쌀 섭취량(g)',
-                                                  code: 'riceIntake',
-                                                  userId: userId,
-                                                );
-                                              },
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    )
+                                    Spacer(),
+                                    Center(
+                                      child: HomeScreenButton(
+                                        text: '섭취량 추이',
+                                        width: 135,
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return MetricChartDialog(title: '탄수화물 섭취량(g)', code: 'carbsIntake', userId: userId);
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                          // 두 번째 Container
-                          Container(
-                            margin: const EdgeInsets.only(left: 20, right: 20),
-                            width: constraints.maxWidth > 300 ? (constraints.maxWidth - 16) : constraints.maxWidth,
-                            height: 300,
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              image: DecorationImage(image: AssetImage('images/yellow_back.png'), fit: BoxFit.cover),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.only(bottom: 36),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(height: 10),
-                                      Text(
-                                        '입력한 쌀 섭취량으로 알아보세요!',
-                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
+                        ),
+
+                        // 단백질 카드
+                        Flexible(
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 16),
+                            constraints: BoxConstraints(minWidth: 175, maxWidth: 300), // 적절한 너비 설정
+                            height: 180, // 적절한 높이 설정
+                            child: Card(
+                              color: Colors.grey[700], // 회색 배경
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(width: 10),
+                                    const Text(
+                                      '단백질\n섭취누적량',
+                                      style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.02),
+                                    ),
+                                    Spacer(),
+                                    Center(
+                                      child: HomeScreenButton(
+                                        text: '섭취량 추이',
+                                        width: 135,
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return MetricChartDialog(title: '단백질 섭취량(g)', code: 'proteinIntake', userId: userId);
+                                            },
+                                          );
+                                        },
                                       ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        '오늘 먹은 총 칼로리 섭취량',
-                                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000)),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                // 영양소 정보 rows
-                                Container(
-                                  width: constraints.maxWidth > 300 ? (constraints.maxWidth - 32) : constraints.maxWidth - 32,
-                                  height: 160,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFFFF8E1), // 연한 노란색 배경
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 0),
-                                        child: FoodRow(color: Color(0xFF007130), name: '쌀', totalGram: totalRice, kcalRatio: 1.46),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 0),
-                                        child: FoodRow(color: Color(0xFF00914B), name: '탄수화물', totalGram: carbCalories / 4, kcalRatio: 4),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 0),
-                                        child: FoodRow(color: Color(0xFF9D895B), name: '단백질', totalGram: proteinCalories / 4, kcalRatio: 4),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      );
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  // 탄수화물/단백질 섭취누적량
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // 탄수화물 카드
-                      Flexible(
-                        child: Container(
-                          margin: const EdgeInsets.only(left: 16),
-                          constraints: const BoxConstraints(minWidth: 175, maxWidth: 300),
-                          height: 180, // 적절한 높이 설정
-                          child: Card(
-                            color: Colors.black, // 검은색 배경
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(width: 10),
-                                  const Text(
-                                    '탄수화물\n섭취누적량',
-                                    style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.02),
-                                  ),
-                                  Spacer(),
-                                  Center(
-                                    child: HomeScreenButton(
-                                      text: '섭취량 추이',
-                                      width: 135,
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return MetricChartDialog(title: '탄수화물 섭취량(g)', code: 'carbsIntake', userId: userId);
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
                               ),
                             ),
                           ),
                         ),
-                      ),
-
-                      // 단백질 카드
-                      Flexible(
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 16),
-                          constraints: BoxConstraints(minWidth: 175, maxWidth: 300), // 적절한 너비 설정
-                          height: 180, // 적절한 높이 설정
-                          child: Card(
-                            color: Colors.grey[700], // 회색 배경
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(width: 10),
-                                  const Text(
-                                    '단백질\n섭취누적량',
-                                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.02),
-                                  ),
-                                  Spacer(),
-                                  Center(
-                                    child: HomeScreenButton(
-                                      text: '섭취량 추이',
-                                      width: 135,
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return MetricChartDialog(title: '단백질 섭취량(g)', code: 'proteinIntake', userId: userId);
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // 칼로리 그리드
-                  // 칼로리 그리드 섹션
-                  Container(
-                    margin: const EdgeInsets.only(left: 8, right: 8, top: 48),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 섹션 제목
-                        Text(
-                          '${userData?["userNm"] ?? ""} 님이 오늘 하루 한 끼에',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.08),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            RichText(
-                              text: const TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: '섭취해야 할 권장 칼로리는? ',
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.06),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Container(width: 10, height: 10, decoration: BoxDecoration(color: Color(0xFFFABE00), shape: BoxShape.circle)),
-                                SizedBox(width: 4), // 동그라미와 텍스트 사이 간격
-                                Container(
-                                  margin: EdgeInsets.only(right: 8),
-                                  child: const Text(
-                                    '섭취완료',
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        // 그리드 레이아웃
-                        Container(
-                          clipBehavior: Clip.antiAlias, // 모서리 부분 클리핑 처리
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Table(
-                            border: TableBorder.all(
-                              color: Colors.grey[300]!,
-                              width: 1,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            // defaultVerticalAlignment: TableCellVerticalAlignment.fill,
-                            children: [
-                              // 헤더 행 (이제 첫 번째 열이 됨)
-                              TableRow(
-                                children: [
-                                  // _buildTableHeader('${NumberFormat('#,###').format(recDailyEnergy)}'),
-                                  _buildTableHeader('${NumberFormat('#,###').format(recDailyEnergy.round())}'),
-                                  buildTableCell('한끼  권장\n칼   로   리', breakfastRice, lunchRice, dinnerRice, isHeader: true),
-                                  buildTableCell('탄수화물\n필  요  량', breakfastRice, lunchRice, dinnerRice, isHeader: true),
-                                  buildTableCell('단  백  질\n필  요  량', breakfastRice, lunchRice, dinnerRice, isHeader: true),
-                                ],
-                              ),
-                              // 아침 행
-                              TableRow(
-                                children: [
-                                  _buildTableHeader('아침'),
-                                  buildTableCell('${(recBreakfastEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'breakfastTotalRecKcal'),
-                                  buildTableCell('${(recBreakfastCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recBreakfastCarbs'),
-                                  buildTableCell('${(recBreakfastProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recBreakfastProtein'),
-                                ],
-                              ),
-                              // 점심 행
-                              TableRow(
-                                children: [
-                                  _buildTableHeader('점심'),
-                                  buildTableCell('${(recLunchEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'lunchTotalRecKcal'),
-                                  buildTableCell('${(recLunchCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recLunchCarbs'),
-                                  buildTableCell('${(recLunchProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recLunchProtein'),
-                                ],
-                              ),
-                              // 저녁 행
-                              TableRow(
-                                children: [
-                                  _buildTableHeader('저녁'),
-                                  buildTableCell('${(recDinnerEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'dinnerTotalRecKcal'),
-                                  buildTableCell('${(recDinnerCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recDinnerCarbs'),
-                                  buildTableCell('${(recDinnerProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recDinnerProtein'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        (breakfastRice != 0 && lunchRice != 0 && dinnerRice != 0) && (dailyCarbsLackCal != 0 || dailyProteinLackCal != 0)
-                            ? Text(
-                                '"탄수화물 ${dailyCarbsLackCal}kcal, 단백질 ${dailyProteinLackCal}kcal 부족해요. 근육과 건강을 위해 파이팅!"',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                              )
-                            : const SizedBox(),
                       ],
                     ),
-                  ),
-                  Column(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(left: 16, right: 16, top: 36),
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '${userData?["userNm"] ?? ""} 님의 권장 필요'
-                              '\n에너지량에 따른 음식추천',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF000000)),
-                            ),
-                          ],
-                        ),
-                      ),
 
-                      // 첫 번째 추천 음식 섹션
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        clipBehavior: Clip.antiAlias, // 모서리 부분 잘라내기
-                        child: ExpansionTile(
-                          collapsedBackgroundColor: Colors.transparent, // 접혀있을 때의 배경색
-                          backgroundColor: Colors.transparent, // 펼쳐졌을 때의 배경색
-                          title: Row(
+                    // 칼로리 그리드
+                    // 칼로리 그리드 섹션
+                    Container(
+                      margin: const EdgeInsets.only(left: 8, right: 8, top: 48),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 섹션 제목
+                          Text(
+                            '${userData?["userNm"] ?? ""} 님이 오늘 하루 한 끼에',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.08),
+                          ),
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Flexible(
-                                child: RichText(
-                                  text: const TextSpan(
-                                    style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.black),
-                                    children: [
-                                      TextSpan(
-                                          text: '탄수화물',
-                                          style: TextStyle(
-                                              color: Color(0xFF00914B), // 초록색
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w700)),
-                                      TextSpan(
-                                          text: '만 먼저 채우고 싶어요!',
-                                          style: TextStyle(
-                                              color: Color(0xFF000000), // 검정색
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
+                              RichText(
+                                text: const TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: '섭취해야 할 권장 칼로리는? ',
+                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.06),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Transform.translate(
-                                offset: Offset(11, 0),
-                                child: Container(
-                                  width: 76,
-                                  height: 24,
-                                  padding: EdgeInsets.symmetric(horizontal: 0.6, vertical: 1.0),
-                                  // margin: EdgeInsets.only(left: 24.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Color(0xFF00914B), width: 2),
-                                  ),
-                                  child: Text('$strRec 추천음식', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00914B), fontSize: 11, letterSpacing: -0.04), textAlign: TextAlign.center),
-                                ),
-                              ),
-                              // Transform.translate(
-                              //   offset: Offset(8, 0),
-                              //   child: Container(
-                              //     padding: EdgeInsets.zero,
-                              //     child: Image.asset(
-                              //       'images/arrow_down.png',
-                              //       width: 24,
-                              //       height: 24,
-                              //     ),
-                              //   ),
-                              // ),
-                            ],
-                          ),
-                          onExpansionChanged: (bool expanded) {
-                            setState(() {
-                              isExpanded1 = expanded;
-                            });
-                          },
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
                                 children: [
-                                  Divider(thickness: 1.0),
-                                  // 표 헤더
-                                  const Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                          '식품명',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text('중량', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text('탄수화물', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text('단백질', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-                                      ),
-                                      Expanded(flex: 2, child: SizedBox())
-                                      // SizedBox(width: 40), // 버튼을 위한 공간
-                                    ],
-                                  ),
-                                  Divider(thickness: 1.0),
-                                  // 표 데이터 행들
-                                  ...carbsFoodListData
-                                      .map((food) => _buildTableRow(
-                                            food['food_id'],
-                                            food['food_name'],
-                                            food['food_weight'],
-                                            food['TOTAL_CARB_CAL'].round(),
-                                            food['TOTAL_PROTEIN_CAL'].round(),
-                                            // '식품명1', '500g','150kcal', '250kcal'
-                                          ))
-                                      .toList(),
+                                  Container(width: 10, height: 10, decoration: BoxDecoration(color: Color(0xFFFABE00), shape: BoxShape.circle)),
+                                  SizedBox(width: 4), // 동그라미와 텍스트 사이 간격
+                                  Container(
+                                    margin: EdgeInsets.only(right: 8),
+                                    child: const Text(
+                                      '섭취완료',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF555555)),
+                                    ),
+                                  )
                                 ],
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          // 그리드 레이아웃
+                          Container(
+                            clipBehavior: Clip.antiAlias, // 모서리 부분 클리핑 처리
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                          ],
-                        ),
+                            child: Table(
+                              border: TableBorder.all(
+                                color: Colors.grey[300]!,
+                                width: 1,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              // defaultVerticalAlignment: TableCellVerticalAlignment.fill,
+                              children: [
+                                // 헤더 행 (이제 첫 번째 열이 됨)
+                                TableRow(
+                                  children: [
+                                    // _buildTableHeader('${NumberFormat('#,###').format(recDailyEnergy)}'),
+                                    _buildTableHeader('${NumberFormat('#,###').format(recDailyEnergy.round())}'),
+                                    buildTableCell('한끼  권장\n칼   로   리', breakfastRice, lunchRice, dinnerRice, isHeader: true),
+                                    buildTableCell('탄수화물\n필  요  량', breakfastRice, lunchRice, dinnerRice, isHeader: true),
+                                    buildTableCell('단  백  질\n필  요  량', breakfastRice, lunchRice, dinnerRice, isHeader: true),
+                                  ],
+                                ),
+                                // 아침 행
+                                TableRow(
+                                  children: [
+                                    _buildTableHeader('아침'),
+                                    buildTableCell('${(recBreakfastEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'breakfastTotalRecKcal'),
+                                    buildTableCell('${(recBreakfastCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recBreakfastCarbs'),
+                                    buildTableCell('${(recBreakfastProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recBreakfastProtein'),
+                                  ],
+                                ),
+                                // 점심 행
+                                TableRow(
+                                  children: [
+                                    _buildTableHeader('점심'),
+                                    buildTableCell('${(recLunchEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'lunchTotalRecKcal'),
+                                    buildTableCell('${(recLunchCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recLunchCarbs'),
+                                    buildTableCell('${(recLunchProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recLunchProtein'),
+                                  ],
+                                ),
+                                // 저녁 행
+                                TableRow(
+                                  children: [
+                                    _buildTableHeader('저녁'),
+                                    buildTableCell('${(recDinnerEnergy).round()}', breakfastRice, lunchRice, dinnerRice, str: 'dinnerTotalRecKcal'),
+                                    buildTableCell('${(recDinnerCarbs).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recDinnerCarbs'),
+                                    buildTableCell('${(recDinnerProtein).round()}', breakfastRice, lunchRice, dinnerRice, str: 'recDinnerProtein'),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          (breakfastRice != 0 && lunchRice != 0 && dinnerRice != 0) && (dailyCarbsLackCal != 0 || dailyProteinLackCal != 0)
+                              ? Text(
+                                  '"탄수화물 ${dailyCarbsLackCal}kcal, 단백질 ${dailyProteinLackCal}kcal 부족해요. 근육과 건강을 위해 파이팅!"',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                )
+                              : const SizedBox(),
+                        ],
                       ),
-
-                      // 두 번째 추천 음식 섹션
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        clipBehavior: Clip.antiAlias, // 모서리 부분 잘라내기
-                        child: ExpansionTile(
-                          collapsedBackgroundColor: Colors.transparent, // 투명하게 설정하여 Container의 배경색이 보이도록
-                          backgroundColor: Colors.transparent, // 투명하게 설정하여 Container의 배경색이 보이도록
-                          title: Row(
+                    ),
+                    Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(left: 16, right: 16, top: 36),
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Flexible(
-                                child: RichText(
-                                  text: const TextSpan(
-                                    style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.black),
-                                    children: [
-                                      TextSpan(
-                                        text: '단백질',
-                                        style: TextStyle(color: Color(0xFF9D895B), fontSize: 13, fontWeight: FontWeight.w700),
-                                      ),
-                                      TextSpan(
-                                          text: '만 먼저 채우고 싶어요!',
-                                          style: TextStyle(
-                                              color: Color(0xFF000000), // 검정색
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Transform.translate(
-                                offset: Offset(11, 0),
-                                child: Container(
-                                  width: 76,
-                                  height: 24,
-                                  padding: EdgeInsets.symmetric(horizontal: 0.6, vertical: 1.0),
-                                  // margin: EdgeInsets.only(left: 16.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Color(0xFF9D895B), width: 2),
-                                  ),
-                                  child: Text(
-                                    '$strRec 추천음식',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF9D895B), fontSize: 11, letterSpacing: -0.04),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
+                              Text(
+                                '${userData?["userNm"] ?? ""} 님의 권장 필요'
+                                '\n에너지량에 따른 음식추천',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF000000)),
                               ),
                             ],
                           ),
-                          onExpansionChanged: (bool expanded) {
-                            setState(() {
-                              isExpanded2 = expanded;
-                            });
-                          },
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Divider(thickness: 1.0),
-                                  // 표 헤더
-                                  Container(
-                                    padding: EdgeInsets.zero,
-                                    child: const Row(
+                        ),
+
+                        // 첫 번째 추천 음식 섹션
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          clipBehavior: Clip.antiAlias, // 모서리 부분 잘라내기
+                          child: ExpansionTile(
+                            collapsedBackgroundColor: Colors.transparent, // 접혀있을 때의 배경색
+                            backgroundColor: Colors.transparent, // 펼쳐졌을 때의 배경색
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: RichText(
+                                    text: const TextSpan(
+                                      style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.black),
+                                      children: [
+                                        TextSpan(
+                                            text: '탄수화물',
+                                            style: TextStyle(
+                                                color: Color(0xFF00914B), // 초록색
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700)),
+                                        TextSpan(
+                                            text: '만 먼저 채우고 싶어요!',
+                                            style: TextStyle(
+                                                color: Color(0xFF000000), // 검정색
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Transform.translate(
+                                  offset: Offset(11, 0),
+                                  child: Container(
+                                    width: 76,
+                                    height: 24,
+                                    padding: EdgeInsets.symmetric(horizontal: 0.6, vertical: 1.0),
+                                    // margin: EdgeInsets.only(left: 24.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: Color(0xFF00914B), width: 2),
+                                    ),
+                                    child: Text('$strRec 추천음식', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00914B), fontSize: 11, letterSpacing: -0.04), textAlign: TextAlign.center),
+                                  ),
+                                ),
+                                // Transform.translate(
+                                //   offset: Offset(8, 0),
+                                //   child: Container(
+                                //     padding: EdgeInsets.zero,
+                                //     child: Image.asset(
+                                //       'images/arrow_down.png',
+                                //       width: 24,
+                                //       height: 24,
+                                //     ),
+                                //   ),
+                                // ),
+                              ],
+                            ),
+                            onExpansionChanged: (bool expanded) {
+                              setState(() {
+                                isExpanded1 = expanded;
+                              });
+                            },
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Divider(thickness: 1.0),
+                                    // 표 헤더
+                                    const Row(
                                       children: [
                                         Expanded(
                                           flex: 3,
@@ -2433,149 +2337,161 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                         ),
                                         Expanded(
                                           flex: 2,
-                                          child: Text(
-                                            '중량',
-                                            style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
-                                            textAlign: TextAlign.center,
-                                          ),
+                                          child: Text('중량', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                                         ),
                                         Expanded(
                                           flex: 2,
-                                          child: Text(
-                                            '탄수화물',
-                                            style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
-                                            textAlign: TextAlign.center,
-                                          ),
+                                          child: Text('탄수화물', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                                         ),
                                         Expanded(
                                           flex: 2,
-                                          child: Text(
-                                            '단백질',
-                                            style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
-                                            textAlign: TextAlign.center,
-                                          ),
+                                          child: Text('단백질', style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                                         ),
                                         Expanded(flex: 2, child: SizedBox())
                                         // SizedBox(width: 40), // 버튼을 위한 공간
                                       ],
                                     ),
-                                  ),
-                                  Divider(thickness: 1.0),
-                                  // 표 데이터 행들
-                                  ...proteinFoodListData
-                                      .map((food) => _buildTableRow(
-                                            food['food_id'],
-                                            food['food_name'],
-                                            food['food_weight'],
-                                            food['TOTAL_CARB_CAL'].round(),
-                                            food['TOTAL_PROTEIN_CAL'].round(),
-                                            // '식품명1', '500g','150kcal', '250kcal'
-                                          ))
-                                      .toList(),
-                                ],
+                                    Divider(thickness: 1.0),
+                                    // 표 데이터 행들
+                                    ...carbsFoodListData
+                                        .map((food) => _buildTableRow(
+                                              food['food_id'],
+                                              food['food_name'],
+                                              food['food_weight'],
+                                              food['TOTAL_CARB_CAL'].round(),
+                                              food['TOTAL_PROTEIN_CAL'].round(),
+                                              // '식품명1', '500g','150kcal', '250kcal'
+                                            ))
+                                        .toList(),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    color: const Color(0xFFf5f4f9),
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.only(left: 16, right: 16, top: 36),
-                          padding: const EdgeInsets.all(12.0),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            '${userData?["userNm"] ?? ""} 님의\n운동등급에 따른 운동추천',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF000000),
-                            ),
+                            ],
                           ),
                         ),
+
+                        // 두 번째 추천 음식 섹션
                         Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 1,
-                                child: Card(
-                                  elevation: 6,
-                                  color: Colors.black,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(20),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                          margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          clipBehavior: Clip.antiAlias, // 모서리 부분 잘라내기
+                          child: ExpansionTile(
+                            collapsedBackgroundColor: Colors.transparent, // 투명하게 설정하여 Container의 배경색이 보이도록
+                            backgroundColor: Colors.transparent, // 투명하게 설정하여 Container의 배경색이 보이도록
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: RichText(
+                                    text: const TextSpan(
+                                      style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.black),
                                       children: [
-                                        const Text(
-                                          '헬스케어 \n장치 연동',
-                                          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
+                                        TextSpan(
+                                          text: '단백질',
+                                          style: TextStyle(color: Color(0xFF9D895B), fontSize: 13, fontWeight: FontWeight.w700),
                                         ),
-                                        SizedBox(height: screenHeight * 0.03),
-                                        HomeScreenButton(
-                                          text: '장치 연결',
-                                          width: double.infinity,
-                                          onPressed: () async {
-                                            await userModel.set_local_saved_data();
-                                            userModel.set_datas(
-                                              g003: msmt003Grade.toDouble(),
-                                              g008: msmt008Grade.toDouble(),
-                                              g011: msmt011Grade.toDouble(),
-                                              g012: msmt012Grade.toDouble(),
-                                              g013: msmt013Grade.toDouble(),
-                                              avg: gradeAvg.toDouble(),
-                                              age: muscleAge,
-                                            );
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => PageConnectBle()),
-                                            );
-                                          },
-                                        ),
+                                        TextSpan(
+                                            text: '만 먼저 채우고 싶어요!',
+                                            style: TextStyle(
+                                                color: Color(0xFF000000), // 검정색
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600)),
                                       ],
                                     ),
                                   ),
                                 ),
-                              ),
-                              //const SizedBox(width: 1),
-                              Expanded(
-                                flex: 1,
-                                child: Card(
-                                  elevation: 6,
-                                  color: Colors.lightGreen[800],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(20),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          '운동 이력\n',
-                                          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
-                                        ),
-                                        SizedBox(height: screenHeight * 0.03),
-                                        HomeScreenButton(
-                                          text: '통계 보기',
-                                          width: double.infinity,
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => StatisticsPage()),
-                                            );
-                                          },
-                                        ),
-                                      ],
+                                Transform.translate(
+                                  offset: Offset(11, 0),
+                                  child: Container(
+                                    width: 76,
+                                    height: 24,
+                                    padding: EdgeInsets.symmetric(horizontal: 0.6, vertical: 1.0),
+                                    // margin: EdgeInsets.only(left: 16.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: Color(0xFF9D895B), width: 2),
+                                    ),
+                                    child: Text(
+                                      '$strRec 추천음식',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF9D895B), fontSize: 11, letterSpacing: -0.04),
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
+                                ),
+                              ],
+                            ),
+                            onExpansionChanged: (bool expanded) {
+                              setState(() {
+                                isExpanded2 = expanded;
+                              });
+                            },
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Divider(thickness: 1.0),
+                                    // 표 헤더
+                                    Container(
+                                      padding: EdgeInsets.zero,
+                                      child: const Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child: Text(
+                                              '식품명',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              '중량',
+                                              style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              '탄수화물',
+                                              style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              '단백질',
+                                              style: TextStyle(fontSize: 12, color: Color(0xFF000000), fontWeight: FontWeight.w500),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Expanded(flex: 2, child: SizedBox())
+                                          // SizedBox(width: 40), // 버튼을 위한 공간
+                                        ],
+                                      ),
+                                    ),
+                                    Divider(thickness: 1.0),
+                                    // 표 데이터 행들
+                                    ...proteinFoodListData
+                                        .map((food) => _buildTableRow(
+                                              food['food_id'],
+                                              food['food_name'],
+                                              food['food_weight'],
+                                              food['TOTAL_CARB_CAL'].round(),
+                                              food['TOTAL_PROTEIN_CAL'].round(),
+                                              // '식품명1', '500g','150kcal', '250kcal'
+                                            ))
+                                        .toList(),
+                                  ],
                                 ),
                               ),
                             ],
@@ -2583,9 +2499,133 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                         ),
                       ],
                     ),
+                  ],
+
+                  SizedBox(height: 40),
+                  //
+                  //
+                  // 운동 섹션
+                  TextButton(
+                    onPressed: () {
+                      setState(() => _isExerciseSectionOpen = !_isExerciseSectionOpen);
+                    },
+                    child: Text(
+                      _isExerciseSectionOpen ? "운동 닫기 ▲" : "운동 열기 ▼",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 22,
+                      ),
+                    ),
                   ),
 
-                  SizedBox(height: 80)
+                  if (_isExerciseSectionOpen) ...[
+                    Container(
+                      color: const Color(0xFFf5f4f9),
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(left: 16, right: 16),
+                            padding: const EdgeInsets.all(12.0),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '${userData?["userNm"] ?? ""} 님의\n운동등급에 따른 운동추천',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF000000),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 1,
+                                  child: Card(
+                                    elevation: 6,
+                                    color: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            '헬스케어 \n장치 연동',
+                                            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
+                                          ),
+                                          SizedBox(height: screenHeight * 0.03),
+                                          HomeScreenButton(
+                                            text: '장치 연결',
+                                            width: double.infinity,
+                                            onPressed: () async {
+                                              await userModel.set_local_saved_data();
+                                              userModel.set_datas(
+                                                g003: msmt003Grade.toDouble(),
+                                                g008: msmt008Grade.toDouble(),
+                                                g011: msmt011Grade.toDouble(),
+                                                g012: msmt012Grade.toDouble(),
+                                                g013: msmt013Grade.toDouble(),
+                                                avg: gradeAvg.toDouble(),
+                                                age: muscleAge,
+                                              );
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => PageConnectBle()),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                //const SizedBox(width: 1),
+                                Expanded(
+                                  flex: 1,
+                                  child: Card(
+                                    elevation: 6,
+                                    color: Colors.lightGreen[800],
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            '운동 이력\n',
+                                            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
+                                          ),
+                                          SizedBox(height: screenHeight * 0.03),
+                                          HomeScreenButton(
+                                            text: '통계 보기',
+                                            width: double.infinity,
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => StatisticsPage()),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  SizedBox(height: 40)
                 ],
               ),
             )
@@ -2780,339 +2820,4 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
 // 상태 변수 추가 (클래스의 필드로)
   String currentActivityLevel = "LOW";
-
-  // 업로드 메서드 수정
-  Future<void> _uploadImage(XFile image) async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      ApiService apiService = ApiService();
-      var result = await apiService.uploadProfileImage(
-        userId.toString(),
-        await image.readAsBytes(), // XFile을 bytes로 변환
-        image.name, // 파일 이름 전달
-      );
-
-      if (result['success'] == true) {
-        await _getProfileImage();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('프로필 이미지가 업로드되었습니다.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('이미지 업로드에 실패했습니다.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-// 이미지 삭제 처리
-  Future<void> _deleteProfileImage() async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      ApiService apiService = ApiService();
-      var result = await apiService.deleteProfileImage(
-        userId.toString(),
-      );
-
-      if (result['success'] == true) {
-        setState(() {
-          _profileImage = null;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('프로필 이미지가 삭제되었습니다.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('이미지 삭제에 실패했습니다.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-// 회원 정보 컨테이너
-/*
-  Container userInfoContainer(BuildContext context, Map<String, dynamic>? userData) {
-    // 함수 시작시 현재 활동량 설정
-    currentActivityLevel = userData?["activityLevel"] ?? "LOW";
-
-    return Container(
-      color: Colors.blueGrey,
-      child: (userData == null)
-          ? Center(
-              child: Text(
-                '회원 정보가 없습니다.',
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            )
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    '회원 정보',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-                // 프로필 사진 섹션 추가
-                Container(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          // 프로필 이미지
-                          Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: _buildProfileImage(),
-                          ),
-                          // 편집 버튼
-                          GestureDetector(
-                            onTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return SafeArea(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        ListTile(
-                                          leading: Icon(Icons.photo_library),
-                                          title: Text('갤러리에서 선택'),
-                                          onTap: () async {
-                                            Navigator.pop(context);
-                                            try {
-                                              final ImagePicker picker = ImagePicker();
-                                              final XFile? image = await picker.pickImage(
-                                                source: ImageSource.gallery,
-                                              );
-                                              if (image != null) {
-                                                setState(() {
-                                                  _profileImage = image; // XFile 직접 저장
-                                                });
-                                                await _uploadImage(image);
-                                              }
-                                            } catch (e) {
-                                              if (e is UnimplementedError) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('이 기능은 현재 플랫폼에서 지원되지 않습니다.')),
-                                                );
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('이미지 선택 중 오류가 발생했습니다.')),
-                                                );
-                                              }
-                                            }
-                                          },
-                                        ),
-                                        ListTile(
-                                          leading: Icon(Icons.photo_camera),
-                                          title: Text('카메라로 촬영'),
-                                          onTap: () async {
-                                            Navigator.pop(context);
-                                            try {
-                                              final ImagePicker picker = ImagePicker();
-                                              final XFile? image = await picker.pickImage(
-                                                source: ImageSource.camera,
-                                              );
-                                              if (image != null) {
-                                                setState(() {
-                                                  _profileImage = image; // File 대신 XFile 사용
-                                                });
-                                                await _uploadImage(image);
-                                              }
-                                            } catch (e) {
-                                              if (e is UnimplementedError) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('카메라 기능은 현재 플랫폼에서 지원되지 않습니다.')),
-                                                );
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('카메라 사용 중 오류가 발생했습니다.')),
-                                                );
-                                              }
-                                            }
-                                          },
-                                        ),
-                                        if (_profileImage != null)
-                                          ListTile(
-                                            leading: Icon(Icons.delete),
-                                            title: Text('프로필 사진 삭제'),
-                                            onTap: () async {
-                                              Navigator.pop(context);
-                                              await _deleteProfileImage();
-                                            },
-                                          ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
-                              ),
-                              child: Icon(Icons.edit, size: 20, color: Colors.blue),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_isLoading)
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                          child: Center(
-                            child: CircularProgressIndicator(color: Colors.white),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.all(16),
-                    children: [
-                      buildUserInfoCard(title: '회원 아이디', value: userData["userId"] ?? "N/A"),
-                      buildUserInfoCard(title: '회원 이름', value: userData["userNm"] ?? "N/A"),
-                      buildUserInfoCard(title: '생년월일', value: userData["bym"] ?? "N/A"),
-                      buildUserInfoCard(title: '성별', value: userData?["sex"] == "M" ? "남성" : "여성"),
-                      StatefulBuilder(
-                        builder: (BuildContext context, StateSetter setState) {
-                          return Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: Text(
-                                      '활동량 구분',
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 7,
-                                    child: DropdownButton<String>(
-                                      value: currentActivityLevel,
-                                      items: [
-                                        DropdownMenuItem(value: 'LOW', child: Text('좌업자')),
-                                        DropdownMenuItem(value: 'NORMAL', child: Text('보통활동')),
-                                        DropdownMenuItem(value: 'HIGH', child: Text('육체활동')),
-                                      ],
-                                      onChanged: (String? value) async {
-                                        if (value != null && currentActivityLevel != value) {
-                                          // 확인 다이얼로그
-                                          bool? confirm = await showDialog<bool>(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                title: Text('활동량 변경'),
-                                                content: Text('활동량을 변경하시겠습니까?'),
-                                                actions: <Widget>[
-                                                  TextButton(
-                                                    child: Text('취소'),
-                                                    onPressed: () => Navigator.of(context).pop(false),
-                                                  ),
-                                                  TextButton(
-                                                    child: Text('확인'),
-                                                    onPressed: () => Navigator.of(context).pop(true),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-
-                                          if (confirm == true) {
-                                            try {
-                                              ApiService apiService = ApiService();
-                                              Map<String, dynamic> result = await apiService.updateUserActivityLevel(
-                                                userData["userId"],
-                                                value,
-                                              );
-
-                                              if (result['result'] == 1) {
-                                                setState(() {
-                                                  currentActivityLevel = value;
-                                                  // userData도 함께 업데이트
-                                                  userData?["activityLevel"] = value;
-                                                });
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text('활동량이 업데이트되었습니다.'),
-                                                    backgroundColor: Colors.green,
-                                                  ),
-                                                );
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text('활동량 업데이트에 실패했습니다.'),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            } catch (e) {
-                                              print('Error updating activity level: $e');
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(
-                                                  content: Text('오류가 발생했습니다. 다시 시도해주세요.'),
-                                                  backgroundColor: Colors.red,
-                                                ),
-                                              );
-                                            }
-                                          }
-                                        }
-                                      },
-                                      isExpanded: true,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-  */
 }

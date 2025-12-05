@@ -35,13 +35,13 @@ class RadarChartWidget extends StatelessWidget {
   }
 }
 
-class CustomRadarChart extends StatelessWidget {
-  final List<String> features; // 꼭짓점 이름
-  final List<double> data; // 0~100 값
-  final int sides; // 꼭짓점 개수
-  final List<Color> graphColors; // 그래프 색상
-  final List<int> ticks; // 눈금 값
-  final double size; // 차트 크기
+class CustomRadarChart extends StatefulWidget {
+  final List<String> features;
+  final List<double> data;
+  final int sides;
+  final List<Color> graphColors;
+  final List<int> ticks;
+  final double size;
 
   const CustomRadarChart({
     super.key,
@@ -54,19 +54,56 @@ class CustomRadarChart extends StatelessWidget {
   });
 
   @override
+  State<CustomRadarChart> createState() => _CustomRadarChartState();
+}
+
+class _CustomRadarChartState extends State<CustomRadarChart> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(
-        painter: _RadarChartPainter(
-          features: features,
-          data: data,
-          sides: sides,
-          graphColors: graphColors,
-          ticks: ticks,
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (_, __) {
+        return SizedBox(
+          width: widget.size,
+          height: widget.size,
+          child: CustomPaint(
+            painter: _RadarChartPainter(
+              features: widget.features,
+              data: widget.data,
+              sides: widget.sides,
+              graphColors: widget.graphColors,
+              ticks: widget.ticks,
+              animationValue: _animation.value,
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -77,6 +114,7 @@ class _RadarChartPainter extends CustomPainter {
   final int sides;
   final List<Color> graphColors;
   final List<int> ticks;
+  final double animationValue; // 🔥 추가됨
 
   _RadarChartPainter({
     required this.features,
@@ -84,6 +122,7 @@ class _RadarChartPainter extends CustomPainter {
     required this.sides,
     required this.graphColors,
     required this.ticks,
+    required this.animationValue,
   });
 
   @override
@@ -93,18 +132,19 @@ class _RadarChartPainter extends CustomPainter {
     final angle = 2 * pi / sides;
 
     final Paint tickPaint = Paint()
-      ..color = Colors.grey.shade400
-      ..style = PaintingStyle.stroke;
+      ..color = Colors.grey.shade500.withOpacity(0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
 
     final Paint outlinePaint = Paint()
       ..color = Colors.grey.shade800
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 3;
 
     final Paint graphPaint = Paint()
       ..color = graphColors.first
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
+      ..strokeWidth = 5;
 
     // 1️⃣ Tick(눈금) 그리기
     for (int t in ticks) {
@@ -118,13 +158,17 @@ class _RadarChartPainter extends CustomPainter {
         else
           path.lineTo(x, y);
       }
-      if (t == 66) {
+      if (t % 20 == 0) {
+        canvas.drawPath(path, tickPaint);
+      }
+      if (t == 120) {
         final fillPaint = Paint()
           ..color = Colors.grey.withOpacity(0.15)
           ..style = PaintingStyle.fill;
         canvas.drawPath(path, fillPaint);
-      } else {
-        canvas.drawPath(path, tickPaint);
+      }
+      if (t == 100) {
+        canvas.drawPath(path, outlinePaint);
       }
     }
 
@@ -132,9 +176,13 @@ class _RadarChartPainter extends CustomPainter {
     final path = Path();
     for (int i = 0; i < sides; i++) {
       double value = (i < data.length) ? data[i] : 0;
-      double r = radius * (value / 100);
+
+      // 🔥 애니메이션을 적용해 크기 보간
+      double r = radius * ((value * animationValue) / 100);
+
       final x = center.dx + r * cos(i * angle - pi / 2);
       final y = center.dy + r * sin(i * angle - pi / 2);
+
       if (i == 0)
         path.moveTo(x, y);
       else
@@ -144,7 +192,7 @@ class _RadarChartPainter extends CustomPainter {
 
     // 채우기(PaintingStyle.fill) + 50% 투명도
     final fillPaint = Paint()
-      ..color = graphColors.first.withOpacity(0.3)
+      ..color = graphColors.first.withOpacity(0.2)
       ..style = PaintingStyle.fill;
 
     canvas.drawPath(path, fillPaint);
@@ -169,14 +217,14 @@ class _RadarChartPainter extends CustomPainter {
       double x = center.dx + r * cos(i * angle - pi / 2);
       double y = center.dy + r * sin(i * angle - pi / 2);
       if (r * cos(i * angle - pi / 2) > 5) {
-        x += 15;
+        x += 20;
       } else if (r * cos(i * angle - pi / 2) < -5) {
-        x -= 15;
+        x -= 20;
       }
 
       textPainter.text = TextSpan(
         text: feature,
-        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.normal),
+        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w400),
       );
       textPainter.layout();
       final offset = Offset(x - textPainter.width / 2, y - textPainter.height / 2);

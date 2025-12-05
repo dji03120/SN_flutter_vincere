@@ -1,16 +1,25 @@
-import 'package:Vincere/http/webReq.dart';
+import 'package:Vincere/http/webReqSpring.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class ScreenHealthInfo extends StatefulWidget {
+/*
+ScreenHealthInfo(
+  healthData: userHlthData,
+  healthInfoItemsFuture: healthInfoItemsFuture,
+  userId: userId,
+  initializeData: _initializeData,
+  msmtItemData: msmtItemData,
+  ),
+ */
+class ScreenHealthInfoInput extends StatefulWidget {
   final List<Map<String, dynamic>> healthData;
   final List<Map<String, dynamic>> msmtItemData; // final 변수 선언
   final Future healthInfoItemsFuture; // 추가
   final String? userId; // 추가
   final Function initializeData; // 추가
 
-  const ScreenHealthInfo({
+  const ScreenHealthInfoInput({
     Key? key,
     List<Map<String, dynamic>>? healthData, // optional로 변경
     List<Map<String, dynamic>>? msmtItemData, // optional 파라미터 추가
@@ -25,7 +34,7 @@ class ScreenHealthInfo extends StatefulWidget {
   _ScreenHealthInfoState createState() => _ScreenHealthInfoState();
 }
 
-class _ScreenHealthInfoState extends State<ScreenHealthInfo> {
+class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
   late List<Map<String, dynamic>> _editedHealthData;
   late List<Map<String, dynamic>> _editMsmtItemData;
   List<TextEditingController> _controllers = [];

@@ -1,7 +1,7 @@
 import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
-import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_elexir_workout/page_workout_content_active.dart';
 import 'package:Vincere/page_elexir_workout/page_workout_content_passive.dart';
 import 'package:Vincere/provider_models.dart';
@@ -142,8 +142,8 @@ class Component3State extends State<WorkoutStart> {
                     text: "운동시작",
                     onPressed: () async {
                       if (workoutModel.writeChar != null) {
-                        await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
-                        await sendCommand(workoutModel.writeChar, ble_commands["continue"]!); // 다시시작
+                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
+                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["continue"]!); // 다시시작
                       } else {
                         print("writeChar is null, BLE not connected");
                       }

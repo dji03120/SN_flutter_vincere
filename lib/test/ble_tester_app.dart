@@ -121,7 +121,7 @@ class _BLEHomePageState extends State<BLEHomePage> {
   }
 
   /// 명령 전송
-  Future<void> sendCommand(String key) async {
+  Future<void> sendCommandElexir(String key) async {
     if (writeChar == null) return;
     final hexString = messageDict[key]!;
     final List<int> bytes = [
@@ -183,7 +183,7 @@ class _BLEHomePageState extends State<BLEHomePage> {
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
-                      onPressed: () => sendCommand(selectedCommandKey),
+                      onPressed: () => sendCommandElexir(selectedCommandKey),
                       child: const Text("Send Command"),
                     ),
                   ],

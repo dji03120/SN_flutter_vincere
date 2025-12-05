@@ -1,4 +1,4 @@
-import 'package:Vincere/http/webReq.dart';
+import 'package:Vincere/http/webReqSpring.dart';
 
 Future<Map<String, dynamic>> getUserGradesData({
   required int userId,
@@ -51,23 +51,10 @@ Future<Map<String, dynamic>> getUserGradesData({
       }
 
       // 평균 grade 계산
-      if ((msmt003Grade != 0 && msmt008Grade != 0 && msmt011Grade != 0) &&
-          userAge < 40) {
-        gradeAvg =
-            ((msmt003Grade + msmt008Grade + msmt011Grade) / 3).toDouble();
-      } else if ((msmt003Grade != 0 &&
-              msmt008Grade != 0 &&
-              msmt011Grade != 0 &&
-              msmt012Grade != 0 &&
-              msmt013Grade != 0) &&
-          userAge >= 40) {
-        gradeAvg = ((msmt003Grade +
-                    msmt008Grade +
-                    msmt011Grade +
-                    msmt012Grade +
-                    msmt013Grade) /
-                5)
-            .toDouble();
+      if ((msmt003Grade != 0 && msmt008Grade != 0 && msmt011Grade != 0) && userAge < 40) {
+        gradeAvg = ((msmt003Grade + msmt008Grade + msmt011Grade) / 3).toDouble();
+      } else if ((msmt003Grade != 0 && msmt008Grade != 0 && msmt011Grade != 0 && msmt012Grade != 0 && msmt013Grade != 0) && userAge >= 40) {
+        gradeAvg = ((msmt003Grade + msmt008Grade + msmt011Grade + msmt012Grade + msmt013Grade) / 5).toDouble();
       }
 
       // 근육 나이 계산
@@ -75,8 +62,7 @@ Future<Map<String, dynamic>> getUserGradesData({
         for (var item in muscleAgeData) {
           double maxGrd = double.tryParse(item['MAX_GRADE'].toString()) ?? 0;
           double minGrd = double.tryParse(item['MIN_GRADE'].toString()) ?? 0;
-          double ageAdj =
-              double.tryParse(item['MUSCLE_AGE_ADJ'].toString()) ?? 0;
+          double ageAdj = double.tryParse(item['MUSCLE_AGE_ADJ'].toString()) ?? 0;
 
           if (gradeAvg >= minGrd && gradeAvg <= maxGrd) {
             muscleAge = (userAge + ageAdj).toString();

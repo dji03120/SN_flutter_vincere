@@ -1,6 +1,7 @@
-import 'package:Vincere/http/webReq.dart';
+import 'package:Vincere/http/webReqSpring.dart';
 import 'package:Vincere/export/screens.dart';
 import 'package:Vincere/page_account/screen_find_account.dart';
+import 'package:Vincere/screen/splash_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 //import 'package:provider/provider.dart' show ChangeNotifierProvider, Provider;
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const MyHomePage(title: "vincere_App"),
+          builder: (_) => const SplashPage(),
         ),
       );
     } else {
@@ -56,11 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               const SizedBox(height: 112),
-              Image.asset(
-                'images/Vincere_logo.png',
-                width: 180,
-                height: 42,
-              ),
+              Image.asset('images/Vincere_logo.png', width: 180, height: 42),
               const SizedBox(height: 30),
               Form(
                   child: Theme(
@@ -183,11 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Container(
-                            width: 1,
-                            height: 13, // 선의 높이
-                            color: Color(0xFF8D8D8D), // 선 색상 (#8D8D8D)
-                          ),
+                          Container(width: 1, height: 13, color: Color(0xFF8D8D8D)),
                           const SizedBox(width: 10), // 선과 다음 텍스트 간격
                           GestureDetector(
                             onTap: () {

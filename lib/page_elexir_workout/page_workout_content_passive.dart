@@ -1,8 +1,8 @@
 import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/component/custom_drawer.dart';
-import 'package:Vincere/http/webReq.dart';
-import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/http/webReqSpring.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_elexir_workout/page_statistics.dart';
 import 'package:Vincere/page_elexir_workout/page_workout_plan.dart';
 import 'package:Vincere/provider_models.dart';
@@ -62,7 +62,7 @@ class Component3State extends State<WorkoutContentPassive> {
     // 운동 강도 초기 세팅
     for (int i = 0; i < workoutSetting['scenario1']['intensity']; i++) {
       intenseValue += 1;
-      await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!); // 다시시작
+      await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_up"]!); // 다시시작
     }
 
     //
@@ -94,12 +94,12 @@ class Component3State extends State<WorkoutContentPassive> {
           int intensity_curr = workoutSetting['scenario${scenario_idx}']['intensity'];
           if (intensity_curr > intensity_prev) {
             for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-              await sendCommand(workoutModel.writeChar, ble_commands["intense_up"]!);
+              await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_up"]!);
               intenseValue += 1;
             }
           } else {
             for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-              await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+              await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
               intenseValue -= 1;
             }
           }
@@ -210,8 +210,8 @@ class Component3State extends State<WorkoutContentPassive> {
                       //
                       int nextWorkoutIdx = workoutModel.currentWorkout + 1;
                       if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
-                        await sendCommand(workoutModel.writeChar, ble_commands["mode2"]!);
-                        await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
+                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
+                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
                           context,
@@ -224,13 +224,13 @@ class Component3State extends State<WorkoutContentPassive> {
                         // reset ble value
                         int intense_value_copy = intenseValue;
                         for (int i = 0; i < intenseValue; i++) {
-                          await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+                          await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
                           intense_value_copy -= 1;
                           print('intense ${intense_value_copy}');
                           setState(() {});
                         }
                         //
-                        await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
+                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
                         workoutModel.set_current_workout(nextWorkoutIdx);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
@@ -260,8 +260,8 @@ class Component3State extends State<WorkoutContentPassive> {
                       }
                       int nextWorkoutIdx = workoutModel.currentWorkout + 1;
                       if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
-                        await sendCommand(workoutModel.writeChar, ble_commands["mode2"]!);
-                        await sendCommand(workoutModel.writeChar, ble_commands["stop"]!);
+                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
+                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(
                           context,
@@ -272,12 +272,12 @@ class Component3State extends State<WorkoutContentPassive> {
                         // reset ble value
                         int intense_value_copy = intenseValue;
                         for (int i = 0; i < intenseValue; i++) {
-                          await sendCommand(workoutModel.writeChar, ble_commands["intense_dw"]!);
+                          await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
                           intense_value_copy -= 1;
                           print('intense ${intense_value_copy}');
                           setState(() {});
                         }
-                        await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
+                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
                         workoutModel.set_current_workout(nextWorkoutIdx);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.pushReplacement(

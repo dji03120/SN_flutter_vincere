@@ -1,7 +1,7 @@
 import 'package:Vincere/export/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../http/webReq.dart';
+import '../http/webReqSpring.dart';
 import '../screen/utils.dart'; // utils.dart 파일 import
 
 class NewsBoard extends StatefulWidget {
@@ -72,11 +72,7 @@ class _NewsBoardState extends State<NewsBoard> {
                   child: Text(
                     '건강뉴스',
                     textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black),
                   ),
                 ),
               ),
@@ -117,21 +113,14 @@ class _NewsBoardState extends State<NewsBoard> {
             Expanded(
               child: _qnaData.isEmpty
                   ? const Center(
-                      child: Text(
-                        '등록된 뉴스가 없습니다.',
-                        style: TextStyle(fontSize: 18),
-                      ),
+                      child: Text('등록된 뉴스가 없습니다.', style: TextStyle(fontSize: 18)),
                     )
                   : ListView.separated(
                       itemCount: _qnaData.length,
                       separatorBuilder: (context, index) => const Column(
                         children: [
                           SizedBox(height: 16), // 상단 여백
-                          Divider(
-                            color: Color(0xFFEDEDED), // 선 색상
-                            thickness: 1, // 선 두께
-                            height: 1, // Divider 자체 높이 최소화
-                          ),
+                          Divider(color: Color(0xFFEDEDED), thickness: 1, height: 1),
                           SizedBox(height: 16), // 하단 여백
                         ],
                       ),
@@ -164,11 +153,7 @@ class _NewsBoardState extends State<NewsBoard> {
                               Expanded(
                                 child: Text(
                                   item["title"] ?? "제목 없음",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                  ),
+                                  style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 14, color: Colors.black),
                                 ),
                               ),
                             ],

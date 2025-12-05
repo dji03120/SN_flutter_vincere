@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:Vincere/component/card_muscle_result.dart';
+import 'package:Vincere/screen/card_muscle_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:html/parser.dart' show parse;
@@ -496,33 +496,17 @@ class RiceCaloriesRow extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              text,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF000000),
-                letterSpacing: -0.02,
-              ),
-            ),
+            Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF000000), letterSpacing: -0.02)),
             RichText(
               text: TextSpan(
                 children: [
                   TextSpan(
                     text: '$totalCalories ',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: color,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: color),
                   ),
                   const TextSpan(
                     text: 'kcal',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF555555),
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF555555)),
                   ),
                 ],
               ),
@@ -549,10 +533,7 @@ class RiceWeightInput extends StatelessWidget {
   void _handleSubmit(BuildContext context) {
     if (controller.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('섭취량을 입력해주세요.'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('섭취량을 입력해주세요.'), backgroundColor: Colors.red),
       );
       return;
     }
@@ -560,20 +541,14 @@ class RiceWeightInput extends StatelessWidget {
     final double? amount = double.tryParse(controller.text);
     if (amount == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('올바른 숫자를 입력해주세요.'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('올바른 숫자를 입력해주세요.'), backgroundColor: Colors.red),
       );
       return;
     }
 
     if (amount < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('0보다 큰 값을 입력해주세요.'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('0보다 큰 값을 입력해주세요.'), backgroundColor: Colors.red),
       );
       return;
     }
@@ -588,18 +563,7 @@ class RiceWeightInput extends StatelessWidget {
         const SizedBox(width: 12),
 
         // 라벨 (아침/점심/저녁)
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF000000),
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-
+        Expanded(flex: 2, child: Text(label, style: const TextStyle(color: Color(0xFF000000), fontSize: 20, fontWeight: FontWeight.w500))),
         const SizedBox(width: 12),
 
         // 입력 필드
@@ -608,11 +572,7 @@ class RiceWeightInput extends StatelessWidget {
           child: TextField(
             controller: controller,
             textAlign: TextAlign.right,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF007330),
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Color(0xFF007330)),
             decoration: const InputDecoration(
               filled: true,
               fillColor: Color(0xFFF5F4F9),
@@ -628,10 +588,7 @@ class RiceWeightInput extends StatelessWidget {
                 widthFactor: 1.0,
                 child: Padding(
                   padding: EdgeInsets.only(right: 16),
-                  child: Text(
-                    'g',
-                    style: TextStyle(color: Color(0xFF555555), fontSize: 14),
-                  ),
+                  child: Text('g', style: TextStyle(color: Color(0xFF555555), fontSize: 14)),
                 ),
               ),
             ),

@@ -1,4 +1,4 @@
-import 'package:Vincere/http/webReq.dart';
+import 'package:Vincere/http/webReqSpring.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:Vincere/export/screens.dart';
@@ -73,9 +73,7 @@ class _MyNutriCheckScreenState extends State<MyNutriCheck> {
                 child: Text(
                   '나의 필요 영양소 확인',
                   textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontSize: 20,
-                  ),
+                  style: TextStyle(fontSize: 20),
                 ),
               ),
             ),
@@ -87,17 +85,11 @@ class _MyNutriCheckScreenState extends State<MyNutriCheck> {
               child: _myNutriData != null
                   ? Text(
                       '${_myNutriData?["content"] ?? "데이터가 없습니다."}',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
+                      style: const TextStyle(fontSize: 20, color: Colors.white),
                     )
-                  : Text(
+                  : const Text(
                       '아직 영양상태 평가 및 추천받은 식단이 없습니다.',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
             )
           ],

@@ -1,16 +1,17 @@
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
-import 'dart:html' as html; // ← 추가
 
 import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:Vincere/page_elexir_workout/page_select_mode.dart';
-import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
 import 'package:provider/provider.dart';
+import 'dart:html' as html;
 
 final bluetooth = FlutterWebBluetooth.instance;
 
@@ -22,74 +23,40 @@ class PageConnectBle extends StatefulWidget {
 }
 
 class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderStateMixin {
-  // ignore: unused_field
   BluetoothDevice? _device;
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? _notifyChar;
+
   static const SERVICE_UUID = "0000fe40-cc7a-482a-984a-7f2ed5b3e58f";
   static const WRITE_UUID = "0000fe41-8e22-4541-9d4c-21edae82ed19";
   static const NOTIFY_UUID = "0000fe42-8e22-4541-9d4c-21edae82ed19";
 
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+
   bool _connectFailed = false;
 
   //
-  //
-  //
-  Future<void> _permissionCheck() async {
-    try {
-      // 브라우저 권한 상태 확인
-      final permissionStatus = await js_util.promiseToFuture(
-        js_util.callMethod(
-          js_util.getProperty(html.window, 'navigator').permissions,
-          'query',
-          [
-            js_util.jsify({"name": "bluetooth"})
-          ],
-        ),
-      );
-      final state = js_util.getProperty(permissionStatus, 'state');
-      print("BLE 권한 상태: $state");
-
-      if (state == 'denied') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("브라우저에서 블루투스 권한을 허용해야 연결할 수 있습니다.")),
-        );
-        return;
-      }
-    } catch (e) {
-      print("권한 확인 실패: $e");
-    }
-  }
-
-  //
-  //
+  // BLE Connect
   //
   Future<void> _scanAndConnect(WorkoutModel workoutModel) async {
-    setState(() {
-      _connectFailed = false;
-    });
+    setState(() => _connectFailed = false);
 
     try {
-      final device = await bluetooth.requestDevice(
-        RequestOptionsBuilder(
-          [RequestFilterBuilder(namePrefix: "VINCERE")],
-          optionalServices: [SERVICE_UUID],
-        ),
-      );
+      final device = await bluetooth.requestDevice(RequestOptionsBuilder(
+        [RequestFilterBuilder(namePrefix: "VINCERE")],
+        optionalServices: [SERVICE_UUID],
+      ));
       setState(() => _device = device);
 
-      // 연결 3회 시도 -> 재시도 버튼
       for (int i = 0; i < 3; i++) {
         try {
-          // ignore: invalid_use_of_visible_for_testing_member
           await device.gatt?.connect();
 
-          // ignore: invalid_use_of_visible_for_testing_member
           final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
           _writeChar = await service?.getCharacteristic(WRITE_UUID);
           _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
+
           workoutModel.set_write_char(_writeChar!);
           workoutModel.set_notify_char(_notifyChar!);
 
@@ -98,81 +65,59 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
             js_util.callMethod(_notifyChar!, 'addEventListener', [
               'characteristicvaluechanged',
               js_util.allowInterop((event) {
-                try {
-                  final target = js_util.getProperty(event, 'target');
-                  final value = js_util.getProperty(target!, 'value');
-                  if (value != null) {
-                    final buffer = js_util.getProperty(value, 'buffer');
-                    final bytes = Uint8List.view(buffer);
-                    setState(() {
-                      print("Notification: ${bytesToHex(bytes)}\n");
-                    });
-                  }
-                } catch (e) {
-                  setState(() {
-                    print("Notification parsing error: $e\n");
-                  });
+                final target = js_util.getProperty(event, 'target');
+                final value = js_util.getProperty(target, 'value');
+                if (value != null) {
+                  final buffer = js_util.getProperty(value, 'buffer');
+                  final bytes = Uint8List.view(buffer);
+                  print("Notification: ${bytesToHex(bytes)}\n");
                 }
               }),
             ]);
           }
 
-          // get calendar device : 장치 초기화 커멘드 (필수) -> 정지
-          await sendCommand(workoutModel.writeChar, "000C0E050100");
-          await sendCommand(workoutModel.writeChar, ble_commands['pause']!);
-          print("connect complete");
-          setState(() {});
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('디바이스가 연결되었습니다.')),
-          );
+          await sendCommandElexir(workoutModel.writeChar, "000C0E050100");
+          await sendCommandElexir(workoutModel.writeChar, elexir_commands['pause']!);
+
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('디바이스가 연결되었습니다.')));
+
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const SelectMode()),
+            MaterialPageRoute(builder: (_) => const SelectMode()),
           );
           break;
         } catch (e) {
-          print("connect fail.. retrying connect ");
-          if (i == 2) {
-            setState(() {
-              _connectFailed = true;
-            });
-          }
+          if (i == 2) setState(() => _connectFailed = true);
         }
       }
     } catch (e) {
-      print("connect fail");
-      setState(() {
-        _connectFailed = true;
-      });
+      setState(() => _connectFailed = true);
     }
   }
 
   //
-  //
+  // init
   //
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final workoutModel = Provider.of<WorkoutModel>(context, listen: false); //
-      _permissionCheck();
+      final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
       _scanAndConnect(workoutModel);
     });
 
-    // 커지고 작아지는 이미지
+    // breathing animation
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
-    _scaleAnimation = Tween<double>(begin: 0.97, end: 1.03).animate(
+
+    _scaleAnimation = Tween<double>(begin: 0.98, end: 1.02).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
 
-  //
-  //
-  //
   @override
   void dispose() {
     _controller.dispose();
@@ -180,67 +125,117 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
   }
 
   //
-  //
+  // UI
   //
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: const Header(),
-      body: Container(
-        color: Color(0xFFf5f4f9),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              SizedBox(height: screenHeight * 0.04),
-              Card(
-                elevation: 4,
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                color: const Color(0xFFFFFFFF),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: const Color(0xFFF5F4F9),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 26),
+        child: Column(
+          children: [
+            const SizedBox(height: 36),
+
+            /// Title
+            Text(
+              _connectFailed ? "연결 실패" : "디바이스 연결 중...",
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF003366),
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 8),
+            Text(
+              _connectFailed ? "다시 시도해주세요." : "장치 전원을 켜고 가까이 두세요.",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black.withOpacity(0.65),
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 40),
+
+            /// 카드 (BLE 애니메이션)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  Image.asset(
+                    'assets/images/image_ble_2.png',
+                    height: 40,
+                  ),
+                  const SizedBox(height: 10),
+                  ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Image.asset(
+                      'assets/images/image_ble_1.png',
+                      height: 250,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 50),
+
+            /// 메시지 or 버튼
+            _connectFailed
+                ? RoundButton(
+                    text: "재연결 시도",
+                    margin: const EdgeInsets.symmetric(horizontal: 60),
+                    onPressed: () {
+                      final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
+                      _scanAndConnect(workoutModel);
+                    },
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Image.asset('assets/images/image_ble_2.png', fit: BoxFit.contain),
-                      const SizedBox(height: 16),
-                      ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: Image.asset(
-                          'assets/images/image_ble_1.png',
-                          fit: BoxFit.contain,
+                      Text(
+                        "1. 장치 전원을 켜주세요",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black.withOpacity(0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "2. 블루투스 목록에서 기기를 선택 후",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black.withOpacity(0.7),
+                        ),
+                      ),
+                      Text(
+                        "   페어링을 눌러주세요",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black.withOpacity(0.7),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.04),
-              if (_connectFailed == true)
-                RoundButton(
-                  margin: EdgeInsets.fromLTRB(50, 36, 50, 0),
-                  text: "재연결 시도",
-                  onPressed: () {
-                    final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
-                    _scanAndConnect(workoutModel);
-                  },
-                ),
-              if (_connectFailed == false)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextCustom(text: "1. 장치의 전원을 켜주세요", fontSize: 20),
-                    SizedBox(height: screenHeight * 0.02),
-                    TextCustom(text: "2. 블루투스를 선택 하신 후에", fontSize: 20),
-                    TextCustom(text: "     페어링을 눌러주세요", fontSize: 20),
-                  ],
-                )
-            ],
-          ),
+          ],
         ),
       ),
     );

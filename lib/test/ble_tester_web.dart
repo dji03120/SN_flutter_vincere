@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 
 import 'package:Vincere/component/custom_widget.dart';
-import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
@@ -92,20 +92,11 @@ class _BLEPageState extends State<WebBleTest> {
           }),
         ]);
       }
-      _sendCommand("000C0E050100"); // 초기화 인증
+      sendCommandElexir(_writeChar, "000C0E050100"); // 초기화 인증
       setState(() => _log += "연결 성공!\n");
     } catch (e) {
       setState(() => _log += "연결 실패: $e\n");
     }
-  }
-
-  Future<void> _sendCommand(String hexCommand) async {
-    if (_writeChar == null) return;
-    final commandBytes = buildCommand(hexCommand);
-    await _writeChar!.writeValueWithoutResponse(commandBytes);
-    setState(() {
-      _log += "명령 전송: ${bytesToHex(commandBytes)}\n";
-    });
   }
 
   @override
@@ -128,7 +119,7 @@ class _BLEPageState extends State<WebBleTest> {
             RoundButton(
                 text: "전송",
                 onPressed: () {
-                  _sendCommand(_hexController.text);
+                  sendCommandElexir(_writeChar, _hexController.text);
                 }),
             SizedBox(height: 10),
             DropdownButton<String>(
@@ -141,7 +132,7 @@ class _BLEPageState extends State<WebBleTest> {
               onChanged: (value) {
                 setState(() => _selectedCommand = value);
                 if (value != null) {
-                  _sendCommand(_commands[value]!);
+                  sendCommandElexir(_writeChar, _commands[value]!);
                 }
               },
             ),

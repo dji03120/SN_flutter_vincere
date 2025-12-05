@@ -1,11 +1,11 @@
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/page_ble_device/ble_elexir_utils.dart';
+import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/page_elexir_workout/page_workout_start.dart';
-import 'package:Vincere/http/webReq.dart';
+import 'package:Vincere/http/webReqSpring.dart';
 
 class WorkoutPlan extends StatefulWidget {
   final String explainText;
@@ -119,8 +119,8 @@ class WorkoutPlanState extends State<WorkoutPlan> {
 
                     // set mode intensity
                     print(workoutModel.workoutLevel);
-                    await sendCommand(workoutModel.writeChar, ble_commands[workoutModel.workoutLevel]!);
-                    await sendCommand(workoutModel.writeChar, ble_commands["pause"]!);
+                    await sendCommandElexir(workoutModel.writeChar, elexir_commands[workoutModel.workoutLevel]!);
+                    await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => WorkoutStart()));
                   },
                   borderRadius: 10,

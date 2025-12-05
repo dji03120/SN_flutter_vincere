@@ -1,3 +1,4 @@
+import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +39,8 @@ class Component3State extends State<SelectMuscle> {
     final userModel = Provider.of<UserModel>(context); // 상태 접근
 
     return Scaffold(
-      appBar: const Header(),
+      appBar: Header(),
+      drawer: CustomDrawer(isLogin: true),
       backgroundColor: const Color(0xFFF5F4F9),
       //drawer: CustomDrawer(isLogin: true),
       body: Container(
