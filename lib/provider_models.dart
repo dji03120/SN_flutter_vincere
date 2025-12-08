@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:Vincere/http/webReqSpring.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
+import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WorkoutModel extends ChangeNotifier {
@@ -242,10 +244,12 @@ class WorkoutModel extends ChangeNotifier {
 //
 class UserModel extends ChangeNotifier {
   bool _isLogin = false;
+  String _userId = '';
   String _password = '';
   bool get isLogin => _isLogin;
   String get password => _password;
-  Future<void> set_local_saved_data() async {
+  String get userId => _userId;
+  Future<void> set_login_data() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _userId = prefs.getString('userId') ?? '';
     _password = prefs.getString('password') ?? '';
@@ -255,17 +259,32 @@ class UserModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String _userId = '';
-  String get userId => _userId;
-  void set_user_id(String userId) {
-    _userId = userId;
-    notifyListeners();
-  }
+  String _profileImageUrl = '';
+  String? get profileImageUrl => _profileImageUrl;
+  Map<String, dynamic>? _userInfo = {};
+  Map<String, dynamic>? get userInfo => _userInfo;
+  Future<void> set_user_info() async {
+    try {
+      //
+      // get user info
+      ApiService apiService = ApiService();
+      Map<String, dynamic> result = await apiService.fetchGetUserInfo(_userId.toString());
+      _userInfo = result["userOne"];
+      print(_userInfo);
 
-  Map<dynamic, dynamic> _userInfo = {};
-  Map<dynamic, dynamic> get userInfo => _userInfo;
-  void set_user_info(Map<dynamic, dynamic> userInfo) {
-    _userInfo = userInfo;
+      //
+      // get profile image
+      Map<String, dynamic> profileRes = await apiService.fetchProfileImage(_userId.toString());
+      if (profileRes['success'] == true && profileRes['imageUrl'] != null) {
+        _profileImageUrl = profileRes['imageUrl'];
+        print(profileRes['imageUrl']);
+      } else {
+        print('Failed to get profile image: ${profileRes['message']}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+    print("userdata : ${_userInfo}");
     notifyListeners();
   }
 
@@ -283,7 +302,7 @@ class UserModel extends ChangeNotifier {
   double get msmt011Grade => _msmt011Grade;
   double get msmt012Grade => _msmt012Grade;
   double get msmt013Grade => _msmt013Grade;
-  void set_datas({
+  void set_grade_datas({
     double? g003,
     double? g008,
     double? g011,

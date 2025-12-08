@@ -40,22 +40,13 @@ class MuscleAgeCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '내 근육 나이',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-                    ),
+                    const Text('내 근육 나이', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 10),
                     RichText(
                       text: TextSpan(
                         children: [
-                          TextSpan(
-                            text: muscleAge,
-                            style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
-                          ),
-                          const TextSpan(
-                            text: ' 세',
-                            style: TextStyle(fontSize: 22, color: Color(0xFF000000)),
-                          ),
+                          TextSpan(text: muscleAge, style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Color(0xFF007130))),
+                          const TextSpan(text: ' 세', style: TextStyle(fontSize: 22, color: Color(0xFF000000))),
                         ],
                       ),
                     ),
@@ -67,13 +58,8 @@ class MuscleAgeCard extends StatelessWidget {
               Container(
                 width: 60,
                 height: 60,
-                margin: EdgeInsets.only(
-                  right: MediaQuery.of(context).size.width * 0.06,
-                ),
-                child: Image.asset(
-                  'images/body.png',
-                  fit: BoxFit.contain,
-                ),
+                margin: EdgeInsets.only(right: MediaQuery.of(context).size.width * 0.06),
+                child: Image.asset('images/body.png', fit: BoxFit.contain),
               ),
             ],
           ),
@@ -111,12 +97,7 @@ class MuscleAgeCard extends StatelessWidget {
           // category
           SizedBox(
             width: 70,
-            child: category.isNotEmpty
-                ? Text(
-                    category,
-                    style: const TextStyle(color: Color(0xFF000000), fontSize: 13, fontWeight: FontWeight.w500),
-                  )
-                : const SizedBox(),
+            child: category.isNotEmpty ? Text(category, style: const TextStyle(color: Color(0xFF000000), fontSize: 13, fontWeight: FontWeight.w500)) : const SizedBox(),
           ),
           Expanded(
             child: Text(
@@ -134,10 +115,7 @@ class MuscleAgeCard extends StatelessWidget {
                 border: Border.all(color: const Color(0xFF00914B), width: 2),
               ),
               child: const Center(
-                child: Text(
-                  'BEST',
-                  style: TextStyle(color: Color(0xFF007130), fontSize: 11, fontWeight: FontWeight.bold),
-                ),
+                child: Text('BEST', style: TextStyle(color: Color(0xFF007130), fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ),
           const SizedBox(width: 10),

@@ -61,7 +61,7 @@ class SelectModeState extends State<SelectMode> {
               const SizedBox(height: 35),
 
               // Active Mode Card / Paid 체크
-              userModel.userInfo['authCd'].contains('PAID')
+              userModel.userInfo?['authCd'].contains('PAID')
                   ? _modeCard(
                       icon: Icons.flash_on,
                       title: "Active Mode",

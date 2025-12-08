@@ -18,20 +18,7 @@ import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ScreenHealthInfo extends StatefulWidget {
-  final dynamic healthData;
-  final Future<dynamic> healthInfoItemsFuture;
-  final String? userId;
-  final Function initializeData;
-  final dynamic msmtItemData;
-
-  const ScreenHealthInfo({
-    super.key,
-    required this.healthData,
-    required this.healthInfoItemsFuture,
-    required this.userId,
-    required this.initializeData,
-    required this.msmtItemData,
-  });
+  const ScreenHealthInfo({super.key});
 
   @override
   State<ScreenHealthInfo> createState() => _ScreenHealthInfo();
@@ -160,22 +147,13 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.black87, width: 1.6),
                             boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 6,
-                                offset: Offset(0, 3),
-                              ),
+                              BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6, offset: Offset(0, 3)),
                             ],
                           ),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(12),
                             onTap: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => HisHealth(),
-                                ),
-                              );
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HisHealth()));
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 18),

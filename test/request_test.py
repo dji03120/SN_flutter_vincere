@@ -41,7 +41,7 @@ if 0:
     print(res.content)
 
 
-if 1:
+if 0:
     import json
     url = "https://vincerebiohealth.kr/api/vincere"
     res = requests.post(f"{url}/select-user-health",json={
@@ -59,7 +59,7 @@ if 0:
     }, verify=False)
     print(json.loads(res.content))
 
-if 0:
+if 1:
     api_key = "zPkSTulXlcw4UKXo9YQS1n7lus1sOEnXVkG727sY2ck9wZ8YPQxehyPAf2pg9FhdITGSZx7aW8tTl2jqLcNivvSuPOW2xW8r5KnTsRMfxqgy0emq0SSdzNtGQ6hIVi3w"
     url = "https://api.thefitrus.com/fitrus-ml/measure/bodyfat"
     headers = {
@@ -69,8 +69,8 @@ if 0:
         "age": "28",
         "gender": "male",
         "height": "168",
-        "voltage": "1.358",
-        "weight": "73"
+        "voltage": "1.362",
+        "weight": "72.5"
     }
     response = requests.post(url, headers=headers, json=payload)
     print(response.content)

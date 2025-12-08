@@ -1,6 +1,7 @@
 import 'package:Vincere/page_ble_device/page_connect_fitrux_hand.dart';
 import 'package:Vincere/page_ble_device/page_connect_fitrux_weight.dart';
 import 'package:Vincere/page_health/screen_my_health_info_raw.dart';
+import 'package:Vincere/test/fitrus_test.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/component/header.dart';
@@ -61,7 +62,7 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const PageConnectFitrusHand()),
+                    MaterialPageRoute(builder: (_) => PageConnectFitrus()),
                   );
                 },
               ),

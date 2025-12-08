@@ -77,7 +77,7 @@ class Component3State extends State<SelectMuscle> {
                   itemBuilder: (context, index) {
                     var workout = workouts[index];
                     bool isDisabled = workout['service_type'] == '유료';
-                    if (userModel.userInfo['authCd'].contains('PAID')) isDisabled = false;
+                    if (userModel.userInfo?['authCd'].contains('PAID')) isDisabled = false;
                     final isSelected = selectedWorkouts.contains(workout['name']);
 
                     return GestureDetector(

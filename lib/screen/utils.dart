@@ -726,3 +726,29 @@ Future<Map<String, dynamic>> loadSessionData() async {
     'isLogin': isLoggedIn,
   };
 }
+
+int calculateAge(String bym) {
+  if (bym.length != 8) return 0; // 생년월일 형식이 맞지 않을 경우
+
+  try {
+    // bym이 'YYYYMMDD' 형식일 경우
+    int birthYear = int.parse(bym.substring(0, 4));
+    int birthMonth = int.parse(bym.substring(4, 6));
+    int birthDay = int.parse(bym.substring(6, 8));
+
+    DateTime birthDate = DateTime(birthYear, birthMonth, birthDay);
+    DateTime currentDate = DateTime.now();
+
+    int age = currentDate.year - birthDate.year;
+
+    // 생일이 아직 지나지 않았다면 1을 빼줌
+    if (currentDate.month < birthDate.month || (currentDate.month == birthDate.month && currentDate.day < birthDate.day)) {
+      age--;
+    }
+
+    return age;
+  } catch (e) {
+    print('Error calculating age: $e');
+    return 0;
+  }
+}
