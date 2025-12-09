@@ -1,14 +1,12 @@
 import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_ble_device/page_connect_elexir.dart';
-import 'package:Vincere/screen/card_muscle_result.dart';
 import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/page_notice/screen_newsboard_list.dart';
 import 'package:Vincere/page_elexir_workout/page_statistics.dart';
-import 'package:Vincere/page_survey/survey_modal.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/screen/utils.dart';
+import 'package:Vincere/page_home/utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' show max;
@@ -2526,16 +2524,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                                             text: '장치 연결',
                                             width: double.infinity,
                                             onPressed: () async {
-                                              await userModel.set_local_saved_data();
-                                              userModel.set_datas(
-                                                g003: msmt003Grade.toDouble(),
-                                                g008: msmt008Grade.toDouble(),
-                                                g011: msmt011Grade.toDouble(),
-                                                g012: msmt012Grade.toDouble(),
-                                                g013: msmt013Grade.toDouble(),
-                                                avg: gradeAvg.toDouble(),
-                                                age: muscleAge,
-                                              );
+                                              await userModel.set_login_data();
+                                              userModel.set_user_info();
                                               Navigator.push(context, MaterialPageRoute(builder: (context) => PageConnectBle()));
                                             },
                                           ),

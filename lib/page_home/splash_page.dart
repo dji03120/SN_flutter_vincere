@@ -1,5 +1,7 @@
-import 'package:Vincere/screen/screen_home.dart';
+import 'package:Vincere/page_home/screen_home.dart';
+import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -22,10 +24,27 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     ]).animate(_controller);
 
     _controller.forward();
+    _initializeData();
 
     Future.delayed(const Duration(milliseconds: 3000), () {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MyHomePage(title: "vincere_App")));
     });
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      final userModel = Provider.of<UserModel>(context, listen: false);
+      await userModel.set_login_data();
+
+      if (userModel.isLogin) {
+        await userModel.set_user_info();
+        await userModel.set_food_plate_data();
+      }
+      print("initialize user done");
+      setState(() {});
+    } catch (e) {
+      print('Error initializing data: $e');
+    }
   }
 
   @override
@@ -56,21 +75,11 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                   child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        "Personalized",
-                        style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5),
-                      ),
+                      Text("Personalized", style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5)),
                       SizedBox(height: 8),
-                      Text(
-                        "Bio Health",
-                        style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5),
-                      ),
+                      Text("Bio Health", style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5)),
                       SizedBox(height: 18),
-                      Text(
-                        "개인 건강정보 기반한 영양평가 및 식품추천",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300, color: Colors.white),
-                        textAlign: TextAlign.center,
-                      ),
+                      Text("개인 건강정보 기반한 영양평가 및 식품추천", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300, color: Colors.white), textAlign: TextAlign.center),
                     ],
                   ),
                 ),

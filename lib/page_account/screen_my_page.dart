@@ -953,7 +953,7 @@ class _MyPageState extends State<MyPage> {
       print('Fetching profile image for user: $userId');
 
       Map<String, dynamic> result = await apiService.fetchProfileImage(userId.toString());
-      print('Profile image API response: $result');
+      //print('Profile image API response: $result');
 
       if (result['success'] == true && result['imageUrl'] != null) {
         print('Setting profile image URL: ${result['imageUrl'].substring(0, 50)}...');

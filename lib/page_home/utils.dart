@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:Vincere/screen/card_muscle_result.dart';
+import 'package:Vincere/http/webReqSpring.dart';
+import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:html/parser.dart' show parse;
@@ -134,30 +135,11 @@ class HtmlUtils {
   }
 }
 
-// 회원 정보 카드 빌더
-Widget userInfoCard({required String title, required String value}) {
-  return Card(
-    color: Colors.white,
-    margin: EdgeInsets.symmetric(vertical: 8.0),
-    child: Padding(
-      padding: EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            value,
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
+//
+//
+//
+//
+//
 Container pscpInfoContainer(BuildContext context, List<Map<String, dynamic>> pscpData) {
   return Container(
     color: Colors.blueGrey,
@@ -193,25 +175,7 @@ Container pscpInfoContainer(BuildContext context, List<Map<String, dynamic>> psc
   );
 }
 
-// 회원 정보 카드 빌더
-Widget buildUserInfoCard({required String title, required String value}) {
-  return Card(
-    color: Colors.white,
-    margin: EdgeInsets.symmetric(vertical: 8.0),
-    child: Padding(
-      padding: EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          Text(value, style: TextStyle(fontSize: 16)),
-        ],
-      ),
-    ),
-  );
-}
-
-// 공통 카드 빌더
+// 카드
 Widget buildInfoCard({required String title, required String value}) {
   return Card(
     color: Colors.white,
@@ -221,14 +185,8 @@ Widget buildInfoCard({required String title, required String value}) {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 16),
-          ),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(value, style: const TextStyle(fontSize: 16)),
         ],
       ),
     ),
@@ -332,155 +290,6 @@ class FoodRow extends StatelessWidget {
 }
 
 // 테이블 데이터 셀 위젯
-Widget buildTableCell(String text, double breakfastRice, double lunchRice, double dinnerRice, {bool isHeader = false, String? str = ' '}) {
-  double numericValue = 0;
-
-  try {
-    numericValue = double.parse(text);
-  } catch (e) {
-    // text가 숫자로 변환할 수 없는 경우 기본값 0 사용
-  }
-  Color dotColor;
-  Color numberColor;
-
-  if (!isHeader && str != null && ((str.contains('recBreakfastCarbs') && breakfastRice > 0) || (str.contains('recBreakfastProtein') && breakfastRice > 0) || (str.contains('recLunchCarbs') && lunchRice > 0) || (str.contains('recLunchProtein') && lunchRice > 0) || (str.contains('recDinnerCarbs') && dinnerRice > 0) || (str.contains('recDinnerProtein') && dinnerRice > 0))) {
-    dotColor = const Color(0xFFFABE00);
-  } else if (!isHeader && str != null && str.contains('TotalRecKcal') && ((str == 'breakfastTotalRecKcal' && breakfastRice > 0) || (str == 'lunchTotalRecKcal' && lunchRice > 0) || (str == 'dinnerTotalRecKcal' && dinnerRice > 0))) {
-    dotColor = const Color(0xFFFABE00);
-  } else if (!isHeader && str != ' ') {
-    dotColor = const Color(0xFFDEDEDE);
-  } else {
-    dotColor = const Color(0xFFF5F5F5);
-  }
-
-  if (!isHeader && str != null && str.contains('Carbs')) {
-    numberColor = const Color(0xFF00914B);
-  } else if (!isHeader && str != null && str.contains('Protein')) {
-    numberColor = const Color(0xFF9D895B);
-  } else {
-    numberColor = const Color(0xFF000000);
-  }
-
-  List<Widget> children = [
-    Row(
-      mainAxisAlignment: MainAxisAlignment.start, // 좌측 정렬
-      children: [
-        SizedBox(width: 10),
-        if (!isHeader) ...[
-          Container(
-            width: 10, // 동그라미 크기
-            height: 10,
-            margin: EdgeInsets.only(top: 10, bottom: 3),
-            decoration: BoxDecoration(
-              color: dotColor,
-              shape: BoxShape.circle,
-            ),
-          ),
-        ],
-        if (isHeader) ...[
-          SizedBox(height: 15),
-        ],
-      ],
-      // SizedBox(height: 10),
-    ),
-    Row(
-      // 새로운 Row 추가
-      mainAxisAlignment: isHeader ? MainAxisAlignment.center : MainAxisAlignment.end, // 중앙 정렬
-      //crossAxisAlignment: isHeader ? CrossAxisAlignment.center : CrossAxisAlignment.start,  // 추가: 세로 중앙 정렬
-      children: [
-        Text(
-          // textAlign: TextAlign.center,
-          isHeader ? text : '${numericValue.round()}',
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-            color: numberColor,
-          ),
-        ),
-        if (!isHeader && str != null && !str.contains('totalRecKcal')) ...[
-          Text(
-            'kcal',
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: Color(0xFF555555)),
-          ),
-          SizedBox(width: 10),
-        ],
-        if (!isHeader && str != null && str.contains('totalRecKcal')) ...[
-          Text(
-            'kcal',
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: Color(0xFF000000)),
-          ),
-          SizedBox(width: 10),
-        ],
-        // SizedBox(width: 8),
-      ],
-    ),
-  ];
-
-  if (!isHeader && str != null && ((str.contains('recBreakfastCarbs') && breakfastRice > 0) || (str.contains('recBreakfastProtein') && breakfastRice > 0) || (str.contains('recLunchCarbs') && lunchRice > 0) || (str.contains('recLunchProtein') && lunchRice > 0) || (str.contains('recDinnerCarbs') && dinnerRice > 0) || (str.contains('recDinnerProtein') && dinnerRice > 0))) {
-    children.addAll([
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end, // 우측 정렬
-        children: [
-          Text(
-            '${(numericValue / 4).round().toString()}',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF000000)),
-          ),
-          Text(
-            'g',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF555555)),
-          ),
-          SizedBox(width: 10),
-        ],
-      ),
-    ]);
-  } else if (!isHeader && str != ' ' && str != null && !str.contains('TotalRecKcal')) {
-    // 탄수화물 필요량 또는 단백질 필요량 cell인 경우
-    children.addAll([
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end, // 우측 정렬
-        children: [
-          Text(
-            '${(numericValue / 4).round().toString()}',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF000000)),
-          ),
-          Text(
-            'g',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF555555)),
-          ),
-          SizedBox(width: 10),
-        ],
-      ),
-    ]);
-  } else if (!isHeader && str != ' ' && str != null && str.contains('totalRecKcal')) {
-    children.addAll([
-      SizedBox(height: 20),
-    ]);
-  }
-
-  Color cellColor;
-  switch (str) {
-    case String s when s.contains('Carbs'):
-      cellColor = const Color(0xFFF0F9F4);
-    case String s when s.contains('Protein'):
-      cellColor = const Color(0xFFF9F8F5);
-    default:
-      cellColor = const Color(0xFFF5F5F5);
-      break;
-  }
-
-  return Container(
-    // padding: const EdgeInsets.symmetric(vertical: 12),
-    alignment: Alignment.center,
-    height: 76,
-    decoration: BoxDecoration(
-      color: !isHeader ? cellColor : Colors.white, // 헤더일 때만 초록색 배경
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: children,
-    ),
-  );
-}
 
 class RiceCaloriesRow extends StatelessWidget {
   final String text;
@@ -751,4 +560,35 @@ int calculateAge(String bym) {
     print('Error calculating age: $e');
     return 0;
   }
+}
+
+class DashedLinePainter extends CustomPainter {
+  final Color color;
+
+  // 생성자에서 컬러를 매개변수로 받음
+  DashedLinePainter({
+    this.color = Colors.grey, // 기본값 설정
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dotRadius = 1; // 점의 반지름
+    double dotSpace = 2; // 점 사이의 간격
+    double startX = 0;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    while (startX < size.width) {
+      canvas.drawCircle(
+        Offset(startX, dotRadius), // y 위치를 반지름만큼 내려서 선이 중앙에 오도록 조정
+        dotRadius,
+        paint,
+      );
+      startX += (dotRadius * 2) + dotSpace; // 다음 점의 위치 계산
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

@@ -1,7 +1,7 @@
 import 'package:Vincere/http/webReqSpring.dart';
 import 'package:Vincere/export/screens.dart';
 import 'package:Vincere/page_account/screen_find_account.dart';
-import 'package:Vincere/screen/splash_page.dart';
+import 'package:Vincere/page_home/splash_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 //import 'package:provider/provider.dart' show ChangeNotifierProvider, Provider;

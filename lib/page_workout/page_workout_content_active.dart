@@ -6,7 +6,7 @@ import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_elexir_workout/page_statistics.dart';
 import 'package:Vincere/page_elexir_workout/page_workout_plan.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/screen/utils.dart';
+import 'package:Vincere/page_home/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/progress_donut.dart';
 import 'package:provider/provider.dart';

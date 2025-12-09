@@ -2,7 +2,7 @@ import 'package:Vincere/export/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../http/webReqSpring.dart';
-import '../screen/utils.dart'; // utils.dart 파일 import
+import '../page_home/utils.dart'; // utils.dart 파일 import
 
 class NewsBoard extends StatefulWidget {
   const NewsBoard({super.key});
@@ -55,8 +55,8 @@ class _NewsBoardState extends State<NewsBoard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const Header(),
-      drawer: CustomDrawer(isLogin: _isLogIn),
+      //appBar: const Header(),
+      //drawer: CustomDrawer(isLogin: _isLogIn),
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 0), // 전체 영역에 16의 패딩 추가

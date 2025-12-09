@@ -13,4 +13,4 @@ export 'package:Vincere/page_notice/screen_regist_qna.dart';
 export 'package:Vincere/page_account/screen_singup.dart';
 export 'package:Vincere/page_health/screen_his_health.dart';
 export 'package:Vincere/component/custom_drawer.dart';
-export 'package:Vincere/screen/screen_home.dart';
+export 'package:Vincere/page_home/screen_home.dart';

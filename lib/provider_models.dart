@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:Vincere/http/webReqFastapi.dart';
 import 'package:Vincere/http/webReqSpring.dart';
+import 'package:Vincere/page_home/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
 import 'package:path/path.dart';
@@ -242,6 +244,27 @@ class WorkoutModel extends ChangeNotifier {
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 class UserModel extends ChangeNotifier {
   bool _isLogin = false;
   String _userId = '';
@@ -256,13 +279,29 @@ class UserModel extends ChangeNotifier {
     if (_userId.isNotEmpty && _password.isNotEmpty) {
       _isLogin = true;
     }
-    notifyListeners();
+    print("login process done...");
   }
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
+  double _gradeAvg = 0.0;
   String _profileImageUrl = '';
-  String? get profileImageUrl => _profileImageUrl;
   Map<String, dynamic>? _userInfo = {};
+  Map<String, dynamic>? _userHealthData = {};
+  List<Map<String, dynamic>> _muscleAgeData = [];
+
+  double get gradeAvg => _gradeAvg;
+  String? get profileImageUrl => _profileImageUrl;
   Map<String, dynamic>? get userInfo => _userInfo;
+  Map<String, dynamic>? get userHealthData => _userHealthData;
+  List<Map<String, dynamic>> get muscleAgeData => _muscleAgeData;
   Future<void> set_user_info() async {
     try {
       //
@@ -270,6 +309,7 @@ class UserModel extends ChangeNotifier {
       ApiService apiService = ApiService();
       Map<String, dynamic> result = await apiService.fetchGetUserInfo(_userId.toString());
       _userInfo = result["userOne"];
+      _userInfo?['age'] = get_birth_to_age(_userInfo?['bym']);
       print(_userInfo);
 
       //
@@ -277,48 +317,272 @@ class UserModel extends ChangeNotifier {
       Map<String, dynamic> profileRes = await apiService.fetchProfileImage(_userId.toString());
       if (profileRes['success'] == true && profileRes['imageUrl'] != null) {
         _profileImageUrl = profileRes['imageUrl'];
-        print(profileRes['imageUrl']);
       } else {
         print('Failed to get profile image: ${profileRes['message']}');
+      }
+
+      //
+      // get user health
+      ApiServiceFast apiServicFast = ApiServiceFast();
+      _userHealthData = (await apiServicFast.selectUserHealth(_userId.toString()))['result'];
+      _gradeAvg = _userHealthData?['grade_average'] ?? 3;
+
+      //
+      // get user muscle age
+      Map<String, dynamic> muscleAgeData = await apiService.getMuscleAgeList();
+      _muscleAgeData = List<Map<String, dynamic>>.from(muscleAgeData["list"]);
+      if ((_muscleAgeData != null && _muscleAgeData.length > 0) && (_userInfo?['age'] != null && _userInfo?['age'] != 0)) {
+        for (int i = 0; i < _muscleAgeData.length; i++) {
+          double? maxGrd = double.tryParse(_muscleAgeData[i]['MAX_GRADE'].toString() ?? '0');
+          double? minGrd = double.tryParse(_muscleAgeData[i]['MIN_GRADE'].toString() ?? '0');
+          double? ageAdj = double.tryParse(_muscleAgeData[i]['MUSCLE_AGE_ADJ'].toString() ?? '0');
+          if ((maxGrd != null && minGrd != null && ageAdj != null) && (gradeAvg >= minGrd && gradeAvg <= maxGrd)) {
+            _userHealthData?['muscleAge'] = (_userInfo?['age'] + ageAdj);
+          }
+        }
+      } else {
+        _userHealthData?['muscleAge'] = null;
+        print("일부 grade 값이 0입니다");
       }
     } catch (e) {
       print('Error: $e');
     }
     print("userdata : ${_userInfo}");
+    print("userHealthData : ${_userHealthData}");
+  }
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+  Map<String, dynamic> _plateData = {};
+  Map<String, dynamic> get plateData => _plateData;
+
+  Future<void> set_food_plate_data() async {
+    try {
+      double weight = _userHealthData?['표준체중'][0] ?? 0.0;
+      String activityLevel = _userInfo?['activityLevel'] ?? 'LOW';
+      Map activityFactor = {'a': 0, 'b': 0};
+      if (weight <= 0) {
+        print('Invalid standard weight');
+        return;
+      }
+      if (activityLevel == 'LOW') activityFactor = {'a': 25, 'b': 30};
+      if (activityLevel == 'NORMAL') activityFactor = {'a': 30, 'b': 35};
+      if (activityLevel == 'HIGH') activityFactor = {'a': 35, 'b': 40};
+      _plateData['recDailyEnergy'] = ((weight * activityFactor['a']) - activityFactor['b']);
+
+      //
+      //
+      //
+      // 쌀 섭취량 데이터 가져오기
+      Map<String, dynamic> riceIntake = await getRiceIntake(_userId);
+
+      // 아침/점심/저녁 섭취량을 double로 변환 (null이면 0으로 처리)
+      _plateData['breakfastRice'] = double.tryParse(riceIntake['BREAKFAST']?.toString() ?? '0') ?? 0;
+      _plateData['lunchRice'] = double.tryParse(riceIntake['LUNCH']?.toString() ?? '0') ?? 0;
+      _plateData['dinnerRice'] = double.tryParse(riceIntake['DINNER']?.toString() ?? '0') ?? 0;
+      _plateData['totalRice'] = _plateData['breakfastRice'] + _plateData['lunchRice'] + _plateData['dinnerRice']; // 총 쌀 섭취량 계산
+
+      // 탄수화물과 단백질 칼로리 계산
+      // 쌀의 탄수화물 비율 37%, 탄수화물 1g당 4kcal // 단백질 1g당 4kcal 쌀의 단백질 비율 2.5%,
+      _plateData['carbCalories'] = _plateData['totalRice'] * 1.32;
+      _plateData['proteinCalories'] = _plateData['totalRice'] * 0.092;
+      _plateData['totalCalories'] = _plateData['carbCalories'] + _plateData['proteinCalories'];
+
+      _plateData['recBreakfastCal'] = _plateData['recDailyEnergy'] / 3;
+      _plateData['recLunchCal'] = _plateData['recDailyEnergy'] / 3;
+      _plateData['recDinnerCal'] = _plateData['recDailyEnergy'] / 3;
+
+      //
+      //
+      //
+      // 추천 칼로리 계산
+      _plateData['recEnergy'] = _plateData['recDailyEnergy'] / 3; // 한끼 권장 칼로리
+      _plateData['recCarbs'] = _plateData['recDailyEnergy'] / 3 * 0.55; // 탄수화물 일일권장량
+      _plateData['recProtein'] = _plateData['recDailyEnergy'] / 3 * 0.3; // 단백질 일일권장량
+
+      // 아침 권장량
+      _plateData['recBreakfastEnergy'] = _plateData['recEnergy'] - _plateData['breakfastRice'] * 1.46;
+      _plateData['recBreakfastCarbs'] = _plateData['recCarbs'] - _plateData['breakfastRice'] * 1.32;
+      _plateData['recBreakfastProtein'] = _plateData['recProtein'] - _plateData['breakfastRice'] * 0.092;
+
+      // 점심 권장량
+      _plateData['recLunchEnergy'] = _plateData['recEnergy'] - (_plateData['lunchRice'] * 1.46);
+      _plateData['recLunchCarbs'] = _plateData['recCarbs'] - (_plateData['lunchRice'] * 1.32);
+      _plateData['recLunchProtein'] = _plateData['recProtein'] - (_plateData['lunchRice'] * 0.092);
+
+      // 저녁 권장량
+      _plateData['recDinnerEnergy'] = _plateData['recEnergy'] - (_plateData['dinnerRice'] * 1.46);
+      _plateData['recDinnerCarbs'] = _plateData['recCarbs'] - (_plateData['dinnerRice'] * 1.32);
+      _plateData['recDinnerProtein'] = _plateData['recProtein'] - (_plateData['dinnerRice'] * 0.092);
+
+      if (_plateData['breakfastRice'] != 0) {
+        // 아침 섭취량이 입력된 경우 - 점심, 저녁에 각각 아침의 부족 초과분/2 추가
+        _plateData['recLunchEnergy'] = _plateData['recLunchEnergy'] + _plateData['recBreakfastEnergy'] / 2;
+        _plateData['recLunchCarbs'] = _plateData['recLunchCarbs'] + _plateData['recBreakfastCarbs'] / 2;
+        _plateData['recLunchProtein'] = _plateData['recLunchProtein'] + _plateData['recBreakfastProtein'] / 2;
+
+        _plateData['recDinnerEnergy'] = _plateData['recDinnerEnergy'] + _plateData['recBreakfastEnergy'] / 2;
+        _plateData['recDinnerCarbs'] = _plateData['recDinnerCarbs'] + _plateData['recBreakfastCarbs'] / 2;
+        _plateData['recDinnerProtein'] = _plateData['recDinnerProtein'] + _plateData['recBreakfastProtein'] / 2;
+      }
+
+      if (_plateData['lunchRice'] != 0) {
+        // 점심 섭취량이 입력된 경우 - 저녁에 각각 점심 부족 초과분 추가
+        _plateData['recDinnerEnergy'] = _plateData['recDinnerEnergy'] + _plateData['recLunchEnergy'];
+        _plateData['recDinnerCarbs'] = _plateData['recDinnerCarbs'] + _plateData['recLunchCarbs'];
+        _plateData['recDinnerProtein'] = _plateData['recDinnerProtein'] + _plateData['recLunchProtein'];
+      }
+
+      if (_plateData['dinnerRice'] != 0) {
+        // 저녁 섭취량이 입력된 경우, 부족 칼로리 계산 진행
+        // 일일 에너지 권장량 - 아침/점심/저녁 섭취 칼로리
+        _plateData['dailyCarbsLackCal'] = _plateData['recDailyEnergy'] * 0.55 - _plateData['totalRice'] * 1.32;
+        _plateData['dailyCarbsLackCal'] = _plateData['dailyCarbsLackCal'] > 0 ? _plateData['dailyCarbsLackCal'].round() as double : 0;
+
+        _plateData['dailyProteinLackCal'] = _plateData['recDailyEnergy'] * 0.3 - _plateData['totalRice'] * 0.092;
+        _plateData['dailyProteinLackCal'] = _plateData['dailyProteinLackCal'] > 0 ? _plateData['dailyProteinLackCal'].round() as double : 0;
+      }
+
+      //
+      //
+      //
+      // 끼니별 쌀 섭취량이 0이 아닐 경우에는 권장량 대신 섭취량 출력
+      _plateData['recBreakfastEnergy'] = _plateData['breakfastRice'] != 0 ? _plateData['breakfastRice'] * 1.46 : _plateData['recBreakfastEnergy'];
+      _plateData['recBreakfastCarbs'] = _plateData['breakfastRice'] != 0 ? _plateData['breakfastRice'] * 1.32 : _plateData['recBreakfastCarbs'];
+      _plateData['recBreakfastProtein'] = _plateData['breakfastRice'] != 0 ? _plateData['breakfastRice'] * 0.092 : _plateData['recBreakfastProtein'];
+
+      _plateData['recLunchEnergy'] = _plateData['lunchRice'] != 0 ? _plateData['lunchRice'] * 1.46 : _plateData['recLunchEnergy'];
+      _plateData['recLunchCarbs'] = _plateData['lunchRice'] != 0 ? _plateData['lunchRice'] * 1.32 : _plateData['recLunchCarbs'];
+      _plateData['recLunchProtein'] = _plateData['lunchRice'] != 0 ? _plateData['lunchRice'] * 0.092 : _plateData['recLunchProtein'];
+
+      _plateData['recDinnerEnergy'] = _plateData['dinnerRice'] != 0 ? _plateData['dinnerRice'] * 1.46 : _plateData['recDinnerEnergy'];
+      _plateData['recDinnerCarbs'] = _plateData['dinnerRice'] != 0 ? _plateData['dinnerRice'] * 1.32 : _plateData['recDinnerCarbs'];
+      _plateData['recDinnerProtein'] = _plateData['dinnerRice'] != 0 ? _plateData['dinnerRice'] * 0.092 : _plateData['recDinnerProtein'];
+
+      //
+      //
+      //
+      // 추천식품을 위한 탄수화물, 단백질 필요 칼로리
+
+      if (_plateData['breakfastRice'] == 0) {
+        // 아침 섭취량이 입력 X
+        _plateData['foodRecCarbsCal'] = _plateData['recBreakfastCarbs'];
+        _plateData['foodRecProteinCal'] = _plateData['recBreakfastProtein'];
+        _plateData['strRec'] = "아침";
+      }
+      if (_plateData['breakfastRice'] != 0) {
+        // 아침 섭취량이 입력된 경우 // 점심 권장 영양을 기준으로 함
+        _plateData['foodRecCarbsCal'] = _plateData['recLunchCarbs'];
+        _plateData['foodRecProteinCal'] = _plateData['recLunchProtein'];
+        _plateData['strRec'] = "점심";
+      }
+
+      if (_plateData['lunchRice'] != 0) {
+        // 점심 섭취량이 입력된 경우 녁 권장 탄수화물 칼로리를 기준으로 함
+        _plateData['foodRecCarbsCal'] = _plateData['recDinnerCarbs'];
+        _plateData['foodRecProteinCal'] = _plateData['recDinnerProtein'];
+        _plateData['strRec'] = "저녁";
+      }
+      if (_plateData['dinnerRice'] != 0) {
+        // 저녁 섭취량이 입력된 경우
+        _plateData['foodRecCarbsCal'] = 0;
+        _plateData['foodRecProteinCal'] = 0;
+        _plateData['strRec'] = "";
+      }
+
+      //
+      //
+      //
+      // 추천식품 API
+      ApiService apiService = ApiService();
+      Map<String, dynamic> result = await apiService.fetchGetRcmdFoodList(
+        _plateData['foodRecCarbsCal'],
+        _plateData['foodRecProteinCal'],
+      );
+      print("_getRcmdFoodList result : $result");
+      if (result.containsKey('carbsFoodMap')) {
+        _plateData['carbsFoodListData'] = List<Map<String, dynamic>>.from(result["carbsFoodMap"]);
+      }
+      if (result.containsKey('proteinFoodMap')) {
+        _plateData['proteinFoodListData'] = List<Map<String, dynamic>>.from(result["proteinFoodMap"]);
+      }
+
+      print("_plateData : ${_plateData}");
+    } catch (e) {
+      print('Error calculating energy: $e');
+    }
     notifyListeners();
   }
 
-  String _muscleAge = '';
-  double _gradeAvg = 0.0;
-  double _msmt003Grade = 0.0;
-  double _msmt008Grade = 0.0;
-  double _msmt011Grade = 0.0;
-  double _msmt012Grade = 0.0;
-  double _msmt013Grade = 0.0;
-  String get muscleAge => _muscleAge;
-  double get gradeAvg => _gradeAvg;
-  double get msmt003Grade => _msmt003Grade;
-  double get msmt008Grade => _msmt008Grade;
-  double get msmt011Grade => _msmt011Grade;
-  double get msmt012Grade => _msmt012Grade;
-  double get msmt013Grade => _msmt013Grade;
-  void set_grade_datas({
-    double? g003,
-    double? g008,
-    double? g011,
-    double? g012,
-    double? g013,
-    double? avg,
-    String? age,
-  }) {
-    if (g003 != null) _msmt003Grade = g003;
-    if (g008 != null) _msmt008Grade = g008;
-    if (g011 != null) _msmt011Grade = g011;
-    if (g012 != null) _msmt012Grade = g012;
-    if (g013 != null) _msmt013Grade = g013;
-    if (avg != null) _gradeAvg = avg;
-    if (age != null) _muscleAge = age;
+  notifyListeners();
+}
 
-    notifyListeners();
+//
+//
+//
+//
+//
+//
+//
+//
+//
+Future<Map<String, dynamic>> getRiceIntake(String userId) async {
+  try {
+    ApiService apiService = ApiService();
+    Map<String, dynamic> result = await apiService.fetchRiceIntake(userId.toString());
+    print("getRiceIntake : $result");
+    if (result != null) {
+      return result;
+    }
+    return {};
+  } catch (e) {
+    print('Error getting rice intake: $e');
+    return {};
+  }
+}
+
+Future<Map<String, String>> getNutritionInfo(String foodName) async {
+  try {
+    ApiService apiService = ApiService();
+    Map<String, dynamic> result = await apiService.fetchGetNutritionInfo(foodName);
+    print("result 확인 : $result");
+
+    if (result['success'] == true) {
+      return {
+        '칼로리': '${result['calories']}kcal',
+        '단백질': '${result['protein']}g',
+        '탄수화물': '${result['carbs']}g',
+        '지방': '${result['fat']}g',
+        '나트륨': '${result['sodium']}mg',
+        '총 제공량': '${result['serving_size']}g',
+        '1회 섭취량': '${result['recommended_intake']}g',
+      };
+    } else {
+      throw Exception('Failed to load nutrition info');
+    }
+  } catch (e) {
+    print('Error fetching nutrition info: $e');
+    return {}; // 또는 기본값 반환
+  }
+}
+
+// 쌀 섭취량 입력
+Future<void> insertRiceIntake(UserModel userModel, String mealType, double amount) async {
+  try {
+    ApiService apiService = ApiService();
+    Map<String, dynamic> result = await apiService.insertRiceIntake(
+      userModel.userId.toString(),
+      mealType,
+      amount,
+    );
+  } catch (e) {
+    print('Error inserting rice intake: $e');
   }
 }

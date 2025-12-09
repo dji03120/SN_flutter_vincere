@@ -15,6 +15,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+  wave: ^0.2.0
   path_provider:
   path:
   table_calendar: ^3.0.6
