@@ -17,33 +17,203 @@ import 'package:Vincere/http/webReqSpring.dart';
 //
 //
 //
-class PlateSection extends StatefulWidget {
-  const PlateSection({super.key});
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+class PlateRiceCard extends StatelessWidget {
+  final UserModel userModel;
+
+  const PlateRiceCard({
+    super.key,
+    required this.userModel,
+  });
 
   @override
-  State<PlateSection> createState() => _PlateSectionState();
+  Widget build(BuildContext context) {
+    return Container(
+        margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
+        height: 200,
+        child: Card(
+            color: const Color(0xFF0B8043),
+            child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const SizedBox(height: 10),
+                  _titleSection(),
+                  const SizedBox(height: 20),
+                  _buttonSection(context),
+                ]))));
+  }
+
+  // 1. 상단 타이틀 + 이미지
+  // ---------------------------------------------
+  Widget _titleSection() {
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('오늘하루', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: Colors.white)),
+        Text('쌀 섭취량 입력', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: Colors.white)),
+        SizedBox(height: 20),
+      ]),
+      Image.asset('images/rice_img.png', width: 90, height: 74),
+    ]);
+  }
+
+  // 2. 버튼 구역 (입력하기 / 섭취량 추이)
+  // ---------------------------------------------
+  Widget _buttonSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+      SizedBox(
+        width: screenWidth * 0.35,
+        height: 42,
+        child: ElevatedButton(
+          onPressed: () => _openRiceInputDialog(context),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            backgroundColor: const Color(0xFF0B8043),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Colors.white, width: 2)),
+          ),
+          child: const Text("입력하기", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+        ),
+      ),
+      SizedBox(
+          width: screenWidth * 0.35,
+          child: ElevatedButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => MetricChartDialog(title: "쌀 섭취량(g)", code: "riceIntake", userId: userModel.userId),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: const Text("섭취량 추이"),
+          ))
+    ]);
+  }
+
+  // 3. "입력하기" 다이얼로그
+  // ---------------------------------------------
+  void _openRiceInputDialog(BuildContext context) {
+    final breakfast = TextEditingController(text: userModel.plateData["breakfastRice"]?.toString() ?? "");
+    final lunch = TextEditingController(text: userModel.plateData["lunchRice"]?.toString() ?? "");
+    final dinner = TextEditingController(text: userModel.plateData["dinnerRice"]?.toString() ?? "");
+
+    showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 4),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              titlePadding: const EdgeInsets.only(top: 30, bottom: 30, left: 24, right: 24),
+
+              // Title
+              title: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                RichText(
+                  text: const TextSpan(
+                    children: [
+                      TextSpan(text: '섭취한 쌀의 ', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black)),
+                      TextSpan(text: '총량', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF00914B))),
+                      TextSpan(text: '을 입력해주세요', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(children: [
+                  const Text("백미,현미,흑미,잡곡 등 종류 상관없음", style: TextStyle(fontSize: 16, color: Color(0xFF555555))),
+                  const Spacer(),
+                  GestureDetector(onTap: () => _openRiceInfoDialog(context), child: Image.asset('images/question_mark.png', width: 20, height: 20)),
+                ])
+              ]),
+
+              // input
+              content: SizedBox(
+                width: 300,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RiceWeightInput(label: "아침", controller: breakfast, onSubmit: (v) => insertRiceIntake(userModel, "BREAKFAST", v)),
+                    const SizedBox(height: 8),
+                    RiceWeightInput(label: "점심", controller: lunch, onSubmit: (v) => insertRiceIntake(userModel, "LUNCH", v)),
+                    const SizedBox(height: 8),
+                    RiceWeightInput(label: "저녁", controller: dinner, onSubmit: (v) => insertRiceIntake(userModel, "DINNER", v)),
+                  ],
+                ),
+              ),
+
+              // close
+              actions: [
+                Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(top: 30),
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF007130),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text("닫기", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
+                    ))
+              ]);
+        });
+  }
+
+  // ---------------------------------------------
+  // 4. "?" 버튼 누르면 나오는 안내 Dialog
+  // ---------------------------------------------
+  void _openRiceInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Stack(
+            alignment: Alignment.topRight,
+            children: [Image.asset('images/rice_calculate_info.png', fit: BoxFit.contain), Positioned(top: 1, right: 1, child: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)))],
+          )),
+    );
+  }
 }
 
-class _PlateSectionState extends State<PlateSection> {
-  late UserModel userModel;
-
-  // 초기 설정
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void dispose() {
-    super.dispose();
-  }
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+class PlateSection extends StatelessWidget {
+  const PlateSection({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     final userModel = Provider.of<UserModel>(context); // 상태 접근
-    final screenWidth = MediaQuery.of(context).size.width;
-
     final plateData = userModel.plateData;
-
     return Container(
       width: double.infinity,
       child: Column(
@@ -51,248 +221,55 @@ class _PlateSectionState extends State<PlateSection> {
         children: [
           LayoutBuilder(
             builder: (context, constraints) {
-              return Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: [
-                  Container(
-                      margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                      width: constraints.maxWidth > 300 ? (constraints.maxWidth - 16) : constraints.maxWidth,
-                      height: 200,
-                      child: Card(
-                          color: Color(0xFF0B8043), // 초록색 배경
-                          child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // 좌우 정렬
-                                  children: [
-                                    const Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text('오늘하루', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: Color(0xFFFFFFFF))),
-                                        Text('쌀 섭취량 입력', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: Color(0xFFFFFFFF))),
-                                        SizedBox(height: 20),
-                                      ],
-                                    ),
-                                    Image.asset('images/rice_img.png', width: 90, height: 74),
-                                  ],
-                                ),
-                                SizedBox(height: 20),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 8),
-                                      child: SizedBox(
-                                        width: screenWidth * 0.35,
-                                        height: 42,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                // 텍스트 입력을 위한 컨트롤러들
-                                                TextEditingController breakfastController = TextEditingController(text: plateData['breakfastRice']?.toString() ?? '');
-                                                TextEditingController lunchController = TextEditingController(text: plateData['lunchRice']?.toString() ?? '');
-                                                TextEditingController dinnerController = TextEditingController(text: plateData['dinnerRice']?.toString() ?? '');
-
-                                                return AlertDialog(
-                                                  insetPadding: EdgeInsets.symmetric(horizontal: 4),
-                                                  contentPadding: EdgeInsets.symmetric(horizontal: 24),
-                                                  titlePadding: EdgeInsets.only(top: 30, bottom: 30, left: 24, right: 24),
-                                                  title: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    children: [
-                                                      RichText(
-                                                        text: const TextSpan(
-                                                          children: [
-                                                            TextSpan(text: '섭취한 쌀의 ', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.04)),
-                                                            TextSpan(text: '총량', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF00914B))),
-                                                            TextSpan(text: '을 입력해주세요', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.04)),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      SizedBox(height: 18), // 두 줄 사이의 간격
-                                                      Row(
-                                                        children: [
-                                                          const Text('백미,현미,흑미,잡곡 등 종류 상관없음', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: Color(0xFF555555))),
-                                                          Spacer(), // 남은 공간을 차지하여 우측 정렬 효과를 줌
-                                                          Container(
-                                                            alignment: Alignment.centerRight,
-                                                            child: GestureDetector(
-                                                              onTap: () {
-                                                                showDialog(
-                                                                  context: context,
-                                                                  builder: (BuildContext context) {
-                                                                    return Dialog(
-                                                                      insetPadding: EdgeInsets.symmetric(horizontal: 24),
-                                                                      child: SingleChildScrollView(
-                                                                        child: Container(
-                                                                          child: Column(
-                                                                            mainAxisSize: MainAxisSize.min,
-                                                                            children: [
-                                                                              Stack(
-                                                                                alignment: Alignment.topRight,
-                                                                                children: [
-                                                                                  // 이미지
-                                                                                  Image.asset('images/rice_calculate_info.png', fit: BoxFit.contain),
-                                                                                  // 닫기 버튼
-                                                                                  Positioned(
-                                                                                    top: 1,
-                                                                                    right: 1,
-                                                                                    child: IconButton(
-                                                                                      icon: Icon(Icons.close),
-                                                                                      onPressed: () {
-                                                                                        Navigator.of(context).pop();
-                                                                                      },
-                                                                                    ),
-                                                                                  ),
-                                                                                ],
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    );
-                                                                  },
-                                                                );
-                                                              },
-                                                              child: Image.asset('images/question_mark.png', width: 20, height: 20),
-                                                            ),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  content: Container(
-                                                    width: 300,
-                                                    child: Column(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        RiceWeightInput(
-                                                          label: '아침',
-                                                          controller: breakfastController,
-                                                          onSubmit: (amount) {
-                                                            insertRiceIntake(userModel, "BREAKFAST", amount);
-                                                          },
-                                                        ),
-                                                        SizedBox(height: 8),
-                                                        RiceWeightInput(
-                                                          label: '점심',
-                                                          controller: lunchController,
-                                                          onSubmit: (amount) {
-                                                            insertRiceIntake(userModel, "LUNCH", amount);
-                                                          },
-                                                        ),
-                                                        SizedBox(height: 8),
-                                                        RiceWeightInput(
-                                                          label: '저녁',
-                                                          controller: dinnerController,
-                                                          onSubmit: (amount) {
-                                                            insertRiceIntake(userModel, "DINNER", amount);
-                                                          },
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  actions: [
-                                                    Container(
-                                                      width: double.infinity,
-                                                      margin: EdgeInsets.only(top: 30),
-                                                      // padding: EdgeInsets.symmetric(horizontal: 4),
-                                                      child: ElevatedButton(
-                                                        child: const Text('닫기', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Color(0xFF007130),
-                                                          padding: EdgeInsets.symmetric(vertical: 16),
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                        ),
-                                                        onPressed: () {
-                                                          Navigator.of(context).pop();
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            padding: EdgeInsets.zero,
-                                            backgroundColor: Color(0xFF0B8043), // 초록색 배경
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Color(0xFFFFFFFF), width: 2.0)),
-                                          ),
-                                          child: Text('입력하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFFFFFFFF)), softWrap: false, overflow: TextOverflow.visible),
-                                        ),
-                                      ),
-                                    ),
-                                    HomeScreenButton(
-                                      text: '섭취량 추이',
-                                      width: screenWidth * 0.35,
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return MetricChartDialog(title: '쌀 섭취량(g)', code: 'riceIntake', userId: userModel.userId);
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                )
-                              ])))),
-                  // 두 번째 Container
-                  Container(
-                    margin: const EdgeInsets.only(left: 20, right: 20),
-                    width: constraints.maxWidth > 300 ? (constraints.maxWidth - 16) : constraints.maxWidth,
-                    height: 300,
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      image: DecorationImage(image: AssetImage('images/yellow_back.png'), fit: BoxFit.cover),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 36),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: 10),
-                              Text('입력한 쌀 섭취량으로 알아보세요!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF000000))),
-                              SizedBox(height: 4),
-                              Text('오늘 먹은 총 칼로리 섭취량', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000))),
-                            ],
-                          ),
+              return Wrap(spacing: 16, runSpacing: 16, children: [
+                Container(
+                  margin: const EdgeInsets.only(left: 20, right: 20),
+                  width: constraints.maxWidth > 300 ? (constraints.maxWidth - 16) : constraints.maxWidth,
+                  height: 300,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    image: DecorationImage(image: AssetImage('images/yellow_back.png'), fit: BoxFit.cover),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 36),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 10),
+                            Text('입력한 쌀 섭취량으로 알아보세요!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF000000))),
+                            SizedBox(height: 4),
+                            Text('오늘 먹은 총 칼로리 섭취량', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF000000))),
+                          ],
                         ),
-                        // 영양소 정보 rows
-                        Container(
-                          width: constraints.maxWidth > 300 ? (constraints.maxWidth - 32) : constraints.maxWidth - 32,
-                          height: 160,
-                          decoration: BoxDecoration(color: Color(0xFFFFF8E1), borderRadius: BorderRadius.circular(16)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Padding(padding: const EdgeInsets.symmetric(vertical: 0), child: FoodRow(color: Color(0xFF007130), name: '쌀', totalGram: plateData['totalRice'], kcalRatio: 1.46)),
-                              Padding(padding: const EdgeInsets.symmetric(vertical: 0), child: FoodRow(color: Color(0xFF00914B), name: '탄수화물', totalGram: plateData['carbCalories'] / 4, kcalRatio: 4)),
-                              Padding(padding: const EdgeInsets.symmetric(vertical: 0), child: FoodRow(color: Color(0xFF9D895B), name: '단백질', totalGram: plateData['proteinCalories'] / 4, kcalRatio: 4)),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              );
+                      ),
+                      // 영양소 정보 rows
+                      Container(
+                        width: constraints.maxWidth > 300 ? (constraints.maxWidth - 32) : constraints.maxWidth - 32,
+                        height: 160,
+                        decoration: BoxDecoration(color: Color(0xFFFFF8E1), borderRadius: BorderRadius.circular(16)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(padding: const EdgeInsets.symmetric(vertical: 0), child: FoodRow(color: Color(0xFF007130), name: '쌀', totalGram: plateData['totalRice'], kcalRatio: 1.46)),
+                            Padding(padding: const EdgeInsets.symmetric(vertical: 0), child: FoodRow(color: Color(0xFF00914B), name: '탄수화물', totalGram: plateData['carbCalories'] / 4, kcalRatio: 4)),
+                            Padding(padding: const EdgeInsets.symmetric(vertical: 0), child: FoodRow(color: Color(0xFF9D895B), name: '단백질', totalGram: plateData['proteinCalories'] / 4, kcalRatio: 4)),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ]);
             },
           ),
           SizedBox(height: 16),
+
           // 탄수화물/단백질 섭취누적량
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -382,11 +359,11 @@ class _PlateSectionState extends State<PlateSection> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 섹션 제목
-                Text('${userModel.userInfo?["userNm"] ?? ""} 님이 오늘 하루 한 끼에', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.08)),
+                Text('${userModel.userInfo?["userNm"] ?? ""} 님이 오늘 하루 한 끼에', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    RichText(text: TextSpan(text: '섭취해야 할 권장 칼로리는? ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.06))),
+                    RichText(text: TextSpan(text: '섭취해야 할 권장 칼로리는? ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black))),
                     Row(
                       children: [Container(width: 10, height: 10, decoration: BoxDecoration(color: Color(0xFFFABE00), shape: BoxShape.circle)), SizedBox(width: 4), Container(margin: EdgeInsets.only(right: 8), child: const Text('섭취완료', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF555555))))],
                     ),
@@ -451,12 +428,15 @@ class _PlateSectionState extends State<PlateSection> {
               ],
             ),
           ),
-          SizedBox(height: 40)
         ],
       ),
     );
   }
 
+  //
+  //
+  //
+  //
   Widget _buildTableCell(String text, UserModel userModel, {bool isHeader = false, String? str = ' '}) {
     double breakfastRice = userModel.plateData['breakfastRice'];
     double lunchRice = userModel.plateData['lunchRice'];
@@ -610,6 +590,14 @@ class _PlateSectionState extends State<PlateSection> {
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 class DailyEnergySection extends StatelessWidget {
   final UserModel userModel;
 
@@ -635,40 +623,36 @@ class DailyEnergySection extends StatelessWidget {
   }
 
   Widget _header(BuildContext context) {
+    final width = MediaQuery.of(context).size.width - 40;
+    double dailyRequireEnergy = userModel.plateData['recDailyEnergy'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _userTitle(),
-        _energyRow(context),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(text: '${userModel.userInfo?["userNm"] ?? ""}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF007130))),
+              const TextSpan(text: ' 님의', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.black)),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: width,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('일일 에너지 권장량', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              RichText(
+                  text: TextSpan(children: [
+                const TextSpan(text: '총 ', style: TextStyle(fontSize: 16)),
+                TextSpan(text: NumberFormat('#,###').format(userModel.userHealthData?['기초대사량'][0] ?? dailyRequireEnergy), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
+                const TextSpan(text: ' kcal', style: TextStyle(fontSize: 16)),
+              ]))
+            ],
+          ),
+        ),
       ],
     );
-  }
-
-  Widget _userTitle() {
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(text: '${userModel.userInfo?["userNm"] ?? ""}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF007130))),
-          const TextSpan(text: ' 님의', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
-        ],
-      ),
-    );
-  }
-
-  Widget _energyRow(BuildContext context) {
-    final width = MediaQuery.of(context).size.width - 40;
-    double dailyRequireEnergy = userModel.plateData['recDailyEnergy'];
-    return SizedBox(
-        width: width,
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Text('일일 에너지 권장량', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          RichText(
-              text: TextSpan(children: [
-            const TextSpan(text: '총 ', style: TextStyle(fontSize: 16)),
-            TextSpan(text: NumberFormat('#,###').format(dailyRequireEnergy), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
-            const TextSpan(text: ' kcal', style: TextStyle(fontSize: 16)),
-          ]))
-        ]));
   }
 
   Widget _calculatorButton(BuildContext context) {
@@ -736,6 +720,14 @@ class DailyEnergySection extends StatelessWidget {
   }
 }
 
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //

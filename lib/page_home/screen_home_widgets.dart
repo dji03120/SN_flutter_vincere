@@ -1,8 +1,10 @@
 import 'package:Vincere/component/metric_chart_dialog.dart';
-import 'package:Vincere/page_health/screen_my_health_info.dart';
+import 'package:Vincere/page_my_health/screen_my_health_info.dart';
 import 'package:Vincere/page_home/utils.dart';
 import 'package:Vincere/page_nutrition/screen_my_nutri.dart';
-import 'package:Vincere/page_nutrition/screen_nutrition_info_popup.dart';
+import 'package:Vincere/page_workout/page_workout_home.dart';
+import 'package:flutter/rendering.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,41 +26,43 @@ class ProfileCard extends StatelessWidget {
 
   // --- 건강 정보 위젯 ---
   Widget _buildHealthMetric(String label, double value, String unit) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))),
-        SizedBox(height: 2),
-        Text(value.toString(), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white)),
-        SizedBox(height: 2),
-        Text(unit, style: TextStyle(fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))),
-      ],
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: value),
+      duration: const Duration(milliseconds: 1000),
+      curve: Curves.easeOutCubic,
+      builder: (context, animatedValue, child) {
+        return Column(
+          children: [
+            Text(label, style: TextStyle(fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))),
+            SizedBox(height: 2),
+            Text(animatedValue.toStringAsFixed(1), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)),
+            SizedBox(height: 2),
+            Text(unit, style: TextStyle(fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))),
+          ],
+        );
+      },
     );
   }
 
   // --- 프로필 이미지 ---
   Widget _buildProfileImage(String? imageUrl) {
     Widget defaultAvatar = CircleAvatar(radius: 58, backgroundColor: Colors.grey[300], child: Icon(Icons.person, size: 35, color: Colors.grey[600]));
-
     return Container(
       width: 90,
       height: 90,
       decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
       child: imageUrl != null
           ? ClipOval(
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => defaultAvatar,
-                loadingBuilder: (_, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
+              child: Image.network(imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => defaultAvatar,
+                  loadingBuilder: (_, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                        child: CircularProgressIndicator(
                       value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null,
-                    ),
-                  );
-                },
-              ),
-            )
+                    ));
+                  }))
           : defaultAvatar,
     );
   }
@@ -66,8 +70,6 @@ class ProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userModel = Provider.of<UserModel>(context);
-    final user = userModel.userInfo;
-
     return Card(
       color: Colors.black87,
       margin: EdgeInsets.zero,
@@ -76,36 +78,44 @@ class ProfileCard extends StatelessWidget {
         padding: const EdgeInsets.all(4.0),
         child: Column(
           children: [
-            SizedBox(height: 15),
+            SizedBox(height: 10),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   width: 90,
                   height: 90,
-                  margin: EdgeInsets.fromLTRB(32, 24, 12, 24),
-                  decoration: BoxDecoration(color: Colors.grey[300], shape: BoxShape.circle),
+                  margin: EdgeInsets.fromLTRB(32, 24, 16, 24),
+                  //decoration: BoxDecoration(color: Colors.grey[300], shape: BoxShape.circle),
                   child: Center(child: _buildProfileImage(userModel.profileImageUrl)),
                 ),
-                SizedBox(width: 4),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 24),
                     Row(
-                      children: [SizedBox(width: 10), Text(user?["userNm"] ?? '', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)), SizedBox(width: 15), Text('만 ${calculateAge(userModel.userInfo?["bym"] ?? "정보없음").toString()}세', style: TextStyle(fontSize: 15, color: Colors.white))],
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(width: 10),
+                        Text(userModel.userInfo?["userNm"] ?? '', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                        SizedBox(width: 25),
+                        Text('만 ${calculateAge(userModel.userInfo?["bym"] ?? "정보없음").toString()}세', style: TextStyle(fontSize: 15, color: Colors.white)),
+                      ],
                     ),
                     SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ScreenHealthInfo()));
-                      },
-                      style: TextButton.styleFrom(
-                        fixedSize: Size(186, 40),
-                        minimumSize: Size.zero,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFF92D2B0), width: 2)),
+                    Container(
+                      margin: EdgeInsets.only(left: 6),
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ScreenHealthInfo()));
+                        },
+                        style: TextButton.styleFrom(
+                          fixedSize: Size(186, 40),
+                          minimumSize: Size.zero,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFF92D2B0), width: 2)),
+                        ),
+                        child: const Text('내 건강정보 자세히보기', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF92D2B0))),
                       ),
-                      child: const Text('내 건강정보 자세히보기', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF92D2B0))),
                     ),
                   ],
                 ),
@@ -128,6 +138,18 @@ class ProfileCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildMetricBox(String name, double value, String unit) {
+    return Column(
+      children: [
+        Text(name, style: TextStyle(fontSize: 15, color: Colors.grey[600])),
+        SizedBox(height: 4),
+        Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
+        SizedBox(height: 2),
+        Text(unit, style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+      ],
+    );
+  }
 }
 
 //
@@ -136,15 +158,19 @@ class ProfileCard extends StatelessWidget {
 //
 //
 //
+
 class ProfileMuscleCard extends StatelessWidget {
   final UserModel userModel;
+
   const ProfileMuscleCard({
     super.key,
     required this.userModel,
   });
 
+  @override
   Widget build(BuildContext context) {
     final muscleData = userModel.userHealthData;
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.only(top: 20),
@@ -155,25 +181,21 @@ class ProfileMuscleCard extends StatelessWidget {
             children: [
               // 왼쪽: 근육 나이 텍스트
               Container(
-                alignment: Alignment.centerLeft,
-                width: MediaQuery.of(context).size.width * 0.6,
-                margin: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.06),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  alignment: Alignment.centerLeft,
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  margin: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.06),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     const Text('내 근육 나이', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 10),
                     RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(text: userModel.userHealthData?['muscleAge'].toString() ?? '--', style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Color(0xFF007130))),
-                          const TextSpan(text: ' 세', style: TextStyle(fontSize: 22, color: Color(0xFF000000))),
-                        ],
+                        text: TextSpan(children: [
+                      TextSpan(
+                        text: userModel.userHealthData?['muscleAge']?.toString() ?? '--',
+                        style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      const TextSpan(text: ' 세', style: TextStyle(fontSize: 22, color: Color(0xFF000000))),
+                    ]))
+                  ])),
 
               // 오른쪽: 이미지
               Container(width: 60, height: 60, margin: EdgeInsets.only(right: MediaQuery.of(context).size.width * 0.06), child: Image.asset('images/body.png', fit: BoxFit.contain)),
@@ -200,6 +222,8 @@ class ProfileMuscleCard extends StatelessWidget {
       ),
     );
   }
+
+  // 기존에 작성된 _buildMetricRow 함수 및 buildDivider, buildDashedDivider 함수는 여기에 위치해야 합니다.
 
   // --- Metric Row ---
   Widget _buildMetricRow(BuildContext context, String category, String title, double grade, String code) {
@@ -248,12 +272,10 @@ Widget contentsCardActive(BuildContext context) {
   return Container(
     width: screenWidth,
     padding: const EdgeInsets.all(4),
-
-    // ⭐ InkWell로 Card 전체 클릭 가능
     child: InkWell(
       borderRadius: BorderRadius.circular(32),
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNutriCheck()));
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const MyWorkoutPage()));
       },
       child: Card(
         elevation: 6,
@@ -274,7 +296,7 @@ Widget contentsCardActive(BuildContext context) {
                       [const Color(0xFFB2FBD2), const Color(0xFFA0F9C5)],
                     ],
                     durations: [35000, 19440],
-                    heightPercentages: [0.50, 0.53],
+                    heightPercentages: [0.50, 0.56],
                   ),
                   backgroundColor: Colors.white,
                   waveAmplitude: 0,
@@ -323,7 +345,7 @@ Widget contentsCardPlate(BuildContext context) {
     child: InkWell(
       borderRadius: BorderRadius.circular(32),
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNutriCheck()));
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNutriPage()));
       },
       child: Card(
         elevation: 6,
@@ -344,7 +366,7 @@ Widget contentsCardPlate(BuildContext context) {
                       [const Color(0xFFB2FBD2), const Color(0xFFA0F9C5)],
                     ],
                     durations: [35000, 19440],
-                    heightPercentages: [0.50, 0.53],
+                    heightPercentages: [0.50, 0.56],
                   ),
                   backgroundColor: Colors.white,
                   waveAmplitude: 0,
@@ -359,11 +381,7 @@ Widget contentsCardPlate(BuildContext context) {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(height: 8),
-                    SizedBox(
-                      width: screenWidth * 0.45,
-                      height: 150,
-                      child: Image.asset("assets/images/HealthyPlate.png"),
-                    ),
+                    SizedBox(width: screenWidth * 0.45, height: 150, child: Image.asset("assets/images/HealthyPlate.png")),
                     SizedBox(height: 12),
                     Text("좋은 음식을 바르게 섭취할 수 있도록", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF00914B))),
                     Text("식사습관 맞춤 영양식을 확인해보세요", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),

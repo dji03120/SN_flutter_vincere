@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/component/custom_widget.dart';
-import 'package:Vincere/page_elexir_workout/page_workout_plan.dart';
+import 'package:Vincere/page_workout/page_workout_plan.dart';
 
 class SelectMuscle extends StatefulWidget {
   const SelectMuscle({super.key});

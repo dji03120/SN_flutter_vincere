@@ -3,7 +3,7 @@ import 'dart:js_util' as js_util;
 
 import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/page_elexir_workout/page_select_mode.dart';
+import 'package:Vincere/page_workout/page_select_mode.dart';
 import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
 

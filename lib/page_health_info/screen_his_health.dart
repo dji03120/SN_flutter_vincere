@@ -1,5 +1,7 @@
+import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Vincere/http/webReqSpring.dart';
 import 'package:Vincere/export/screens.dart';
@@ -17,9 +19,6 @@ class _HisHealthScreenState extends State<HisHealth> {
   List<Map<String, dynamic>> _filteredHealthData = [];
   Map<String, List<Map<String, dynamic>>> _groupedHealthData = {};
 
-  String? userId;
-  String? password;
-  bool _isLogIn = false;
   String? _selectedSeq;
   // ignore: unused_field
   String? _selectedDate;
@@ -27,29 +26,15 @@ class _HisHealthScreenState extends State<HisHealth> {
   @override
   void initState() {
     super.initState();
-    _loadSessionData().then((_) {
-      _getHisHealth();
-    });
-  }
-
-  Future<void> _loadSessionData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userId = prefs.getString('userId');
-      password = prefs.getString('password');
-      if (userId != null && password != null) {
-        _isLogIn = true;
-      }
-    });
+    _getHisHealth();
   }
 
   Future<void> _getHisHealth() async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      userId = prefs.getString('userId');
+      final userModel = Provider.of<UserModel>(context, listen: false);
 
       ApiService apiService = ApiService();
-      Map<String, dynamic> result = await apiService.fetchGetUserHlthHisInfo(userId!);
+      Map<String, dynamic> result = await apiService.fetchGetUserHlthHisInfo(userModel.userId);
       print('Received data: $result');
 
       if (result.containsKey('listResultMap')) {
@@ -140,7 +125,7 @@ class _HisHealthScreenState extends State<HisHealth> {
     return Scaffold(
       appBar: const Header(),
       backgroundColor: Colors.white,
-      drawer: CustomDrawer(isLogin: _isLogIn),
+      drawer: CustomDrawer(isLogin: true),
       body: SingleChildScrollView(
         child: Container(
           color: Colors.white,

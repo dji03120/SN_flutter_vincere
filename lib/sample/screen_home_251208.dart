@@ -1,10 +1,10 @@
-import 'package:Vincere/page_ble_device/ble_utils.dart';
+/*import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_ble_device/page_connect_elexir.dart';
 import 'package:Vincere/component/custom_widget.dart';
-import 'package:Vincere/page_health/screen_my_health_info.dart';
+import 'package:Vincere/page_my_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/page_notice/screen_newsboard_list.dart';
-import 'package:Vincere/page_elexir_workout/page_statistics.dart';
+import 'package:Vincere/page_workout/page_statistics.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/page_home/utils.dart';
 import 'package:image_picker/image_picker.dart';
@@ -2633,3 +2633,4 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 // 상태 변수 추가 (클래스의 필드로)
   String currentActivityLevel = "LOW";
 }
+*/

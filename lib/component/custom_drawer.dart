@@ -1,6 +1,6 @@
 import 'package:Vincere/http/webReqSpring.dart';
-import 'package:Vincere/page_account/screen_update_pswd.dart';
-import 'package:Vincere/test/page_select_test.dart';
+import 'package:Vincere/page_my_health/screen_my_health_info.dart';
+import 'package:Vincere/page_workout/page_workout_home.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Vincere/export/screens.dart';
@@ -143,14 +143,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           SizedBox(height: 30),
           _buildListTile(context, '홈으로', const MyHomePage(title: "vincere_App")),
-          _buildListTileUser(context, '나의 건강 정보 이력', const HisHealth(), widget.isLogin),
-          _buildListTileUser(context, '맞춤형 건강 식단', const NewsBoard(), widget.isLogin), //add
-          _buildListTileUser(context, '맞춤형 운동 플랜', const NewsBoard(), widget.isLogin), //add
-          _buildListTileUser(context, '전문가 상담', const NewsBoard(), widget.isLogin),
-          //_buildListTileUser(context, '정보 및 기사', const NewsBoard(), widget.isLogin),
+          _buildListTileUser(context, '나의 건강정보', const ScreenHealthInfo(), widget.isLogin),
+          _buildListTileUser(context, '맞춤형 건강 식단', const MyNutriPage(), widget.isLogin), //add
+          _buildListTileUser(context, '맞춤형 운동 플랜', const MyWorkoutPage(), widget.isLogin), //add
+          _buildListTileUser(context, '전문가 상담', const Qna(), widget.isLogin),
           _buildListTileUser(context, 'Q&A', const Qna(), widget.isLogin),
-          //_buildListTileUser(context, '비밀번호 재설정', const UpdatePswd(), widget.isLogin),
-          //_buildListTileUser(context, '실험', const PageSelectTest(), widget.isLogin),
         ],
       ),
     );

@@ -57,8 +57,15 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               const SizedBox(height: 112),
-              Image.asset('images/Vincere_logo.png', width: 180, height: 42),
-              const SizedBox(height: 30),
+              Container(
+                width: 216,
+                height: 50,
+                child: Image.asset(
+                  'images/Vincere_logo.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 50),
               Form(
                   child: Theme(
                 data: ThemeData(primaryColor: Colors.white, inputDecorationTheme: const InputDecorationTheme(labelStyle: TextStyle(color: Colors.teal, fontSize: 15.0))),

@@ -3,13 +3,22 @@ import 'dart:js_util' as js_util;
 
 import 'package:Vincere/component/custom_widget.dart';
 import 'package:Vincere/component/header.dart';
+import 'package:Vincere/http/webReqFastapi.dart';
 import 'package:Vincere/page_ble_device/ble_utils.dart';
+import 'package:Vincere/page_my_health/screen_my_health_info.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';
 import 'package:provider/provider.dart';
-import 'dart:html' as html;
+
+enum MeasureState {
+  connecting,
+  waitUserReady,
+  impedanceMeasuring,
+  requestAiAnalysis,
+  done,
+}
 
 final bluetooth = FlutterWebBluetooth.instance;
 
@@ -21,7 +30,6 @@ class PageConnectFitrusHand extends StatefulWidget {
 }
 
 class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with SingleTickerProviderStateMixin {
-  // ignore: unused_field
   BluetoothDevice? _device;
   WebBluetoothRemoteGATTCharacteristic? _writeChar;
   WebBluetoothRemoteGATTCharacteristic? _notifyChar;
@@ -32,100 +40,99 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
 
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+
   bool _connectFailed = false;
+  MeasureState measureState = MeasureState.connecting;
+  double impedance = 0.0;
+  int progress = 0;
+  Map OSDResult = {};
+  String _notifyMsg = "";
 
-  //
-  //
-  //
+  // 안전한 setState
+  void safeSetState(VoidCallback fn) {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(fn);
+    });
+  }
 
-  //
-  //
-  //
-  Future<void> _scanAndConnect(WorkoutModel workoutModel) async {
-    setState(() {
+  /// BLE 연결
+  Future<void> _scanAndConnect() async {
+    safeSetState(() {
       _connectFailed = false;
+      measureState = MeasureState.connecting;
     });
 
     try {
-      final device = await bluetooth.requestDevice(RequestOptionsBuilder(
-        [RequestFilterBuilder(namePrefix: "FitrusPlus3")],
-        optionalServices: [SERVICE_UUID],
-      ));
-      setState(() => _device = device);
+      final device = await bluetooth.requestDevice(
+        RequestOptionsBuilder(
+          [RequestFilterBuilder(namePrefix: "FitrusPlus3")],
+          optionalServices: [SERVICE_UUID],
+        ),
+      );
+      safeSetState(() => _device = device);
 
-      // 연결 3회 시도 -> 재시도 버튼
       for (int i = 0; i < 3; i++) {
         try {
-          // ignore: invalid_use_of_visible_for_testing_member
+          await Future.delayed(const Duration(milliseconds: 1));
           await device.gatt?.connect();
 
-          // ignore: invalid_use_of_visible_for_testing_member
           final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
           _writeChar = await service?.getCharacteristic(WRITE_UUID);
           _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
-          workoutModel.set_write_char(_writeChar!);
-          workoutModel.set_notify_char(_notifyChar!);
 
-          if (workoutModel.notifyChar != null) {
-            await _notifyChar!.startNotifications();
-            js_util.callMethod(_notifyChar!, 'addEventListener', [
-              'characteristicvaluechanged',
-              js_util.allowInterop((event) {
-                try {
-                  final target = js_util.getProperty(event, 'target');
-                  final value = js_util.getProperty(target!, 'value');
-                  if (value != null) {
-                    final buffer = js_util.getProperty(value, 'buffer');
-                    final bytes = Uint8List.view(buffer);
-                    setState(() {
-                      print("Notification: ${bytesToHex(bytes)}\n");
-                    });
-                  }
-                } catch (e) {
-                  setState(() {
-                    print("Notification parsing error: $e\n");
-                  });
-                }
-              }),
-            ]);
-          }
-          print("connect complete");
-          setState(() {});
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('디바이스가 연결되었습니다.')),
-          );
+          await _notifyChar!.startNotifications();
+          js_util.callMethod(_notifyChar!, 'addEventListener', [
+            'characteristicvaluechanged',
+            js_util.allowInterop(_onNotify),
+          ]);
+
+          safeSetState(() => measureState = MeasureState.waitUserReady);
+
           break;
         } catch (e) {
-          print("connect fail.. retrying connect ");
-          if (i == 2) {
-            setState(() {
-              _connectFailed = true;
-            });
-          }
+          if (i == 2) safeSetState(() => _connectFailed = true);
         }
       }
     } catch (e) {
-      print(e);
-      print("connect fail");
-      setState(() {
-        _connectFailed = true;
-      });
+      safeSetState(() => _connectFailed = true);
     }
   }
 
-  //
-  //
-  //
+  /// BLE Notify 이벤트 처리
+  void _onNotify(event) {
+    try {
+      final target = js_util.getProperty(event, 'target');
+      final value = js_util.getProperty(target!, 'value');
+      if (value == null) return;
+
+      final buffer = js_util.getProperty(value, 'buffer');
+      final bytes = Uint8List.view(buffer);
+      String notifyMsg = bytesToUtf8String(bytes).replaceAll('\r', '').replaceAll('\n', '').trim();
+      _notifyMsg = notifyMsg;
+
+      final progMatch = RegExp(r'BFP:Prog=(\d+)').firstMatch(notifyMsg);
+      if (progMatch != null) {
+        progress = int.parse(progMatch.group(1)!);
+        safeSetState(() {});
+      }
+
+      final endRawMatch = RegExp(r'BFP:End\.Raw=([0-9.]+)').firstMatch(notifyMsg);
+      if (endRawMatch != null) {
+        sendCommandFitrus(_writeChar, fitrus_hand_commands['bfp_stop'] ?? '');
+        impedance = double.parse(endRawMatch.group(1)!);
+        safeSetState(() => measureState = MeasureState.requestAiAnalysis);
+      }
+    } catch (e) {
+      print("Notify parsing error: $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scanAndConnect());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final workoutModel = Provider.of<WorkoutModel>(context, listen: false); //
-      _scanAndConnect(workoutModel);
-    });
-
-    // 커지고 작아지는 이미지
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -135,76 +142,289 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
     );
   }
 
-  //
-  //
-  //
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  //
-  //
-  //
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: const Header(),
       body: Container(
-        color: Color(0xFFf5f4f9),
+        color: const Color(0xFFf5f4f9),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               SizedBox(height: screenHeight * 0.04),
-              Card(
-                elevation: 4,
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                color: const Color(0xFFFFFFFF),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.asset('assets/images/image_ble_2.png', fit: BoxFit.contain),
-                      const SizedBox(height: 16),
-                      ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: Image.asset('assets/images/image_ble_1.png', fit: BoxFit.contain),
-                      ),
-                    ],
-                  ),
-                ),
+              Expanded(
+                child: Center(child: _buildCurrentUI(screenHeight)),
               ),
-              SizedBox(height: screenHeight * 0.04),
-              if (_connectFailed == true)
-                RoundButton(
-                  margin: EdgeInsets.fromLTRB(50, 36, 50, 0),
-                  text: "재연결 시도",
-                  onPressed: () {
-                    final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
-                    _scanAndConnect(workoutModel);
-                  },
-                ),
-              if (_connectFailed == false)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextCustom(text: "1. 장치의 전원을 켜주세요", fontSize: 20),
-                    SizedBox(height: screenHeight * 0.02),
-                    TextCustom(text: "2. 블루투스를 선택 하신 후에", fontSize: 20),
-                    TextCustom(text: "    페어링을 눌러주세요", fontSize: 20),
-                  ],
-                )
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildCurrentUI(double screenHeight) {
+    switch (measureState) {
+      case MeasureState.connecting:
+        return _buildConnectingUI(screenHeight);
+      case MeasureState.waitUserReady:
+        return _buildUserReadyUI();
+      case MeasureState.impedanceMeasuring:
+        return _buildImpedanceUI();
+      case MeasureState.requestAiAnalysis:
+        return _buildRequestAIAnalysis();
+      case MeasureState.done:
+        return const SizedBox();
+    }
+  }
+
+  Widget _buildConnectingUI(double screenHeight) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 300,
+          child: Card(
+            elevation: 4,
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Image.asset('assets/images/fitrus_start.png'),
+              ]),
+            ),
+          ),
+        ),
+        SizedBox(height: screenHeight * 0.03),
+        Text(
+          "1. 장치 전원을 켜주세요",
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.black.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          "2. 블루투스 목록에서 기기를 선택 후",
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.black.withOpacity(0.7),
+          ),
+        ),
+        Text(
+          "   페어링을 눌러주세요",
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.black.withOpacity(0.7),
+          ),
+        ),
+        if (_connectFailed)
+          RoundButton(
+            margin: const EdgeInsets.fromLTRB(50, 36, 50, 0),
+            text: "재연결",
+            onPressed: _scanAndConnect,
+          )
+      ],
+    );
+  }
+
+  // --------------------------------------------------------
+  Widget _buildUserReadyUI() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: 300,
+          child: Card(
+            elevation: 4,
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Image.asset('assets/images/grip_fitrus.png'),
+              ]),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          "1. 그림과 같이 장치를 잡아주세요.",
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.black.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          "2. 준비가 되셨으면, 아래 버튼을 눌러",
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.black.withOpacity(0.7),
+          ),
+        ),
+        Text(
+          "   측정을 시작해주세요",
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.black.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 40),
+        RoundButton(
+          text: "체지방 측정 시작",
+          margin: const EdgeInsets.fromLTRB(50, 0, 50, 0),
+          onPressed: () async {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("3초 후 측정이 시작됩니다.")),
+            );
+
+            await Future.delayed(const Duration(seconds: 2));
+            await sendCommandFitrus(_writeChar, fitrus_hand_commands['bfp_start'] ?? '');
+
+            setState(() {
+              measureState = MeasureState.impedanceMeasuring;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  // --------------------------------------------------------
+  Widget _buildImpedanceUI() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "측정중입니다.",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          "잠시만 기다려주세요...",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 30),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 160,
+              height: 160,
+              child: CircularProgressIndicator(
+                value: progress / 100,
+                strokeWidth: 12,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+              ),
+            ),
+            Text(
+              "$progress%",
+              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            )
+          ],
+        ),
+        const SizedBox(height: 40),
+        Column(
+          children: [
+            const Text("예시 : 건강에 대한 팁....", style: TextStyle(fontSize: 20)),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildRequestAIAnalysis() {
+    return FutureBuilder<Map>(
+      future: _requestAi(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("AI 분석중입니다...", style: TextStyle(fontSize: 22)),
+              SizedBox(height: 20),
+              CircularProgressIndicator(),
+            ],
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Text("AI 분석 실패: ${snapshot.error}");
+        }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _onAiAnalyzeFinished(snapshot.data!);
+        });
+
+        return const SizedBox();
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> _requestAi() async {
+    ApiServiceFast apiService = ApiServiceFast();
+    UserModel userModel = Provider.of<UserModel>(context, listen: false);
+    Map<String, dynamic> response = await apiService.requestOSDResult(userModel, impedance);
+
+    try {
+      userModel.userHealthData?['체지방률'][0] = response['result']['bfp'];
+      userModel.userHealthData?['체지방량'][0] = response['result']['bfm'];
+      userModel.userHealthData?['기초대사량'][0] = response['result']['bmr'];
+      userModel.userHealthData?['근육량'][0] = response['result']['smm'];
+      await saveMeasureResult();
+    } catch (_) {}
+
+    return response;
+  }
+
+  void _onAiAnalyzeFinished(Map result) {
+    if (measureState == MeasureState.done) return;
+    OSDResult = result;
+    measureState = MeasureState.done;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ScreenHealthInfo()),
+        );
+      }
+    });
+  }
+
+  Future<void> saveMeasureResult() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    try {
+      // API 호출
+      ApiServiceFast apiService = ApiServiceFast();
+      Map<String, dynamic> result = await apiService.insertUserHealth(userModel.userId, userModel.userHealthData ?? {});
+      // 결과 처리
+      if (result.containsKey("result")) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('건강정보가 성공적으로 업데이트되었습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.green),
+        );
+      }
+      if (result.containsKey("error")) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('업데이트 중 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      print("저장 중 오류 발생: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('알 수 없는 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
+      );
+    }
   }
 }

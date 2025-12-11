@@ -321,34 +321,6 @@ class ApiService {
     return checkResponse(response);
   }
 
-  // UserActivityLevel Modify
-  Future<Map<String, dynamic>> updateUserActivityLevel(String userId, String activityLevel) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/app/modUserActivityLevel.do'),
-      headers: header,
-      body: json.encode({
-        'userId': userId,
-        'activityLevel': activityLevel,
-      }),
-    );
-    return checkResponse(response);
-  }
-
-  // ApiService 클래스에 추가
-  Future<Map<String, dynamic>> fetchCalculatedValue(Map<String, dynamic> requestData) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/app/calculateValue.do'), // 실제 API 엔드포인트로 수정
-        headers: header,
-        body: json.encode(requestData),
-      );
-
-      return checkResponse(response);
-    } catch (e) {
-      throw Exception('Error: $e');
-    }
-  }
-
   Future<Map<String, dynamic>> uploadProfileImage(
     String userId,
     Uint8List imageBytes,

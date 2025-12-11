@@ -1,7 +1,7 @@
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/test/ble_tester_web.dart';
-import 'package:Vincere/test/gps_tester.dart';
-import 'package:Vincere/test/gyro_tester.dart';
+import 'package:Vincere/sample/ble_tester_web.dart';
+import 'package:Vincere/sample/gps_tester.dart';
+import 'package:Vincere/sample/gyro_tester.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/custom_widget.dart';
 

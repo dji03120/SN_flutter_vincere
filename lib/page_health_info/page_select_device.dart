@@ -1,11 +1,11 @@
 import 'package:Vincere/page_ble_device/page_connect_fitrux_hand.dart';
 import 'package:Vincere/page_ble_device/page_connect_fitrux_weight.dart';
-import 'package:Vincere/page_health/screen_my_health_info_raw.dart';
-import 'package:Vincere/test/fitrus_test.dart';
+import 'package:Vincere/page_my_health/screen_my_health_info_input.dart';
+import 'package:Vincere/sample/fitrus_test.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/component/custom_drawer.dart';
 import 'package:Vincere/component/header.dart';
-import 'package:Vincere/page_elexir_workout/page_select_muscle.dart';
+import 'package:Vincere/page_workout/page_select_muscle.dart';
 
 class SelectMeasureDevice extends StatefulWidget {
   const SelectMeasureDevice({super.key});
@@ -21,7 +21,9 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
 
     return Scaffold(
       appBar: const Header(),
-      drawer: const CustomDrawer(isLogin: true),
+      drawer: const CustomDrawer(
+        isLogin: true,
+      ),
       backgroundColor: const Color(0xFFF5F4F9),
       body: Center(
         child: Padding(
@@ -45,10 +47,7 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                 title: "스마트 체중계 측정",
                 subtitle: "BLE 체중계 연동하여 자동 측정",
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const PageConnectFitrusWeight()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => PageConnectFitrusWeight()));
                 },
               ),
 
@@ -62,7 +61,7 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => PageConnectFitrus()),
+                    MaterialPageRoute(builder: (_) => PageConnectFitrusHand()),
                   );
                 },
               ),
@@ -75,10 +74,10 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                 title: "직접 입력하기",
                 subtitle: "측정 없이 수동으로 입력",
                 onTap: () {
-                  /*Navigator.push(
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ScreenHealthInfoInput()),
-                  );*/
+                    MaterialPageRoute(builder: (_) => ScreenHealthInfoInput()),
+                  );
                 },
               ),
             ],
@@ -128,23 +127,14 @@ class _ModernCardState extends State<_ModernCard> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.8),
             borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))],
             border: Border.all(color: Colors.white.withOpacity(0.4)),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blueAccent.withOpacity(0.12),
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.12), shape: BoxShape.circle),
                 child: Icon(widget.icon, size: 32, color: Colors.blueAccent),
               ),
               const SizedBox(width: 20),
@@ -153,15 +143,9 @@ class _ModernCardState extends State<_ModernCard> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.title,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-                  ),
+                  Text(widget.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
                   const SizedBox(height: 4),
-                  Text(
-                    widget.subtitle,
-                    style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.6)),
-                  ),
+                  Text(widget.subtitle, style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.6))),
                 ],
               )
             ],

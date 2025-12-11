@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:Vincere/page_home/utils.dart';
+import 'package:Vincere/provider_models.dart';
 import 'package:http/http.dart' as http;
 
 class ApiServiceFast {
@@ -29,19 +31,8 @@ class ApiServiceFast {
   //
   //
   //
-  Future<Map<String, dynamic>> selectUserInfo(String user_id) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/select-user-info'),
-      headers: header,
-      body: json.encode({'user_id': user_id}),
-    );
-    return checkResponse(response);
-  }
-
-  //
-  //
-  //
   Future<Map<String, dynamic>> selectUserHealth(String user_id) async {
+    print('$baseUrl/select-user-health');
     final response = await http.post(
       Uri.parse('$baseUrl/select-user-health'),
       headers: header,
@@ -58,6 +49,7 @@ class ApiServiceFast {
     String item_nm,
     String new_value,
   ) async {
+    print('$baseUrl/select-user-health');
     final response = await http.post(
       Uri.parse('$baseUrl/select-user-health'),
       headers: header,
@@ -66,6 +58,60 @@ class ApiServiceFast {
         'item_nm': item_nm,
         'value': new_value,
       }),
+    );
+    return checkResponse(response);
+  }
+
+  //
+  //
+  //
+  dynamic sanitizeForJson(dynamic value) {
+    if (value is double && value.isNaN) return null;
+    if (value is Map) {
+      return value.map((k, v) => MapEntry(k, sanitizeForJson(v)));
+    }
+    if (value is List) {
+      return value.map((v) => sanitizeForJson(v)).toList();
+    }
+    return value;
+  }
+
+  Future<Map<String, dynamic>> insertUserHealth(
+    String user_id,
+    Map<String, dynamic> health_data,
+  ) async {
+    print('$baseUrl/insert-user-health');
+    print("$user_id $health_data");
+    final response = await http.post(
+      Uri.parse('$baseUrl/insert-user-health'),
+      headers: header,
+      body: json.encode({
+        'user_id': user_id,
+        'health_data': sanitizeForJson(health_data),
+      }),
+    );
+    return checkResponse(response);
+  }
+
+  //
+  //
+  //
+  Future<Map<String, dynamic>> requestOSDResult(UserModel userModel, double voltage) async {
+    print('$baseUrl/proxy-osd-bodyfat');
+    final Map<String, dynamic> param = {
+      'param': {
+        "age": calculateAge(userModel.userInfo?["bym"]),
+        "gender": userModel.userInfo?["sex"] == "M" ? "male" : "female",
+        "height": userModel.userHealthData?['키'][0],
+        "voltage": voltage,
+        "weight": userModel.userHealthData?['몸무게'][0],
+      }
+    };
+    print(param);
+    final response = await http.post(
+      Uri.parse('$baseUrl/proxy-osd-bodyfat'),
+      headers: header,
+      body: jsonEncode(param),
     );
     return checkResponse(response);
   }

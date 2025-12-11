@@ -195,15 +195,13 @@ class _RadarChartPainter extends CustomPainter {
       ..color = graphColors.first.withOpacity(0.2)
       ..style = PaintingStyle.fill;
 
-    canvas.drawPath(path, fillPaint);
-
-// 외곽선 유지
     final strokePaint = Paint()
       ..color = graphColors.first
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
     canvas.drawPath(path, strokePaint);
+    canvas.drawPath(path, fillPaint);
 
     // 3️⃣ Feature 이름 중앙 배치
     final textPainter = TextPainter(

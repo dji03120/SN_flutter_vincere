@@ -63,15 +63,17 @@ if 1:
     api_key = "zPkSTulXlcw4UKXo9YQS1n7lus1sOEnXVkG727sY2ck9wZ8YPQxehyPAf2pg9FhdITGSZx7aW8tTl2jqLcNivvSuPOW2xW8r5KnTsRMfxqgy0emq0SSdzNtGQ6hIVi3w"
     url = "https://api.thefitrus.com/fitrus-ml/measure/bodyfat"
     headers = {
+        "Content-Type": "application/json", 
         "x-api-key": api_key
     }
     payload = {
         "age": "28",
         "gender": "male",
         "height": "168",
-        "voltage": "1.362",
+        "voltage": "1.278",
         "weight": "72.5"
     }
+    #payload = {'age': 27, 'gender': 'male', 'height': 168, 'voltage': 1.25, 'weight': 73};
     response = requests.post(url, headers=headers, json=payload)
     print(response.content)
     

@@ -30,3 +30,42 @@ impedance = 618
 
 bfp = calculate_bfp_kushner(weight, height, age, sex, impedance)
 print("Kushner 공식 체지방률:", bfp, "%")
+
+
+
+
+import pymysql
+import json
+
+conn = pymysql.connect(host="203.251.89.161", user="vincere_id", password="vincere_pw", db="vincere_db")
+cursor = conn.cursor(pymysql.cursors.DictCursor)
+cursor.execute("SELECT * FROM mst_body_ref")
+rows = cursor.fetchall()
+
+result = {}
+for row in rows:
+    std = row['standard_gbn']
+    gender = row['gender_gbn']
+    if std not in result:
+        result[std] = {}
+    if gender not in result[std]:
+        result[std][gender] = {}
+    
+    try:
+        grades = [float(row['grade_2_start']), float(row['grade_3_start']), float(row['grade_4_start']), float(row['grade_5'])]
+    except:
+        print(row)
+        input(">>")
+    result[std][gender][row['age_end']] = grades
+    
+    
+for key in result:
+    print(key, 'F')
+    for key2 in result[key]['F']:
+        print(f'"{key2}":{result[key]["F"][key2]},')
+    print(key, 'M')
+    for key2 in result[key]['M']:
+        print(f'"{key2}":{result[key]["M"][key2]},')
+
+#json_output = json.dumps(result, ensure_ascii=False, indent=2)
+#print(json_output)

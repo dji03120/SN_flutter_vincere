@@ -1,4 +1,6 @@
+import 'package:Vincere/http/webReqFastapi.dart';
 import 'package:Vincere/page_home/screen_home.dart';
+import 'package:Vincere/page_home/utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,14 +21,20 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     super.initState();
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3));
     _opacityAnimation = TweenSequence([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 75), //밝아짐
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 25), //어두워짐
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 75,
+      ), //밝아짐
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 25,
+      ), //어두워짐
     ]).animate(_controller);
 
     _controller.forward();
     _initializeData();
 
-    Future.delayed(const Duration(milliseconds: 3000), () {
+    Future.delayed(const Duration(milliseconds: 2800), () {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MyHomePage(title: "vincere_App")));
     });
   }
@@ -40,6 +48,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
         await userModel.set_user_info();
         await userModel.set_food_plate_data();
       }
+
       print("initialize user done");
       setState(() {});
     } catch (e) {

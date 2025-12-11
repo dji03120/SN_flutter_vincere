@@ -3,7 +3,7 @@ import 'package:Vincere/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/page_elexir_workout/page_select_muscle.dart';
+import 'package:Vincere/page_workout/page_select_muscle.dart';
 
 class SelectMode extends StatefulWidget {
   const SelectMode({super.key});

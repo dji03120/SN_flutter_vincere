@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:Vincere/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_home/screen_home_widgets.dart';
-import 'package:Vincere/page_health/screen_my_health_info.dart';
+import 'package:Vincere/page_my_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/page_notice/screen_newsboard_list.dart';
 import 'package:Vincere/provider_models.dart';
@@ -47,6 +47,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       _tabController = TabController(length: 3, vsync: this);
       _tabController.addListener(() => setState(() => _tabSelectedIndex = _tabController.index));
 
+      final userModel = Provider.of<UserModel>(context, listen: false);
+      if (userModel.isLogin) {
+        await userModel.set_user_info();
+      }
+
       final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
       await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
       print("initialize user done");
@@ -79,15 +84,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
               child: Column(
                 children: [
                   ProfileCard(userModel: userModel),
+                  SizedBox(height: 30),
+                  ProfileMuscleCard(userModel: userModel),
                   SizedBox(height: 60),
                   pageViewContents(),
                   SizedBox(height: 60),
-                  ProfileMuscleCard(userModel: userModel),
-                  SizedBox(height: 40),
-                  //DailyEnergySection(userModel: userModel),
-                  //SizedBox(height: 40),
-                  //PlateSection(),
-                  //RecommandFood(),
                 ],
               ),
             )

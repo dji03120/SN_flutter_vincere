@@ -101,11 +101,14 @@ Future<void> sendCommandFitrus(
 ) async {
   if (_writeChar == null) return;
   final commandBytes = Uint8List.fromList(utf8.encode(command));
-  await _writeChar!.writeValueWithoutResponse(commandBytes);
+  await _writeChar.writeValueWithoutResponse(commandBytes);
   print("명령 전송: ${bytesToHex(commandBytes)}\n");
-  await Future.delayed(const Duration(milliseconds: 150));
 }
 
+//
+//
+//
+// weight calculate
 double parseWeightFromBytes(Uint8List data) {
   if (data.length < 8) return 0.0;
   if (data[0] != 0xAC || data[1] != 0x02) return 0.0;

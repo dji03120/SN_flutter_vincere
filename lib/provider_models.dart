@@ -326,24 +326,6 @@ class UserModel extends ChangeNotifier {
       ApiServiceFast apiServicFast = ApiServiceFast();
       _userHealthData = (await apiServicFast.selectUserHealth(_userId.toString()))['result'];
       _gradeAvg = _userHealthData?['grade_average'] ?? 3;
-
-      //
-      // get user muscle age
-      Map<String, dynamic> muscleAgeData = await apiService.getMuscleAgeList();
-      _muscleAgeData = List<Map<String, dynamic>>.from(muscleAgeData["list"]);
-      if ((_muscleAgeData != null && _muscleAgeData.length > 0) && (_userInfo?['age'] != null && _userInfo?['age'] != 0)) {
-        for (int i = 0; i < _muscleAgeData.length; i++) {
-          double? maxGrd = double.tryParse(_muscleAgeData[i]['MAX_GRADE'].toString() ?? '0');
-          double? minGrd = double.tryParse(_muscleAgeData[i]['MIN_GRADE'].toString() ?? '0');
-          double? ageAdj = double.tryParse(_muscleAgeData[i]['MUSCLE_AGE_ADJ'].toString() ?? '0');
-          if ((maxGrd != null && minGrd != null && ageAdj != null) && (gradeAvg >= minGrd && gradeAvg <= maxGrd)) {
-            _userHealthData?['muscleAge'] = (_userInfo?['age'] + ageAdj);
-          }
-        }
-      } else {
-        _userHealthData?['muscleAge'] = null;
-        print("일부 grade 값이 0입니다");
-      }
     } catch (e) {
       print('Error: $e');
     }
@@ -351,6 +333,15 @@ class UserModel extends ChangeNotifier {
     print("userHealthData : ${_userHealthData}");
   }
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -376,6 +367,12 @@ class UserModel extends ChangeNotifier {
       if (activityLevel == 'NORMAL') activityFactor = {'a': 30, 'b': 35};
       if (activityLevel == 'HIGH') activityFactor = {'a': 35, 'b': 40};
       _plateData['recDailyEnergy'] = ((weight * activityFactor['a']) - activityFactor['b']);
+
+      if (_userHealthData?['기초대사량'][0] != null) {
+        if (_userHealthData?['기초대사량'][0] != 0) {
+          _plateData['recDailyEnergy'] = _userHealthData?['기초대사량'][0];
+        }
+      }
 
       //
       //
@@ -524,6 +521,15 @@ class UserModel extends ChangeNotifier {
   notifyListeners();
 }
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //

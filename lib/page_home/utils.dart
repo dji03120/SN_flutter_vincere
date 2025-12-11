@@ -479,26 +479,6 @@ Widget _buildInfoRow({
   );
 }
 
-// 건강 정보 위젯 추출
-Widget _buildHealthInfo(String label, List<Map<String, dynamic>> data, String code, String unit) {
-  return Row(
-    children: [
-      Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-      SizedBox(width: 4),
-      Text(
-          data
-                  .firstWhere(
-                    (item) => item['MSMT_ITEM_CD'] == code,
-                    orElse: () => {'MSMT_VALUE': '--', 'MSMT_UNIT': unit},
-                  )['MSMT_VALUE']
-                  ?.toString() ??
-              '--',
-          style: TextStyle(fontSize: 12)),
-      Text(unit),
-    ],
-  );
-}
-
 Widget buildDivider(BuildContext context, {bool isBold = false}) {
   return SizedBox(
     width: MediaQuery.of(context).size.width * 0.88,

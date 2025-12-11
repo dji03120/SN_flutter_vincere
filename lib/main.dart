@@ -1,3 +1,4 @@
+import 'package:Vincere/page_home/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -24,11 +25,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Vincere App',
       theme: ThemeData(fontFamily: 'NotoSansKR'),
-      home: LoginScreen(), // const LoginScreen(),
-      locale: const Locale('ko', 'KR'), // 기본 로케일을 한국어로
-      supportedLocales: const [
-        Locale('ko', 'KR'), // 한국어
-      ],
+      home: LoginScreen(),
+      locale: const Locale('ko', 'KR'),
+      supportedLocales: const [Locale('ko', 'KR')],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
