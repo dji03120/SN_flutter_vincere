@@ -564,6 +564,7 @@ class ApiService {
 
   // 운동 이력 가져오기
   Future<Map<dynamic, dynamic>> selectWorkoutRecent(String user_id) async {
+    print('$baseUrl/app/selectWorkoutRecent.do');
     final response = await http.post(
       Uri.parse('$baseUrl/app/selectWorkoutRecent.do'),
       headers: header,

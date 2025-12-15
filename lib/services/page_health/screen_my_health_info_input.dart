@@ -115,20 +115,20 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
       Text(keyword, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
       const SizedBox(height: 8),
       TextFormField(
-          controller: _controllers[keyword],
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-          ],
-          decoration: getInputDecoration('', false, userModel.userHealthData?[keyword][3] ?? ''),
-
-          // 완료 버튼을 눌렀을 때만 업데이트
-          onChanged: (value) {
-            userModel.userHealthData?[keyword][0] = num.tryParse(value);
-            print(userModel.userHealthData);
-            updateControllers();
-            setState(() {});
-          })
+        controller: _controllers[keyword],
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
+        decoration: getInputDecoration('', false, userModel.userHealthData?[keyword][3] ?? ''),
+        onChanged: (value) {
+          // 입력 중에는 문자열 그대로 저장
+          userModel.userHealthData?[keyword][0] = value;
+          print(userModel.userHealthData);
+          updateControllers();
+          setState(() {});
+        },
+      )
     ]));
   }
 

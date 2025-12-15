@@ -27,7 +27,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
   Map userInfo = {};
   bool _isLoading = true;
   // 예시 데이터
-  final List<String> _radarNames = ['신체질량지수(BMI)', '체지방률', '근육', '앉았다 일어서기', '걷기', '악력'];
+  final List<String> _radarNames = ['걷기', '앉았다 일어서기', '근육', '신체질량지수(BMI)', '체지방률', '악력'];
   final Map<String, List<double>> _radarValues = {
     '1': [],
     '2': [60, 60, 60, 60, 60, 60],

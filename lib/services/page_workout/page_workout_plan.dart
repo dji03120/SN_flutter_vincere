@@ -93,7 +93,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: userModel.gradeAvg.toString(),
+                      text: userModel.gradeAvg.toStringAsFixed(1),
                       style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF007130)),
                     ),
                     const TextSpan(text: ' 등급 ', style: TextStyle(fontSize: 22, color: Color(0xFF000000))),

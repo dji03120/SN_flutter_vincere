@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:Vincere/utils/component/mission_card.dart';
 import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_home/screen_home_widgets.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info.dart';
@@ -32,6 +33,7 @@ class _MyNutriPage extends State<MyNutriPage> with SingleTickerProviderStateMixi
   int _tabSelectedIndex = 0;
   final PageController _pageController = PageController(viewportFraction: 0.9);
 
+  final List<Map<String, dynamic>> dietList = [];
   //
   //
   //
@@ -51,6 +53,12 @@ class _MyNutriPage extends State<MyNutriPage> with SingleTickerProviderStateMixi
       if (userModel.isLogin) {
         await userModel.set_food_plate_data();
       }
+
+      var daliyPlan = userModel.userHealthData?['daliyPlatePlan']['items'];
+      for (int i = 0; i < daliyPlan.length; i++) {
+        dietList.add({'title': daliyPlan[i]['title'], 'detail': "${daliyPlan[i]['value']} ${daliyPlan[i]['unit']}", 'complete': false});
+      }
+      print(dietList);
 
       print("initialize user done");
       setState(() {});
@@ -83,6 +91,8 @@ class _MyNutriPage extends State<MyNutriPage> with SingleTickerProviderStateMixi
                 children: [
                   ProfileCard(userModel: userModel),
                   SizedBox(height: 20),
+                  DailyMissionCard(title: '오늘의 식단 추천', missionList: dietList),
+                  SizedBox(height: 40),
                   DailyEnergySection(userModel: userModel),
                   SizedBox(height: 20),
                   PlateRiceCard(),

@@ -115,4 +115,54 @@ class ApiServiceFast {
     );
     return checkResponse(response);
   }
+
+  //
+  //
+  //
+  Future<Map<String, dynamic>> select_workout_plan(String plan_nm) async {
+    final Map<String, dynamic> param = {"plan_nm": plan_nm};
+    print(param);
+    final response = await http.post(
+      Uri.parse('$baseUrl/select-workout-plan'),
+      headers: header,
+      body: jsonEncode(param),
+    );
+    return checkResponse(response);
+  }
+
+  //
+  //
+  //
+  Future<Map<String, dynamic>> select_plate_plan(String plan_nm) async {
+    final Map<String, dynamic> param = {"plan_nm": plan_nm};
+    print(param);
+    final response = await http.post(
+      Uri.parse('$baseUrl/select-plate-plan'),
+      headers: header,
+      body: jsonEncode(param),
+    );
+    return checkResponse(response);
+  }
+
+  //
+  //
+  //
+  Future<Map<String, dynamic>> create_qa(
+    String user_id,
+    String title,
+    String content,
+  ) async {
+    final Map<String, dynamic> param = {
+      "user_id": user_id,
+      "title": title,
+      "content": content,
+    };
+    print(param);
+    final response = await http.post(
+      Uri.parse('$baseUrl/create-qna'),
+      headers: header,
+      body: jsonEncode(param),
+    );
+    return checkResponse(response);
+  }
 }

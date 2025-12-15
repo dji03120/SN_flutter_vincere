@@ -326,6 +326,26 @@ class UserModel extends ChangeNotifier {
       ApiServiceFast apiServicFast = ApiServiceFast();
       _userHealthData = (await apiServicFast.selectUserHealth(_userId.toString()))['result'];
       _gradeAvg = _userHealthData?['grade_average'] ?? 3;
+
+      //
+      // get daliy workout
+      String planName = _userHealthData?['workout_plan'] ?? "sample_plan";
+      int planIdx = _userHealthData?['workout_plan_idx'] ?? 0;
+      dynamic planData = (await apiServicFast.select_workout_plan(planName))['result'];
+      Map dailyWorkout = planData['items'][planIdx];
+      _userHealthData?['daliyWorkoutPlan'] = dailyWorkout;
+      print(dailyWorkout);
+
+      //
+      // get daliy plate
+      planName = _userHealthData?['plate_plan'] ?? "sample_plan";
+      planIdx = _userHealthData?['plate_plan_idx'] ?? 0;
+      planData = (await apiServicFast.select_plate_plan(planName))['result'];
+      Map dailyPlate = planData['items'][planIdx];
+      _userHealthData?['daliyPlatePlan'] = dailyPlate;
+      print(dailyPlate);
+
+      //
     } catch (e) {
       print('Error: $e');
     }

@@ -11,6 +11,10 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:video_player/video_player.dart';
 
+//
+//
+//
+//
 class WorkoutStart extends StatefulWidget {
   const WorkoutStart({super.key});
 
@@ -77,10 +81,7 @@ class Component3State extends State<WorkoutStart> {
                           ? Stack(
                               alignment: Alignment.center,
                               children: [
-                                AspectRatio(
-                                  aspectRatio: _videoController.value.aspectRatio,
-                                  child: VideoPlayer(_videoController),
-                                ),
+                                AspectRatio(aspectRatio: _videoController.value.aspectRatio, child: VideoPlayer(_videoController)),
                                 if (!_videoController.value.isPlaying)
                                   IconButton(
                                     iconSize: 64,
@@ -100,21 +101,12 @@ class Component3State extends State<WorkoutStart> {
                       alignment: Alignment.centerLeft,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                        child: DonutProgress(
-                          progress: 1,
-                          strokeWidth: 10,
-                          size: Size(screenWidth * 0.3, screenWidth * 0.3),
-                          centerText: "${(10 * 1).toInt()}min",
-                        ),
+                        child: DonutProgress(progress: 1, strokeWidth: 10, size: Size(screenWidth * 0.3, screenWidth * 0.3), centerText: "${(10 * 1).toInt()}min"),
                       ),
                     ),
                   ],
                 ),
-              if (workoutModel.workoutMode == 'passive')
-                Container(
-                  height: screenHeight * 0.45,
-                  child: Image.asset(image_url, fit: BoxFit.contain),
-                ),
+              if (workoutModel.workoutMode == 'passive') Container(height: screenHeight * 0.45, child: Image.asset(image_url, fit: BoxFit.contain)),
             ],
           ),
         ),
@@ -125,10 +117,7 @@ class Component3State extends State<WorkoutStart> {
           height: screenHeight * 0.25,
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 111, 163, 27),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
           ),
           child: SingleChildScrollView(
             child: Padding(

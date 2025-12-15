@@ -1,3 +1,4 @@
+import 'package:Vincere/utils/http/webReqFastapi.dart';
 import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -74,8 +75,8 @@ class _RegQnaScreenState extends State<regQnA> {
 
   Future<void> _regQna() async {
     try {
-      ApiService apiService = ApiService();
-      Map<String, dynamic> result = await apiService.fetchRegQna(userId.toString(), title, content);
+      ApiServiceFast apiService = ApiServiceFast();
+      Map<String, dynamic> result = await apiService.create_qa(userId.toString(), title, content);
       print('Recevied data: $result');
       if (_isLogIn) {
         if (result['result'] == 1) {
