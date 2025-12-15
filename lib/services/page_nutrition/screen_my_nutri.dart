@@ -5,6 +5,7 @@ import 'package:Vincere/page_home/screen_home_widgets.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/services/page_consult/screen_newsboard_list.dart';
+import 'package:Vincere/services/page_nutrition/screen_plate_widgets.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/services.dart';
 
@@ -16,18 +17,17 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 //
 //
 //
-class MyHomePage extends StatefulWidget {
-  final String title;
-  const MyHomePage({super.key, required this.title});
+class MyNutriPage extends StatefulWidget {
+  const MyNutriPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyNutriPage> createState() => _MyNutriPage();
 }
 
 //
 //
 //
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+class _MyNutriPage extends State<MyNutriPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _tabSelectedIndex = 0;
   final PageController _pageController = PageController(viewportFraction: 0.9);
@@ -49,11 +49,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
       final userModel = Provider.of<UserModel>(context, listen: false);
       if (userModel.isLogin) {
-        await userModel.set_user_info();
+        await userModel.set_food_plate_data();
       }
 
-      final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
-      await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
       print("initialize user done");
       setState(() {});
     } catch (e) {
@@ -84,11 +82,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
               child: Column(
                 children: [
                   ProfileCard(userModel: userModel),
-                  SizedBox(height: 10),
-                  ProfileMuscleCard(userModel: userModel),
-                  SizedBox(height: 50),
-                  pageViewContents(),
-                  SizedBox(height: 60),
+                  SizedBox(height: 20),
+                  DailyEnergySection(userModel: userModel),
+                  SizedBox(height: 20),
+                  PlateRiceCard(),
+                  SizedBox(height: 40),
+                  PlateSection(),
+                  RecommandFood(),
                 ],
               ),
             )
@@ -108,12 +108,21 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         labelColor: Colors.black,
         controller: _tabController,
         onTap: (index) {
-          //if (_tabSelectedIndex == 2) Navigator.push(context, MaterialPageRoute(builder: (context) => const NewsBoard()));
+          if (_tabSelectedIndex == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MyHomePage(
+                  title: "vincere_App",
+                ),
+              ),
+            );
+          }
         },
         tabs: <Widget>[
-          Tab(icon: Icon(Icons.home, color: _tabSelectedIndex == 0 ? Color(0xFF007130) : Colors.grey), text: "홈"),
-          Tab(icon: Icon(Icons.person, color: _tabSelectedIndex == 1 ? Color(0xFF007130) : Colors.grey), text: "마이페이지"),
-          Tab(icon: Icon(Icons.article, color: _tabSelectedIndex == 2 ? Color(0xFF007130) : Colors.grey), text: "건강뉴스"),
+          Tab(icon: _tabSelectedIndex == 0 ? Image.asset('images/nav_home.png', width: 24, height: 24) : Image.asset('images/nav_home_off.png', width: 24, height: 24), text: "홈"),
+          Tab(icon: _tabSelectedIndex == 1 ? Image.asset('images/nav_my.png', width: 24, height: 24) : Image.asset('images/nav_my_off.png', width: 24, height: 24), text: "마이페이지"),
+          Tab(icon: _tabSelectedIndex == 2 ? Image.asset('images/nav_news.png', width: 24, height: 24) : Image.asset('images/nav_news_off.png', width: 24, height: 24), text: "건강뉴스"),
         ],
       ),
     );
@@ -139,42 +148,5 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     final userModel = Provider.of<UserModel>(context, listen: false);
     userModel.set_user_info();
     setState(() {});
-  }
-
-  Widget pageViewContents() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start, // ← 왼쪽 정렬
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(32, 0, 0, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("빈체레가 제안하는 개인 맞춤", style: TextStyle(fontSize: 16)),
-              Text("골든케어 솔루션", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
-            ],
-          ),
-        ),
-        SizedBox(height: 4),
-        SizedBox(
-          height: 400,
-          child: PageView(
-            controller: _pageController,
-            children: [
-              contentsCardPlate(context),
-              contentsCardActive(context),
-            ],
-          ),
-        ),
-        SizedBox(height: 8),
-        Center(
-          child: SmoothPageIndicator(
-            controller: _pageController,
-            count: 2,
-            effect: WormEffect(dotColor: Colors.grey.shade300, activeDotColor: Colors.orangeAccent, dotHeight: 15, dotWidth: 15),
-          ),
-        ),
-      ],
-    );
   }
 }

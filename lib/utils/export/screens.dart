@@ -1,0 +1,20 @@
+// screens.dart
+
+export 'package:Vincere/utils/component/header.dart';
+export 'package:Vincere/services/page_nutrition/screen_food_info.dart';
+export 'package:Vincere/utils/component/screen_loading.dart';
+export 'package:Vincere/page_account/screen_login.dart';
+export 'package:Vincere/services/page_nutrition/screen_my_nutri.dart';
+export 'package:Vincere/services/page_consult/screen_qna_list.dart';
+export 'package:Vincere/services/page_consult/screen_qna_view.dart';
+export 'package:Vincere/services/page_consult/screen_regist_qna.dart';
+export 'package:Vincere/page_account/screen_singup.dart';
+export 'package:Vincere/services/page_health/screen_his_health.dart';
+export 'package:Vincere/utils/component/custom_drawer.dart';
+export 'package:Vincere/page_home/screen_home.dart';
+import 'package:Vincere/utils/component/custom_drawer.dart';
+import 'package:Vincere/utils/component/header.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:Vincere/provider_models.dart';
+import 'package:Vincere/services/page_workout/page_select_muscle.dart';

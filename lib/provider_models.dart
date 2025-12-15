@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:Vincere/http/webReqFastapi.dart';
-import 'package:Vincere/http/webReqSpring.dart';
+import 'package:Vincere/utils/http/webReqFastapi.dart';
+import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:Vincere/page_home/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';

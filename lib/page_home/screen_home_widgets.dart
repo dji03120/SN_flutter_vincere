@@ -1,8 +1,9 @@
-import 'package:Vincere/component/metric_chart_dialog.dart';
-import 'package:Vincere/page_my_health/screen_my_health_info.dart';
+import 'package:Vincere/utils/component/metric_chart_dialog.dart';
+import 'package:Vincere/services/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_home/utils.dart';
-import 'package:Vincere/page_nutrition/screen_my_nutri.dart';
-import 'package:Vincere/page_workout/page_workout_home.dart';
+import 'package:Vincere/services/page_nutrition/screen_my_nutri.dart';
+import 'package:Vincere/services/page_workout/page_workout_home.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/rendering.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:Vincere/provider_models.dart';
@@ -28,8 +29,8 @@ class ProfileCard extends StatelessWidget {
   Widget _buildHealthMetric(String label, double value, String unit) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: value),
-      duration: const Duration(milliseconds: 1000),
-      curve: Curves.easeOutCubic,
+      duration: const Duration(milliseconds: 1500),
+      curve: Curves.easeInCubic,
       builder: (context, animatedValue, child) {
         return Column(
           children: [
@@ -85,7 +86,7 @@ class ProfileCard extends StatelessWidget {
                 Container(
                   width: 90,
                   height: 90,
-                  margin: EdgeInsets.fromLTRB(32, 24, 16, 24),
+                  margin: EdgeInsets.fromLTRB(32, 32, 16, 24),
                   //decoration: BoxDecoration(color: Colors.grey[300], shape: BoxShape.circle),
                   child: Center(child: _buildProfileImage(userModel.profileImageUrl)),
                 ),
@@ -97,12 +98,12 @@ class ProfileCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(width: 10),
-                        Text(userModel.userInfo?["userNm"] ?? '', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Text(userModel.userInfo?["userNm"] ?? '', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
                         SizedBox(width: 25),
-                        Text('만 ${calculateAge(userModel.userInfo?["bym"] ?? "정보없음").toString()}세', style: TextStyle(fontSize: 15, color: Colors.white)),
+                        Text('만 ${calculateAge(userModel.userInfo?["bym"] ?? "정보없음").toString()}세', style: TextStyle(fontSize: 18, color: Colors.white)),
                       ],
                     ),
-                    SizedBox(height: 12),
+                    SizedBox(height: 20),
                     Container(
                       margin: EdgeInsets.only(left: 6),
                       child: TextButton(
@@ -130,7 +131,7 @@ class ProfileCard extends StatelessWidget {
                 Container(height: 74, child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1)),
                 Container(margin: EdgeInsets.all(24.0), child: _buildHealthMetric('몸무게', userModel.userHealthData?['몸무게'][0] ?? 0, 'kg')),
                 Container(height: 74, child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1)),
-                Container(margin: const EdgeInsets.fromLTRB(12.0, 24.0, 32.0, 24.0), child: _buildHealthMetric('근육량', userModel.userHealthData?['근육량'][0] ?? 0, 'kg')),
+                Container(margin: const EdgeInsets.fromLTRB(12.0, 24.0, 32.0, 24.0), child: _buildHealthMetric('근육', userModel.userHealthData?['근육'][0] ?? 0, '%')),
               ],
             ),
           ],
@@ -185,6 +186,7 @@ class ProfileMuscleCard extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * 0.6,
                   margin: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.06),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    SizedBox(height: 10),
                     const Text('내 근육 나이', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 10),
                     RichText(
@@ -205,19 +207,19 @@ class ProfileMuscleCard extends StatelessWidget {
           // ====== 메트릭 리스트 ======
           const SizedBox(height: 16),
           buildDivider(context, isBold: true),
-          _buildMetricRow(context, '신체조성', '신체질량지수(BMI)', muscleData?['신체질량지수(BMI)']?[4], 'MSMT_003'),
+          _buildMetricRow(context, '신체조성', '신체질량지수(BMI)'),
           buildDashedDivider(context),
-          _buildMetricRow(context, '', '체지방률(%)', muscleData?['체지방률']?[4] ?? 5, 'MSMT_008'),
+          _buildMetricRow(context, '', '체지방률'),
           buildDashedDivider(context),
-          _buildMetricRow(context, '', '근육량(kg)', muscleData?['근육량']?[4] ?? 5, 'MSMT_008'),
+          _buildMetricRow(context, '', '근육'), // ASM/체중*100%
           buildDivider(context),
-          _buildMetricRow(context, '신체기능', '악력(kg)', muscleData?['악력']?[4] ?? 5, 'MSMT_011'),
+          _buildMetricRow(context, '신체기능', '악력'),
           buildDashedDivider(context),
-          _buildMetricRow(context, '', '걷기(m/sec)', muscleData?['걷기']?[4] ?? 5, 'MSMT_012'),
+          _buildMetricRow(context, '', '걷기'),
           buildDashedDivider(context),
-          _buildMetricRow(context, '', '앉았다 일어나기(횟수)', muscleData?['앉았다 일어서기']?[4] ?? 5, 'MSMT_013'),
+          _buildMetricRow(context, '', '앉았다 일어서기'),
           buildDivider(context, isBold: true),
-          const SizedBox(height: 16),
+          const SizedBox(height: 26),
         ],
       ),
     );
@@ -226,14 +228,17 @@ class ProfileMuscleCard extends StatelessWidget {
   // 기존에 작성된 _buildMetricRow 함수 및 buildDivider, buildDashedDivider 함수는 여기에 위치해야 합니다.
 
   // --- Metric Row ---
-  Widget _buildMetricRow(BuildContext context, String category, String title, double grade, String code) {
+  Widget _buildMetricRow(BuildContext context, String category, String title) {
+    double grade = userModel.userHealthData?[title][4] ?? 5;
+    String code = userModel.userHealthData?[title][1]; // msmt 코드
+    String unit = userModel.userHealthData?[title][3]; // 단위
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 0, horizontal: MediaQuery.of(context).size.width * 0.06),
+      padding: EdgeInsets.symmetric(vertical: 2, horizontal: MediaQuery.of(context).size.width * 0.06),
       child: Row(
         children: [
           // category
           SizedBox(width: 70, child: category.isNotEmpty ? Text(category, style: const TextStyle(color: Color(0xFF000000), fontSize: 13, fontWeight: FontWeight.w500)) : const SizedBox()),
-          Expanded(child: Text(title, style: const TextStyle(color: Color(0xFF555555), fontSize: 13, fontWeight: FontWeight.w400))),
+          Expanded(child: Text("$title ($unit)", style: const TextStyle(color: Color(0xFF555555), fontSize: 13, fontWeight: FontWeight.w400))),
           if (grade == 1)
             Container(
               width: 40,
@@ -244,7 +249,7 @@ class ProfileMuscleCard extends StatelessWidget {
           const SizedBox(width: 10),
           Text('$grade등급', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: grade == 1 ? const Color(0xFF00914B) : (grade == 2 ? const Color(0xFF9D895B) : const Color(0xFF8D8D8D)))),
           IconButton(
-            icon: const Icon(Icons.bar_chart, color: Color(0xFF00914B)),
+            icon: const Icon(Icons.bar_chart, size: 24, color: Color(0xFF00914B)),
             onPressed: () {
               showDialog(
                 context: context,
@@ -295,7 +300,7 @@ Widget contentsCardActive(BuildContext context) {
                       [const Color(0xFFE2FFF0), const Color(0xFFC8FFE2)],
                       [const Color(0xFFB2FBD2), const Color(0xFFA0F9C5)],
                     ],
-                    durations: [35000, 19440],
+                    durations: [17500, 9720],
                     heightPercentages: [0.50, 0.56],
                   ),
                   backgroundColor: Colors.white,
@@ -313,8 +318,18 @@ Widget contentsCardActive(BuildContext context) {
                     const SizedBox(height: 8),
                     SizedBox(width: screenWidth * 0.5, height: 150, child: Image.asset("assets/images/HealthyActive.png")),
                     const SizedBox(height: 12),
-                    const Text("일상 속에서 근력을 늘릴 수 있는", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF00914B))),
-                    const Text("맞춤형 운동 미션을 확인하세요", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    const AutoSizeText(
+                      "일상 속에서 근력을 늘릴 수 있는",
+                      maxLines: 1,
+                      minFontSize: 12,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF00914B)),
+                    ),
+                    const AutoSizeText(
+                      "맞춤형 운동 미션을 확인하세요",
+                      maxLines: 1,
+                      minFontSize: 12,
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 20),
                     SizedBox(width: screenWidth, height: 90, child: Image.asset("assets/images/HealthyActive2.png")),
                   ],
@@ -365,7 +380,7 @@ Widget contentsCardPlate(BuildContext context) {
                       [const Color(0xFFE2FFF0), const Color(0xFFC8FFE2)],
                       [const Color(0xFFB2FBD2), const Color(0xFFA0F9C5)],
                     ],
-                    durations: [35000, 19440],
+                    durations: [17500, 9720],
                     heightPercentages: [0.50, 0.56],
                   ),
                   backgroundColor: Colors.white,
@@ -383,8 +398,25 @@ Widget contentsCardPlate(BuildContext context) {
                     SizedBox(height: 8),
                     SizedBox(width: screenWidth * 0.45, height: 150, child: Image.asset("assets/images/HealthyPlate.png")),
                     SizedBox(height: 12),
-                    Text("좋은 음식을 바르게 섭취할 수 있도록", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF00914B))),
-                    Text("식사습관 맞춤 영양식을 확인해보세요", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    AutoSizeText(
+                      "좋은 음식을 바르게 섭취할 수 있도록",
+                      maxLines: 1, // → 두 줄 이상 못 넘어가게
+                      minFontSize: 12, // → 최소 폰트 크기
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF00914B),
+                      ),
+                    ),
+                    AutoSizeText(
+                      "식사습관 맞춤 영양식을 확인해보세요",
+                      maxLines: 1,
+                      minFontSize: 12,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     SizedBox(height: 20),
                     SizedBox(
                       width: screenWidth,

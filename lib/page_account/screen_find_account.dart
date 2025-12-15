@@ -1,5 +1,5 @@
-import 'package:Vincere/http/webReqSpring.dart';
-import 'package:Vincere/component/header.dart';
+import 'package:Vincere/utils/http/webReqSpring.dart';
+import 'package:Vincere/utils/component/header.dart';
 import 'package:flutter/material.dart';
 
 //

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:Vincere/http/webReqSpring.dart';
+import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

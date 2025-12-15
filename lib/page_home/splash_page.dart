@@ -1,4 +1,4 @@
-import 'package:Vincere/http/webReqFastapi.dart';
+import 'package:Vincere/utils/http/webReqFastapi.dart';
 import 'package:Vincere/page_home/screen_home.dart';
 import 'package:Vincere/page_home/utils.dart';
 import 'package:Vincere/provider_models.dart';
@@ -34,7 +34,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     _controller.forward();
     _initializeData();
 
-    Future.delayed(const Duration(milliseconds: 2800), () {
+    Future.delayed(const Duration(milliseconds: 3000), () {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MyHomePage(title: "vincere_App")));
     });
   }
@@ -69,7 +69,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
         animation: _opacityAnimation,
         builder: (context, child) {
           // 밝기 값 (0~1). 반대로 어두운 오버레이 계산
-          double darkOpacity = (1 - _opacityAnimation.value) * 0.8;
+          double darkOpacity = (1 - _opacityAnimation.value) * 0.9;
 
           return Stack(
             fit: StackFit.expand,

@@ -1,7 +1,7 @@
-import 'package:Vincere/export/screens.dart';
+import 'package:Vincere/utils/export/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Vincere/http/webReqSpring.dart';
+import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:Vincere/page_account/screen_kakao_address.dart';
 
 class SingUpScreen extends StatefulWidget {

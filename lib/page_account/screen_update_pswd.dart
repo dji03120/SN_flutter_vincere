@@ -1,6 +1,6 @@
-import 'package:Vincere/export/screens.dart';
-import 'package:Vincere/http/webReqSpring.dart';
-import 'package:Vincere/component/header.dart';
+import 'package:Vincere/utils/export/screens.dart';
+import 'package:Vincere/utils/http/webReqSpring.dart';
+import 'package:Vincere/utils/component/header.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

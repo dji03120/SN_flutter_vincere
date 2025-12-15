@@ -1,10 +1,9 @@
-import 'package:Vincere/page_home/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/export/screens.dart';
+import 'package:Vincere/utils/export/screens.dart';
 
 void main() {
   runApp(

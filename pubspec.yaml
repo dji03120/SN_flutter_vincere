@@ -15,7 +15,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  wave: ^0.2.0
   path_provider:
   path:
   table_calendar: ^3.0.6
@@ -36,16 +35,27 @@ dependencies:
   dio: ^5.0.0 # 2 통신 택 1
   flutter_swiper_null_safety:
   auto_size_text:
-  flutter_html: 2.2.1
   # win32: ^3.1.4
   url_launcher: ^6.3.1
-  html: ^0.15.0
   flutter_radar_chart: ^0.2.1
   daum_postcode_search: ^0.0.2
   geolocator: ^14.0.1
-  js: ^0.6.5
   smooth_page_indicator: ^1.0.0  # 최신 버전으로 확인하세요
   convert: ^3.1.2
+
+  js: ^0.6.5
+  wave: ^0.2.0
+  html: ^0.15.0
+  flutter_html: ^3.0.0-beta.2
+  flutter_svg: ^2.2.3
+  video_player: ^2.8.2
+
+  flutter_webrtc: ^0.11.0
+  socket_io_client: ^2.0.3   # signaling
+  permission_handler: ^11.0.1
+
+
+
 
 dev_dependencies:
   flutter_test:
