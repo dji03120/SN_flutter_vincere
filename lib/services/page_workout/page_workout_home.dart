@@ -9,8 +9,8 @@ import 'package:Vincere/services/page_workout/page_statistics.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/utils/component/mission_card.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
-import 'package:Vincere/utils/page_ble_device/page_connect_elexir.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/page_connect_elexir.dart';
 import 'package:flutter/services.dart';
 
 import 'package:Vincere/utils/export/screens.dart';
@@ -112,7 +112,7 @@ class _MyWorkoutPage extends State<MyWorkoutPage> with SingleTickerProviderState
         controller: _tabController,
         onTap: (index) {
           if (_tabSelectedIndex == 0) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => const MyHomePage(title: "vincere_App"),

@@ -1,10 +1,11 @@
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 
+import 'package:Vincere/services/page_ble_device/page_connect_fitrux_hand.dart';
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
@@ -47,6 +48,9 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
   bool _connectFailed = false;
   bool _saved = false;
 
+//
+//
+//
   /// 안전한 setState
   void safeSetState(VoidCallback fn) {
     if (!mounted) return;
@@ -55,6 +59,9 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     });
   }
 
+//
+//
+//
   /// 데이터 저장
   Future<void> saveMeasureResult() async {
     final userModel = Provider.of<UserModel>(context, listen: false);
@@ -78,6 +85,9 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     }
   }
 
+//
+//
+//
   /// BLE 연결
   Future<void> _scanAndConnect() async {
     setState(() => _connectFailed = false);
@@ -123,6 +133,9 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     }
   }
 
+//
+//
+//
   /// BLE Notify 처리
   void _onNotify(event) async {
     try {
@@ -140,19 +153,15 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
       if (tmpWeight >= 0 && tmpWeight < 220) {
         _saved = false;
         weightResult = tmpWeight;
-
-        safeSetState(() {
-          measureState = MeasureState.weightMeasuring;
-        });
+        measureState = MeasureState.weightMeasuring;
+        safeSetState(() {});
       }
 
       // 임피던스 측정
       if (bytes.length > 2 && bytes[2] == 0xFD) {
         impedance = parseImpedanceToMap(bytes);
-
-        safeSetState(() {
-          measureState = MeasureState.impedanceMeasuring;
-        });
+        measureState = MeasureState.impedanceMeasuring;
+        safeSetState(() {});
       }
 
       // 측정 완료
@@ -172,10 +181,6 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
           double height = userModel.userHealthData?["키"][0] ?? 0.0 / 100;
           userModel.userHealthData?["신체질량지수(BMI)"][0] = weightResult / (height * height);
         }
-        if (bfp > 0) {
-          userModel.userHealthData?["체지방률"][0] = bfp;
-        }
-
         if (!_saved) {
           await saveMeasureResult();
           _saved = true;
@@ -190,6 +195,9 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     }
   }
 
+//
+//
+//
   /// Init
   @override
   void initState() {
@@ -216,6 +224,9 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     super.dispose();
   }
 
+//
+//
+//
   /// UI
   @override
   Widget build(BuildContext context) {
@@ -240,6 +251,9 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     );
   }
 
+//
+//
+//
   /// 현재 상태에 맞는 UI 선택
   Widget _buildCurrentUI(double screenHeight) {
     switch (measureState) {
@@ -248,16 +262,20 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
       case MeasureState.weightMeasuring:
         return _buildWeightGauge();
       case MeasureState.impedanceMeasuring:
-        return _buildImpedanceUI();
+        return _buildDoneUI();
       case MeasureState.done:
         return _buildDoneUI();
     }
   }
 
+//
+//
+//
   Widget _buildConnectingUI(double screenHeight) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
+        SizedBox(height: 50),
         Card(
           elevation: 4,
           margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -271,56 +289,42 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
               children: [
                 // 🔵 외곽 파동 애니메이션
                 SizedBox(
-                  width: 220,
-                  height: 220,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // 외부 파동
-                      ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withOpacity(0.15)),
-                        ),
-                      ),
+                    width: 220,
+                    height: 220,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // 외부 파동
+                        ScaleTransition(scale: _scaleAnimation, child: Container(width: 200, height: 200, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withOpacity(0.15)))),
 
-                      // 중간 파동
-                      ScaleTransition(
-                        scale: Tween(begin: 0.7, end: 1.0).animate(_scaleAnimation),
-                        child: Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withOpacity(0.25)),
-                        ),
-                      ),
+                        // 중간 파동
+                        ScaleTransition(scale: Tween(begin: 0.7, end: 1.0).animate(_scaleAnimation), child: Container(width: 150, height: 150, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withOpacity(0.25)))),
 
-                      // 아이콘(체중계)
-                      Container(
-                        width: 110,
-                        height: 110,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: Offset(0, 4))],
-                        ),
-                        child: Center(child: Icon(Icons.monitor_weight, color: Colors.green, size: 90)),
-                      ),
-                    ],
-                  ),
-                ),
+                        // 아이콘(체중계)
+                        Container(
+                            width: 110,
+                            height: 110,
+                            child: Center(child: Icon(Icons.monitor_weight, color: Colors.green, size: 90)),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: Offset(0, 4))],
+                            )),
+                      ],
+                    )),
 
                 const SizedBox(height: 25),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 30),
-        const Text("체중계와 연결중입니다...", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 20),
-        const Text("양말을 벗고 체중계 위에 오르신 후", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-        const Text("페어링을 눌러주세요", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+        SizedBox(height: screenHeight * 0.03),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text("1. 체중계 위로 올라와 주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
+          const SizedBox(height: 10),
+          Text("2. 블루투스 목록에서 기기를 선택 후", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
+          Text("   페어링을 눌러주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
+        ]),
         if (_connectFailed)
           RoundButton(
             margin: const EdgeInsets.fromLTRB(50, 36, 50, 0),
@@ -331,6 +335,9 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     );
   }
 
+//
+//
+//
   Widget _buildWeightGauge() {
     final userModel = Provider.of<UserModel>(context, listen: false);
     double heightM = (userModel.userHealthData?['키'][0] ?? 0.0) / 100;
@@ -370,86 +377,176 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
           width: screenWidth * 0.62,
           height: screenWidth * 0.62,
           child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: progress),
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOutCubic,
-            builder: (context, animatedValue, _) {
-              return Stack(
-                alignment: Alignment.center,
-                children: [
+              tween: Tween(begin: 0.0, end: progress),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutCubic,
+              builder: (context, animatedValue, _) {
+                return Stack(alignment: Alignment.center, children: [
                   // 배경 도넛
                   SizedBox(
                     width: screenWidth * 0.62,
                     height: screenWidth * 0.62,
-                    child: CircularProgressIndicator(
-                      value: 1,
-                      strokeWidth: 24,
-                      valueColor: AlwaysStoppedAnimation(Colors.grey[300]!),
-                    ),
+                    child: CircularProgressIndicator(value: 1, strokeWidth: 24, valueColor: AlwaysStoppedAnimation(Colors.grey[300]!)),
                   ),
 
                   // 진행 도넛
                   SizedBox(
-                    width: screenWidth * 0.62,
-                    height: screenWidth * 0.62,
-                    child: CircularProgressIndicator(
-                      value: animatedValue,
-                      strokeWidth: 24,
-                      valueColor: AlwaysStoppedAnimation(gaugeColor),
-                      backgroundColor: Colors.transparent,
-                    ),
-                  ),
+                      width: screenWidth * 0.62,
+                      height: screenWidth * 0.62,
+                      child: CircularProgressIndicator(
+                        value: animatedValue,
+                        strokeWidth: 24,
+                        valueColor: AlwaysStoppedAnimation(gaugeColor),
+                        backgroundColor: Colors.transparent,
+                      )),
 
                   // 가운데 숫자
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("${weightResult.toStringAsFixed(1)} kg", style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 6),
-                      Text("BMI ${bmi.toStringAsFixed(1)}", style: TextStyle(fontSize: 20, color: Colors.grey[600])),
-                      const SizedBox(height: 6),
-                      Text(bmiLabel, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: gaugeColor)),
-                    ],
-                  )
-                ],
-              );
-            },
-          ),
+                  Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Text("${weightResult.toStringAsFixed(1)} kg", style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    Text("BMI ${bmi.toStringAsFixed(1)}", style: TextStyle(fontSize: 20, color: Colors.grey[600])),
+                    const SizedBox(height: 6),
+                    Text(bmiLabel, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: gaugeColor)),
+                  ])
+                ]);
+              }),
         ),
         SizedBox(height: 100),
         Text("측정중입니다.", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         Text("잠시만 기다려주세요...", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 40),
-        Column(children: [const Text("예시 : 건강에 대한 팁....", style: TextStyle(fontSize: 20))])
+        const Text("예시 : 건강에 대한 팁....", style: TextStyle(fontSize: 20)),
+        const SizedBox(height: 40),
       ],
     );
   }
 
-  Widget _buildImpedanceUI() {
-    return Column(
-      children: const [
-        Text("체지방 분석중입니다...", style: TextStyle(fontSize: 22)),
-        SizedBox(height: 20),
-        CircularProgressIndicator(),
-      ],
-    );
-  }
-
+//
+//
+//
   Widget _buildDoneUI() {
-    return Column(
-      children: [
-        const Text("측정 완료!", style: TextStyle(fontSize: 26)),
-        const SizedBox(height: 20),
-        Text("체중: ${weightResult.toStringAsFixed(1)} kg", style: const TextStyle(fontSize: 22)),
-        Text("임피던스: $impedance", style: const TextStyle(fontSize: 22)),
-        Text("체지방률: ${bfp.toStringAsFixed(1)}%", style: const TextStyle(fontSize: 22)),
-        const SizedBox(height: 30),
-        RoundButton(
-          margin: const EdgeInsets.fromLTRB(50, 36, 50, 0),
-          text: "다시 측정",
-          onPressed: _scanAndConnect,
-        )
-      ],
+    const Color kGreenMain = Color(0xFF2E7D32); // 딥 그린 (신뢰감)
+    const Color kGreenAccent = Color(0xFF4CAF50); // 버튼 / 포인트
+    const Color kGreenSoft = Color(0x332E7D32); // 연한 배경
+    final userModel = Provider.of<UserModel>(context, listen: false);
+
+    double heightM = (userModel.userHealthData?['키'][0] ?? 0.0) / 100;
+    double bmi = heightM > 0 ? weightResult / (heightM * heightM) : 0;
+
+    return Center(
+      child: Card(
+        elevation: 4,
+        margin: const EdgeInsets.symmetric(horizontal: 24),
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 완료 아이콘
+              Container(
+                width: 90,
+                height: 90,
+                decoration: const BoxDecoration(shape: BoxShape.circle, color: kGreenSoft),
+                child: const Icon(Icons.check_rounded, color: kGreenMain, size: 56),
+              ),
+
+              const SizedBox(height: 24),
+              const Text("측정이 완료되었습니다", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+
+              _buildResultRow("체중", "${weightResult.toStringAsFixed(1)} kg"),
+              _buildResultRow("BMI", bmi > 0 ? bmi.toStringAsFixed(1) : "-"),
+              if (bfp > 0) _buildResultRow("체지방률", "${bfp.toStringAsFixed(1)} %"),
+
+              const SizedBox(height: 36),
+
+              // 다음 단계 버튼
+              SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kGreenAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: _showNextMeasureDialog,
+                    child: const Text("다음 단계로", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black)),
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+//
+//
+//
+  Widget _buildResultRow(String label, String value) {
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text(label, style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        ]));
+  }
+
+//
+//
+//
+  void _showNextMeasureDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.help_outline, size: 48, color: Colors.green),
+                const SizedBox(height: 16),
+                const Text("다음 측정을 진행할까요?", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                Text("다시 체중을 측정하거나\n측정을 종료할 수 있습니다.", textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey[900])),
+                const SizedBox(height: 28),
+                Row(
+                  children: [
+                    Expanded(
+                        child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context); // 페이지 종료 or 홈 이동
+                      },
+                      child: const Text("종료", style: TextStyle(fontSize: 16, color: Colors.black)),
+                    )),
+                    const SizedBox(width: 12),
+                    Expanded(
+                        child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () {
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PageConnectFitrusHand()));
+                      },
+                      child: const Text("예", style: TextStyle(fontSize: 16, color: Colors.black)),
+                    )),
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

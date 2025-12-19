@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 
 import 'package:Vincere/utils/component/custom_widget.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
 import 'package:flutter_web_bluetooth/js_web_bluetooth.dart';

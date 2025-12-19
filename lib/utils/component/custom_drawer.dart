@@ -1,4 +1,7 @@
+import 'package:Vincere/provider_models.dart';
+import 'package:Vincere/services/page_survery/page_home.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Vincere/utils/export/screens.dart';
 import 'package:Vincere/utils/http/webReqSpring.dart';
@@ -148,6 +151,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           _buildListTileUser(context, '맞춤형 건강 식단', const MyNutriPage(), widget.isLogin), //add
           _buildListTileUser(context, '맞춤형 운동 플랜', const MyWorkoutPage(), widget.isLogin), //add
           _buildListTileUser(context, '전문가 상담', const WebRTCSample(), widget.isLogin),
+          _buildListTileUser(context, '건강 설문지', const HealthSurveyScreen(), widget.isLogin),
           _buildListTileUser(context, 'Q&A', const Qna(), widget.isLogin),
         ],
       ),
@@ -158,7 +162,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('userId');
     await prefs.remove('password');
-    Navigator.pushReplacement(
+    UserModel userModel = Provider.of<UserModel>(context, listen: false);
+    userModel.set_login_data();
+    print(userModel.isLogin);
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
@@ -172,9 +179,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
           title: const Text('로그아웃 하시겠습니까?'),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop(); // '예'를 선택하면 먼저 알림창을 닫음
-                _logout(context); // 로그아웃 처리
+                await _logout(context); // 로그아웃 처리
               },
               child: const Text('예'),
             ),

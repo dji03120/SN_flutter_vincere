@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_home/screen_home_widgets.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       _tabController.addListener(() => setState(() => _tabSelectedIndex = _tabController.index));
 
       final userModel = Provider.of<UserModel>(context, listen: false);
-      if (userModel.isLogin) {
+      if (userModel.isLogin == true) {
         await userModel.set_user_info();
       }
 

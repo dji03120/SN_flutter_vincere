@@ -68,7 +68,7 @@ class _QnaScreenState extends State<Qna> {
       // 탭에 따라 화면 전환 로직 추가 가능
       if (_selectedIndex == 0) {
         // 홈 화면으로 이동
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const MyHomePage(title: "홈 화면")),
         );
@@ -76,7 +76,7 @@ class _QnaScreenState extends State<Qna> {
         // 현재 Q&A 화면
       } else if (_selectedIndex == 2) {
         // 다른 화면으로 이동
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const MyHomePage(title: "홈 화면")),
         );

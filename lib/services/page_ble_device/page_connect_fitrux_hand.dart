@@ -4,7 +4,7 @@ import 'dart:js_util' as js_util;
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
@@ -185,32 +185,28 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
   Widget _buildConnectingUI(double screenHeight) {
     return Column(
       children: [
+        SizedBox(height: 50),
         SizedBox(
-          height: 300,
-          child: Card(
-            elevation: 4,
-            margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            color: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Image.asset('assets/images/fitrus_start.png'),
-              ]),
-            ),
-          ),
-        ),
+            height: 300,
+            child: Card(
+              elevation: 4,
+              margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              color: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Image.asset('assets/images/fitrus_start.png'),
+                  ])),
+            )),
         SizedBox(height: screenHeight * 0.03),
-        Text("1. 장치 전원을 켜주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
-        const SizedBox(height: 10),
-        Text("2. 블루투스 목록에서 기기를 선택 후", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
-        Text("   페어링을 눌러주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
-        if (_connectFailed)
-          RoundButton(
-            margin: const EdgeInsets.fromLTRB(50, 36, 50, 0),
-            text: "재연결",
-            onPressed: _scanAndConnect,
-          )
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text("1. 장치 전원을 켜주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
+          const SizedBox(height: 10),
+          Text("2. 블루투스 목록에서 기기를 선택 후", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
+          Text("   페어링을 눌러주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
+        ]),
+        if (_connectFailed) RoundButton(margin: const EdgeInsets.fromLTRB(50, 36, 50, 0), text: "재연결", onPressed: _scanAndConnect)
       ],
     );
   }
@@ -224,17 +220,16 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
           SizedBox(
             height: 300,
             child: Card(
-              elevation: 4,
-              margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              color: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Image.asset('assets/images/grip_fitrus.png'),
-                ]),
-              ),
-            ),
+                elevation: 4,
+                margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Image.asset('assets/images/grip_fitrus.png'),
+                  ]),
+                )),
           ),
           const SizedBox(height: 20),
           Text("1. 그림과 같이 장치를 잡아주세요.", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
@@ -246,10 +241,7 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
             text: "체지방 측정 시작",
             margin: const EdgeInsets.fromLTRB(50, 0, 50, 0),
             onPressed: () async {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("3초 후 측정이 시작됩니다.")),
-              );
-
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("3초 후 측정이 시작됩니다.")));
               await Future.delayed(const Duration(seconds: 2));
               await sendCommandFitrus(_writeChar, fitrus_hand_commands['bfp_start'] ?? '');
 
@@ -270,40 +262,26 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 60),
-          Text(
-            "측정중입니다.",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            "잠시만 기다려주세요...",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
+          Text("측정중입니다.", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text("잠시만 기다려주세요...", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 30),
           Stack(
             alignment: Alignment.center,
             children: [
               SizedBox(
-                width: 160,
-                height: 160,
-                child: CircularProgressIndicator(
-                  value: progress / 100,
-                  strokeWidth: 12,
-                  backgroundColor: Colors.grey.shade300,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-                ),
-              ),
-              Text(
-                "$progress%",
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              )
+                  width: 160,
+                  height: 160,
+                  child: CircularProgressIndicator(
+                    value: progress / 100,
+                    strokeWidth: 12,
+                    backgroundColor: Colors.grey.shade300,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                  )),
+              Text("$progress%", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold))
             ],
           ),
           const SizedBox(height: 40),
-          Column(
-            children: [
-              const Text("예시 : 건강에 대한 팁....", style: TextStyle(fontSize: 20)),
-            ],
-          )
+          Column(children: [const Text("예시 : 건강에 대한 팁....", style: TextStyle(fontSize: 20))])
         ],
       ),
     );
@@ -360,10 +338,7 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ScreenHealthInfo()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ScreenHealthInfo()));
       }
     });
   }

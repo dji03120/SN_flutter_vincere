@@ -270,16 +270,31 @@ class UserModel extends ChangeNotifier {
   String _userId = '';
   String _password = '';
   bool get isLogin => _isLogin;
+  void set_user_id(String user_id) {
+    _userId = user_id;
+  }
+
+  void set_password(String password) {
+    _password = password;
+  }
+
+  void set_islogin(bool isLogin) {
+    _isLogin = isLogin;
+  }
+
   String get password => _password;
   String get userId => _userId;
   Future<void> set_login_data() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _userId = prefs.getString('userId') ?? '';
     _password = prefs.getString('password') ?? '';
-    if (_userId.isNotEmpty && _password.isNotEmpty) {
+    if (_userId != "" && _password != "") {
       _isLogin = true;
+      print("login process done...");
+    } else {
+      _isLogin = false;
+      print("login process fail...");
     }
-    print("login process done...");
   }
 
 //

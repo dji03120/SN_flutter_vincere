@@ -1,5 +1,5 @@
-import 'package:Vincere/utils/page_ble_device/page_connect_fitrux_hand.dart';
-import 'package:Vincere/utils/page_ble_device/page_connect_fitrux_weight.dart';
+import 'package:Vincere/services/page_ble_device/page_connect_fitrux_hand.dart';
+import 'package:Vincere/services/page_ble_device/page_connect_fitrux_weight.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info_input.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/utils/component/custom_drawer.dart';
@@ -31,11 +31,7 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
             children: [
               const Text(
                 "측정 장비를 선택해주세요",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black87),
               ),
               const SizedBox(height: 40),
 
@@ -57,10 +53,7 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                 title: "체지방 측정기",
                 subtitle: "AI 기반 정밀 체성분 측정",
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => PageConnectFitrusHand()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => PageConnectFitrusHand()));
                 },
               ),
 
@@ -72,10 +65,7 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                 title: "직접 입력하기",
                 subtitle: "측정 없이 수동으로 입력",
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => ScreenHealthInfoInput()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => ScreenHealthInfoInput()));
                 },
               ),
             ],

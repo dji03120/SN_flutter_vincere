@@ -138,7 +138,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(12),
                             onTap: () {
-                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HisHealth()));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => HisHealth()));
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 18),
@@ -216,7 +216,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectMeasureDevice()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => SelectMeasureDevice()));
                     },
                     style: TextButton.styleFrom(
                       fixedSize: Size(width * 0.7, 50),

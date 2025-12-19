@@ -19,7 +19,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
     // 3초 동안 로딩 화면을 보여줍니다.
     await Future.delayed(const Duration(seconds: 3));
     // 로딩이 끝나면 홈 화면으로 이동합니다.
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context).push(
       MaterialPageRoute(
           builder: (context) => const MyHomePage(
                 title: 'Vincere_App',

@@ -4,7 +4,7 @@ import 'dart:js_util' as js_util;
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/services/page_workout/page_select_mode.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
 
 import 'package:flutter/material.dart';
@@ -187,10 +187,7 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
                   const SizedBox(height: 10),
                   ScaleTransition(
                     scale: _scaleAnimation,
-                    child: Image.asset(
-                      'assets/images/image_ble_1.png',
-                      height: 250,
-                    ),
+                    child: Image.asset('assets/images/image_ble_1.png', height: 250),
                   ),
                 ],
               ),
@@ -211,28 +208,10 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        "1. 장치 전원을 켜주세요",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.black.withOpacity(0.7),
-                        ),
-                      ),
+                      Text("1. 장치 전원을 켜주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
                       const SizedBox(height: 10),
-                      Text(
-                        "2. 블루투스 목록에서 기기를 선택 후",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.black.withOpacity(0.7),
-                        ),
-                      ),
-                      Text(
-                        "   페어링을 눌러주세요",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.black.withOpacity(0.7),
-                        ),
-                      ),
+                      Text("2. 블루투스 목록에서 기기를 선택 후", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
+                      Text("   페어링을 눌러주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
                     ],
                   ),
           ],

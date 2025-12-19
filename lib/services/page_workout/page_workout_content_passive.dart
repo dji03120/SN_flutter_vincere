@@ -2,7 +2,7 @@ import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/utils/component/custom_drawer.dart';
 import 'package:Vincere/utils/http/webReqSpring.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/services/page_workout/page_statistics.dart';
 import 'package:Vincere/services/page_workout/page_workout_plan.dart';
 import 'package:Vincere/provider_models.dart';
@@ -213,7 +213,7 @@ class Component3State extends State<WorkoutContentPassive> {
                         await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
                         await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
                         await apiService.updateWorkoutEnd(userModel.userId);
-                        Navigator.pushReplacement(
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const StatisticsPage(),
@@ -233,7 +233,7 @@ class Component3State extends State<WorkoutContentPassive> {
                         await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
                         workoutModel.set_current_workout(nextWorkoutIdx);
                         await apiService.updateWorkoutEnd(userModel.userId);
-                        Navigator.pushReplacement(
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const WorkoutPlan(
@@ -263,7 +263,7 @@ class Component3State extends State<WorkoutContentPassive> {
                         await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
                         await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
                         await apiService.updateWorkoutEnd(userModel.userId);
-                        Navigator.pushReplacement(
+                        Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const StatisticsPage()),
                         );
@@ -280,7 +280,7 @@ class Component3State extends State<WorkoutContentPassive> {
                         await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
                         workoutModel.set_current_workout(nextWorkoutIdx);
                         await apiService.updateWorkoutEnd(userModel.userId);
-                        Navigator.pushReplacement(
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const WorkoutPlan(

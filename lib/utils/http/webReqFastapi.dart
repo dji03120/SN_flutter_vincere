@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:Vincere/page_home/utils.dart';
 import 'package:Vincere/provider_models.dart';
+import 'package:Vincere/services/page_survery/data_models.dart';
 import 'package:http/http.dart' as http;
 
 class ApiServiceFast {
@@ -16,7 +17,6 @@ class ApiServiceFast {
       try {
         final decodedBody = utf8.decode(response.bodyBytes);
         final result = json.decode(decodedBody);
-        print(result);
         return result;
       } catch (e) {
         throw Exception('Failed to decode JSON: ${e.toString()}');
@@ -164,5 +164,19 @@ class ApiServiceFast {
       body: jsonEncode(param),
     );
     return checkResponse(response);
+  }
+
+  Future<List<SurveyItem>> fetchAllSurveys() async {
+    print('$baseUrl/survery');
+    final response = await http.get(Uri.parse('$baseUrl/survery'), headers: header);
+
+    if (response.statusCode == 200) {
+      final jsonRes = checkResponse(response);
+      final SurveyResponse surveyResponse = SurveyResponse.fromJson(jsonRes);
+      print(surveyResponse.items);
+      return surveyResponse.items;
+    } else {
+      throw Exception('Failed to load surveys from API. Status code: ${response.statusCode}');
+    }
   }
 }

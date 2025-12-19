@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:Vincere/utils/component/mission_card.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_home/screen_home_widgets.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
@@ -50,7 +50,7 @@ class _MyNutriPage extends State<MyNutriPage> with SingleTickerProviderStateMixi
       _tabController.addListener(() => setState(() => _tabSelectedIndex = _tabController.index));
 
       final userModel = Provider.of<UserModel>(context, listen: false);
-      if (userModel.isLogin) {
+      if (userModel.isLogin == true) {
         await userModel.set_food_plate_data();
       }
 
@@ -119,14 +119,7 @@ class _MyNutriPage extends State<MyNutriPage> with SingleTickerProviderStateMixi
         controller: _tabController,
         onTap: (index) {
           if (_tabSelectedIndex == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const MyHomePage(
-                  title: "vincere_App",
-                ),
-              ),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const MyHomePage(title: "vincere_App")));
           }
         },
         tabs: <Widget>[

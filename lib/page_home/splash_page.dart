@@ -44,7 +44,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       final userModel = Provider.of<UserModel>(context, listen: false);
       await userModel.set_login_data();
 
-      if (userModel.isLogin) {
+      if (userModel.isLogin == true) {
         await userModel.set_user_info();
         await userModel.set_food_plate_data();
       }

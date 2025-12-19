@@ -108,7 +108,7 @@ class ProfileCard extends StatelessWidget {
                       margin: EdgeInsets.only(left: 6),
                       child: TextButton(
                         onPressed: () {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ScreenHealthInfo()));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const ScreenHealthInfo()));
                         },
                         style: TextButton.styleFrom(
                           fixedSize: Size(186, 40),

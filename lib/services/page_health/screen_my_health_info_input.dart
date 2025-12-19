@@ -162,25 +162,13 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
             ],
           ),
           SizedBox(height: 20),
-          Row(
-            children: [
-              editForm(userModel, '신체질량지수(BMI)'),
-            ],
-          ),
+          Row(children: [editForm(userModel, '신체질량지수(BMI)')]),
           SizedBox(height: 60),
-          Row(
-            children: [
-              editForm(userModel, '악력'),
-            ],
-          ),
-          SizedBox(height: 30),
-          Row(
-            children: [
-              editForm(userModel, '앉았다 일어서기'),
-              SizedBox(width: 10),
-              editForm(userModel, '걷기'),
-            ],
-          ),
+          Row(children: [editForm(userModel, '악력')]),
+          SizedBox(height: 20),
+          Row(children: [editForm(userModel, '앉았다 일어서기')]),
+          SizedBox(height: 20),
+          Row(children: [editForm(userModel, '걷기')]),
           SizedBox(height: 60),
           Row(
             children: [
@@ -190,21 +178,13 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
             ],
           ),
           SizedBox(height: 20),
-          Row(
-            children: [
-              editForm(userModel, '혈당'),
-            ],
-          ),
+          Row(children: [editForm(userModel, '혈당')]),
           SizedBox(height: 20),
-          Row(
-            children: [
-              editForm(userModel, '간수치 ALP'),
-              SizedBox(width: 10),
-              editForm(userModel, '간수치 ASP'),
-              SizedBox(width: 10),
-              editForm(userModel, '간수치 ALT'),
-            ],
-          ),
+          Row(children: [editForm(userModel, '간수치 ALP')]),
+          SizedBox(height: 20),
+          Row(children: [editForm(userModel, '간수치 ASP')]),
+          SizedBox(height: 20),
+          Row(children: [editForm(userModel, '간수치 ALT')]),
         ],
       ),
     );

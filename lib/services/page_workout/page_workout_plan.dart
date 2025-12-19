@@ -1,6 +1,6 @@
 import 'package:Vincere/services/page_workout/page_workout_start.dart';
 import 'package:Vincere/utils/component/header.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Vincere/provider_models.dart';
@@ -121,7 +121,7 @@ class WorkoutPlanState extends State<WorkoutPlan> {
                     print(workoutModel.workoutLevel);
                     await sendCommandElexir(workoutModel.writeChar, elexir_commands[workoutModel.workoutLevel]!);
                     await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => WorkoutStart()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutStart()));
                   },
                   borderRadius: 10,
                 ),

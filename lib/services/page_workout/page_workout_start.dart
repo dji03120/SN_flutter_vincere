@@ -1,7 +1,7 @@
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/utils/component/custom_drawer.dart';
-import 'package:Vincere/utils/page_ble_device/ble_utils.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/services/page_workout/page_workout_content_active.dart';
 import 'package:Vincere/services/page_workout/page_workout_content_passive.dart';
 import 'package:Vincere/provider_models.dart';
@@ -138,10 +138,10 @@ class Component3State extends State<WorkoutStart> {
                       }
                       // 운동 페이지로 이동
                       if (workoutModel.workoutMode == 'passive') {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const WorkoutContentPassive()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const WorkoutContentPassive()));
                       }
                       if (workoutModel.workoutMode == 'active') {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const WorkoutContentActive()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const WorkoutContentActive()));
                       }
                     },
                   ),

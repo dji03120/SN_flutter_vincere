@@ -1,9 +1,11 @@
+import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:Vincere/utils/export/screens.dart';
 import 'package:Vincere/page_account/screen_find_account.dart';
 import 'package:Vincere/page_home/splash_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -18,6 +20,32 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController idController = TextEditingController();
   final TextEditingController pwController = TextEditingController();
 
+  //
+  //
+  //
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+    setState(() {});
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String userId = prefs.getString('userId') ?? '';
+      String password = prefs.getString('password') ?? '';
+      ApiService apiService = ApiService();
+      Map<String, dynamic> result = await apiService.fetchUserLogin(userId, password);
+      if (result['result'] == true) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SplashPage()));
+      }
+      setState(() {});
+    } catch (e) {
+      print('Error initializing data: $e');
+    }
+  }
+
   // 로그인 처리
   Future<void> _login(BuildContext context) async {
     final id = idController.text;
@@ -30,11 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('userId', id);
       await prefs.setString('password', password);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const SplashPage()),
-      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SplashPage()));
     } else {
       showSnackBar(
         context,

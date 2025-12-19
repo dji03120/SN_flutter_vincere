@@ -134,10 +134,7 @@ class _HisHealthScreenState extends State<HisHealth> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '나의 건강정보 이력',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-                ),
+                const Text('나의 건강정보 이력', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 30),
                 Container(
                   height: 48,
@@ -152,38 +149,24 @@ class _HisHealthScreenState extends State<HisHealth> {
                     child: DropdownButton<String>(
                       value: _selectedSeq,
                       hint: const Center(
-                        child: Text(
-                          '선택',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'NotoSansKR',
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                            color: Color(0xFF555555),
-                          ),
-                        ),
-                      ),
+                          child: Text(
+                        '선택',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontFamily: 'NotoSansKR', fontWeight: FontWeight.w500, fontSize: 16, color: Color(0xFF555555)),
+                      )),
                       onChanged: _onSeqChanged,
                       items: seqOptions.map<DropdownMenuItem<String>>((String seq) {
                         String date = _formatTimestampToDate(_groupedHealthData[seq]!.first['MSMT_DAT']);
                         return DropdownMenuItem<String>(
-                          value: seq,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0), // 내부 아이템에 패딩 추가
-                            child: Center(
-                              child: Text(
-                                '$seq차   $date',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'NotoSansKR',
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                  color: Color(0xFF555555),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
+                            value: seq,
+                            child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0), // 내부 아이템에 패딩 추가
+                                child: Center(
+                                    child: Text(
+                                  '$seq차   $date',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontFamily: 'NotoSansKR', fontWeight: FontWeight.w500, fontSize: 16, color: Color(0xFF555555)),
+                                ))));
                       }).toList(),
                       style: const TextStyle(fontFamily: 'NotoSansKR', color: Color(0xFF555555), fontSize: 16, fontWeight: FontWeight.w500),
                       dropdownColor: Colors.white,
@@ -204,43 +187,29 @@ class _HisHealthScreenState extends State<HisHealth> {
                     ),
                     cardTheme: const CardThemeData(
                       color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero, // BorderRadius 제거
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                       elevation: 0,
                     ),
                     cardColor: Colors.white,
                     dataTableTheme: DataTableThemeData(
                       dividerThickness: 1,
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: Color(0xFFDEDEDE), width: 1.0),
-                        ),
-                      ),
+                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFDEDEDE), width: 1.0))),
                       headingRowColor: MaterialStateProperty.all(Color(0xFFF5F4F9)), // 헤더 배경색
                       dataRowColor: MaterialStateProperty.all(Colors.white), // 데이터 행 배경색
-                      headingTextStyle: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                        color: Colors.black, // 헤더 텍스트 색상
-                      ),
+                      headingTextStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Colors.black),
                     ),
                     textButtonTheme: TextButtonThemeData(
-                      style: TextButton.styleFrom(
-                          foregroundColor: Colors.black, // 페이지네이션 텍스트 색상
-                          backgroundColor: Colors.white),
+                      style: TextButton.styleFrom(foregroundColor: Colors.black, backgroundColor: Colors.white),
                     ),
                   ),
                   child: _filteredHealthData.isEmpty
                       ? const SizedBox(
                           height: 300,
                           child: Center(
-                            child: Text(
-                              '데이터가 없습니다.',
-                              style: TextStyle(fontFamily: 'NotoSansKR', fontWeight: FontWeight.w500, fontSize: 18, color: Colors.black),
-                            ),
-                          ),
-                        )
+                              child: Text(
+                            '데이터가 없습니다.',
+                            style: TextStyle(fontFamily: 'NotoSansKR', fontWeight: FontWeight.w500, fontSize: 18, color: Colors.black),
+                          )))
                       : Container(
                           width: double.infinity,
                           child: PaginatedDataTable(
@@ -251,17 +220,12 @@ class _HisHealthScreenState extends State<HisHealth> {
                             showFirstLastButtons: true,
                             columns: const [
                               DataColumn(
-                                label: Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "측정항목",
-                                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: Colors.black),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                                  label: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text("측정항목", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: Colors.black)),
+                                      ))),
                               DataColumn(
                                 label: Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -330,28 +294,13 @@ class HealthData extends DataTableSource {
               textAlign: TextAlign.left, // 텍스트 왼쪽 정렬
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
-              style: const TextStyle(
-                fontFamily: 'NunitoSans',
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                color: Color(0xFF555555),
-              ),
+              style: const TextStyle(fontFamily: 'NunitoSans', fontWeight: FontWeight.w600, fontSize: 16, color: Color(0xFF555555)),
             ),
           ),
         ),
       ),
     ]);
   }
-
-  // String _formatTimestampToDate(dynamic timestamp) {
-  //   if (timestamp == null) return '';
-  //   try {
-  //     var dateTime = DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp.toString()));
-  //     return DateFormat('yyyy-MM-dd').format(dateTime);
-  //   } catch (e) {
-  //     return '';
-  //   }
-  // }
 
   @override
   bool get isRowCountApproximate => false;
