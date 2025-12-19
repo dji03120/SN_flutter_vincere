@@ -89,10 +89,7 @@ class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('건강 설문 앱'),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: _toggleMenuVisibility,
-        ),
+        leading: IconButton(icon: const Icon(Icons.menu), onPressed: _toggleMenuVisibility),
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
@@ -142,11 +139,9 @@ class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
                 ),
 
                 // 2. 오버레이
-                if (_isMenuVisible)
-                  GestureDetector(
-                    onTap: _toggleMenuVisibility,
-                    child: Container(color: Colors.black54),
-                  ),
+                if (_isMenuVisible) ...[
+                  GestureDetector(onTap: _toggleMenuVisibility, child: Container(color: Colors.black54)),
+                ],
 
                 // 3. 사이드바
                 AnimatedPositioned(

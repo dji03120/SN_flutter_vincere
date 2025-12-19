@@ -151,7 +151,7 @@ class _MyWorkoutPage extends State<MyWorkoutPage> with SingleTickerProviderState
                 TextSpan(text: '${userModel.userInfo?["userNm"] ?? ""}', style: TextStyle(fontSize: 17, color: Colors.green, fontWeight: FontWeight.w600)),
                 TextSpan(text: ' 님의', style: TextStyle(fontSize: 17, color: Colors.black)),
               ])),
-              Text("운동등급에 따른 운동추천", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700)),
+              Text("근육등급에 따른 운동추천", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700)),
             ])),
         Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

@@ -144,6 +144,16 @@ class _QuestionDisplayWidgetState extends State<QuestionDisplayWidget> {
     return conditionValues.contains(answerValue);
   }
 
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   // ---------------------------
   // buildMainInput: radio / checkbox / text (기존 형태 유지)
   // ---------------------------
@@ -241,6 +251,18 @@ class _QuestionDisplayWidgetState extends State<QuestionDisplayWidget> {
       );
     }
 
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
     // CHECKBOX (저장 형식: "a,b,c")
     if (qType == 'checkbox') {
       final List<String> selectedList = (selected ?? '').toString().isEmpty ? [] : (selected ?? '').toString().split('|').where((s) => s.isNotEmpty).toList();
@@ -321,6 +343,18 @@ class _QuestionDisplayWidgetState extends State<QuestionDisplayWidget> {
       );
     }
 
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
     // CHECKBOX WITH INPUT (checkbox 와 동일한 레이아웃)
     if (qType == 'checkbox_with_input') {
       final List<String> selectedList = (answers[qId] ?? '').toString().isEmpty ? [] : (answers[qId] ?? '').toString().split('|').where((s) => s.isNotEmpty).toList();
@@ -450,6 +484,23 @@ class _QuestionDisplayWidgetState extends State<QuestionDisplayWidget> {
     return const SizedBox.shrink();
   }
 
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   // ---------------------------
   // 7) 특정 선택지에 의해 트리거되는 subQuestions 추출
   // ---------------------------
@@ -797,6 +848,31 @@ class _QuestionDisplayWidgetState extends State<QuestionDisplayWidget> {
     );
   }
 
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   Widget buildSubItemRow({
     required BuildContext context,
     required bool checked,
@@ -1126,6 +1202,27 @@ class _QuestionDisplayWidgetState extends State<QuestionDisplayWidget> {
     );
   }
 
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   Widget buildDetailSelectableWrap({
     required double itemMinWidth,
     required List<Widget> children,
@@ -1676,6 +1773,39 @@ class _QuestionDisplayWidgetState extends State<QuestionDisplayWidget> {
   }
 }
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 // =======================================================
 // RightContentPanel: 선택된 SurveyItem의 질문들을 렌더링하는 컨테이너
 // =======================================================
@@ -1805,10 +1935,7 @@ class RightContentPanel extends StatelessWidget {
 
                 // ⭐️ QuestionDisplayWidget을 사용하여 질문 목록 렌더링
                 ...currentQuestions.asMap().entries.map((entry) {
-                  return QuestionDisplayWidget(
-                    question: entry.value,
-                    index: entry.key + 1,
-                  );
+                  return QuestionDisplayWidget(question: entry.value, index: entry.key + 1);
                 }).toList(),
 
                 const SizedBox(height: 20), // 마지막 질문과 하단 바 사이 여백
