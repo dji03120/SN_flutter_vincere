@@ -166,17 +166,51 @@ class ApiServiceFast {
     return checkResponse(response);
   }
 
+  //
+  //
+  //
   Future<List<SurveyItem>> fetchAllSurveys() async {
+    // 모든 survey loading
     print('$baseUrl/survery');
     final response = await http.get(Uri.parse('$baseUrl/survery'), headers: header);
 
     if (response.statusCode == 200) {
       final jsonRes = checkResponse(response);
       final SurveyResponse surveyResponse = SurveyResponse.fromJson(jsonRes);
-      print(surveyResponse.items);
       return surveyResponse.items;
     } else {
       throw Exception('Failed to load surveys from API. Status code: ${response.statusCode}');
     }
+  }
+
+  //
+  //
+  //
+  Future<List<dynamic>> select_all_surveys() async {
+    // survey table의 id에 해당하는 모든 question 로딩
+    print('$baseUrl/survery');
+    final response = await http.get(Uri.parse('$baseUrl/survery'), headers: header);
+    return checkResponse(response)['items'];
+  }
+
+  //
+  //
+  //
+  Future<List<Map<String, dynamic>>> select_survey_questions(int surveyId) async {
+    // survey table의 id에 해당하는 모든 question 로딩
+    print('$baseUrl/survery-question/$surveyId');
+    final response = await http.get(Uri.parse('$baseUrl/survery-question/$surveyId'), headers: header);
+    final jsonRes = checkResponse(response)['result'];
+    final questions = (jsonRes as List).map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e)).toList();
+    return questions;
+  }
+
+  //
+  //
+  //
+  Future<Map<String, dynamic>> select_survey_question_one(int questionId) async {
+    print('$baseUrl/survery-question-one/$questionId');
+    final response = await http.get(Uri.parse('$baseUrl/survery-question-one/$questionId'), headers: header);
+    return checkResponse(response)['result'];
   }
 }

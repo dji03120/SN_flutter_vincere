@@ -1,5 +1,5 @@
 // page_home.dart
-import 'package:Vincere/services/page_survery/data_models.dart';
+import 'data_models.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
 import 'package:flutter/material.dart';
 import 'page_survey_sidebar.dart';
@@ -16,15 +16,12 @@ class HealthSurveyScreen extends StatefulWidget {
 class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
   // 1. 상태 변수
   Future<List<SurveyItem>>? _surveyDataFuture;
-  int? _selectedSurveyId;
-  Map<String, List<SurveyItem>> _groupedByCategory = {};
 
   // 2. 메뉴 상태
+  int? _selectedSurveyId;
   bool _isMenuVisible = false;
+  Map<String, List<SurveyItem>> _groupedByCategory = {};
   static const double menuWidth = 300.0;
-
-  // 3. Service 변수 초기화
-  final ApiServiceFast _surveyService = ApiServiceFast();
 
   @override
   void initState() {
@@ -32,23 +29,17 @@ class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
     _surveyDataFuture = _fetchAndProcessSurveys();
   }
 
-  // 4. 데이터 로드 및 그룹화
   Future<List<SurveyItem>> _fetchAndProcessSurveys() async {
-    final items = await _surveyService.fetchAllSurveys();
-    print(items);
-
-    // 카테고리별 그룹화 로직 수행
-    _groupedByCategory = groupBy(items, (item) => item.category);
-
-    // 초기 선택: 첫 번째 항목 자동 선택
+    final ApiServiceFast surveyService = ApiServiceFast();
+    final items = await surveyService.fetchAllSurveys(); //load survey data
+    _groupedByCategory = groupBy(items, (item) => item.category); // category group
     if (items.isNotEmpty && _selectedSurveyId == null) {
-      _selectedSurveyId = items.first.id;
+      _selectedSurveyId = items.first.id; // init setting = first item
     }
-
     return items;
   }
 
-  // 5. 항목 선택 핸들러
+  // select handler
   void _selectSurveyItem(int id) {
     setState(() {
       _selectedSurveyId = id;
@@ -62,7 +53,7 @@ class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
     });
   }
 
-  // 6. 페이지 이동 로직 (카테고리 경계 무관하게 전체 리스트 기준 이동)
+  // page handler
   void _goToPrevItem() async {
     final allItems = await _surveyDataFuture;
     if (allItems == null || _selectedSurveyId == null) return;
@@ -87,16 +78,9 @@ class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('개인 건강 상태 정밀 평가'),
+        title: const Text('건강 설문 앱'),
         leading: IconButton(icon: const Icon(Icons.menu), onPressed: _toggleMenuVisibility),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.home), onPressed: () => Navigator.pop(context))],
       ),
       body: FutureBuilder<List<SurveyItem>>(
         future: _surveyDataFuture,
@@ -129,20 +113,16 @@ class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
               children: <Widget>[
                 // 1. 설문 콘텐츠 영역 (전달 인자 수정)
                 RightContentPanel(
-                  selectedItem: selectedItem,
-                  // 전체 개수가 아닌 카테고리별 개수를 전달
-                  maxPageNumber: categoryTotalPages,
-                  // 현재 카테고리 내 번호를 넘기고 싶다면 RightContentPanel 정의를 수정하여 활용 가능
+                  selectedItem: selectedItem, // 전체 개수가 아닌 카테고리별 개수를 전달
+                  maxPageNumber: categoryTotalPages, // 현재 카테고리 내 번호를 넘기고 싶다면 RightContentPanel 정의를 수정하여 활용 가능
                   onPrevItem: _goToPrevItem,
                   onNextItem: _goToNextItem,
                 ),
 
-                // 2. 오버레이
+                // 2. 사이드바
                 if (_isMenuVisible) ...[
                   GestureDetector(onTap: _toggleMenuVisibility, child: Container(color: Colors.black54)),
                 ],
-
-                // 3. 사이드바
                 AnimatedPositioned(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,

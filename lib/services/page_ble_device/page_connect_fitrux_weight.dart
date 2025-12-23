@@ -168,18 +168,22 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
       if (bytes.length > 2 && bytes[2] == 0xFE) {
         final userModel = Provider.of<UserModel>(context, listen: false);
 
-        bfp = calculateBfpKushner(
+        /*bfp = calculateBfpKushner(
           weightResult,
           userModel.userHealthData?['키'][0] ?? 0.0,
           userModel.userInfo?['age'],
           userModel.userInfo?['sex'],
           impedance,
-        );
+        );*/
 
         if (weightResult > 30) {
           userModel.userHealthData?["몸무게"][0] = weightResult;
-          double height = userModel.userHealthData?["키"][0] ?? 0.0 / 100;
+          double height = (userModel.userHealthData?["키"][0] ?? 0.0) / 100;
           userModel.userHealthData?["신체질량지수(BMI)"][0] = weightResult / (height * height);
+          print(userModel.userHealthData?["몸무게"][0]);
+          print(userModel.userHealthData?["키"][0]);
+          print(userModel.userHealthData?["신체질량지수(BMI)"][0]);
+          print(height);
         }
         if (!_saved) {
           await saveMeasureResult();

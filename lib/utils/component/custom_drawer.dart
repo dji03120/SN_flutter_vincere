@@ -139,19 +139,26 @@ class _CustomDrawerState extends State<CustomDrawer> {
               ],
             ),
           ),
-          SizedBox(height: 40),
+          SizedBox(height: 20),
+          Divider(
+            color: const Color(0xFFEDEDED),
+            thickness: 2,
+            height: 1,
+          ),
+          SizedBox(height: 30),
+          _buildListTile(context, '홈으로', const MyHomePage(title: "vincere_App")),
+          _buildListTileUser(context, '나의 건강 정보', const ScreenHealthInfo(), widget.isLogin),
+          _buildListTileUser(context, '맞춤형 식단 플랜', const MyNutriPage(), widget.isLogin), //add
+          _buildListTileUser(context, '맞춤형 운동 플랜', const MyWorkoutPage(), widget.isLogin), //add
+          SizedBox(height: 30),
           Divider(
             color: const Color(0xFFEDEDED),
             thickness: 1,
             height: 1,
           ),
           SizedBox(height: 30),
-          _buildListTile(context, '홈으로', const MyHomePage(title: "vincere_App")),
-          _buildListTileUser(context, '나의 건강정보', const ScreenHealthInfo(), widget.isLogin),
-          _buildListTileUser(context, '맞춤형 건강 식단', const MyNutriPage(), widget.isLogin), //add
-          _buildListTileUser(context, '맞춤형 운동 플랜', const MyWorkoutPage(), widget.isLogin), //add
+          _buildListTileUser(context, '나의 건강 진단하기', const HealthSurveyScreen(), widget.isLogin),
           _buildListTileUser(context, '전문가 상담', const WebRTCSample(), widget.isLogin),
-          _buildListTileUser(context, '건강 설문지', const HealthSurveyScreen(), widget.isLogin),
           _buildListTileUser(context, 'Q&A', const Qna(), widget.isLogin),
         ],
       ),

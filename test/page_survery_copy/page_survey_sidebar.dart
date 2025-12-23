@@ -1,6 +1,6 @@
 // page_surveys.dart (최종 수정: Container color/decoration 에러 해결)
 
-import 'package:Vincere/services/page_survery/data_models.dart';
+import 'data_models.dart';
 import 'package:flutter/material.dart';
 
 // 1. 메뉴 표시 단계를 정의하는 Enum
@@ -97,7 +97,6 @@ class _SurveySidePanelState extends State<SurveySidePanel> {
     final bool isTitleListValid = _currentStage == MenuStage.titleList && _selectedCategory != null && widget.groupedData[_selectedCategory]?.isNotEmpty == true;
 
     return Container(
-      // ⚠️ [수정된 부분] Container의 color 속성을 제거하고 decoration 내부에만 color를 둡니다.
       decoration: BoxDecoration(
         color: Colors.white, // ✅ 배경색을 BoxDecoration 내부에서 지정
         border: Border(right: BorderSide(color: Colors.grey.shade300)),
@@ -114,10 +113,7 @@ class _SurveySidePanelState extends State<SurveySidePanel> {
             child: !hasData
                 ? const Center(child: Text('표시할 설문 데이터가 없습니다.', style: TextStyle(color: Colors.grey)))
                 : _currentStage == MenuStage.categoryList
-                    ? _CategoryListWidget(
-                        categories: widget.groupedData.keys.toList(),
-                        onSelect: _selectCategory,
-                      )
+                    ? _CategoryListWidget(categories: widget.groupedData.keys.toList(), onSelect: _selectCategory)
                     : isTitleListValid
                         ? _TitleListWidget(
                             category: _selectedCategory!,
@@ -160,20 +156,7 @@ class _SurveySidePanelState extends State<SurveySidePanel> {
       height: 60,
       child: _currentStage == MenuStage.titleList && _selectedCategory != null
           ? Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.blueGrey),
-                  onPressed: _backToCategoryList,
-                  tooltip: '카테고리 목록으로 돌아가기',
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: Text(
-                  _selectedCategory!,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey),
-                  overflow: TextOverflow.ellipsis,
-                ))
-              ],
+              children: [IconButton(icon: const Icon(Icons.arrow_back, color: Colors.blueGrey), onPressed: _backToCategoryList, tooltip: '카테고리 목록으로 돌아가기'), const SizedBox(width: 8), Expanded(child: Text(_selectedCategory!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey), overflow: TextOverflow.ellipsis))],
             )
           : const Text('설문 카테고리', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
     );
@@ -200,9 +183,7 @@ class _CategoryListWidget extends StatelessWidget {
           onTap: () => onSelect(category),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-            ),
+            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
             child: Row(
               children: [
                 const Icon(Icons.folder, color: Colors.orange),
@@ -264,10 +245,7 @@ class _TitleListWidgetState extends State<_TitleListWidget> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.article,
-                    color: isSelected ? selectedHighlightColor : Colors.grey[600],
-                  ),
+                  Icon(Icons.article, color: isSelected ? selectedHighlightColor : Colors.grey[600]),
                   const SizedBox(width: 16.0),
                   Expanded(
                     child: Text(

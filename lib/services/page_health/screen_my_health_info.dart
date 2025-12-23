@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:Vincere/services/page_health/insight_card.dart';
 import 'package:Vincere/utils/component/radar_chart.dart';
 import 'package:Vincere/utils/export/screens.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
@@ -114,8 +115,36 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                   decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]),
                   child: _content_radar(context, widget, _radarNames, _radarValues),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 10),
                 ProfileMuscleCard(userModel: userModel),
+                SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: InsightSummaryCard(
+                    title: "건강 인사이트",
+                    summary: "ex) 체지방률과 BMI가 기준보다 높습니다. 체중 관리 중심의 생활습관 개선이 권장됩니다.",
+                    insights: [
+                      {
+                        "icon": Icons.warning_amber_rounded,
+                        "color": Colors.orange,
+                        "text": "ex) 체지방률이 기준 대비 높습니다.",
+                      },
+                      {
+                        "icon": Icons.trending_up, //trending_down
+                        "color": Colors.green,
+                        "text": "ex) 최근 3개월간 근육량이 증가하였습니다.",
+                      },
+                      {
+                        "icon": Icons.directions_walk,
+                        "color": Colors.red,
+                        "text": "ex) 최근 활동량이 감소하였습니다.",
+                      },
+                    ],
+                    onActionTap: () {
+                      // 행동 가이드 페이지 이동
+                    },
+                  ),
+                ),
                 SizedBox(height: 60),
                 Card(
                     elevation: 4,
@@ -154,8 +183,8 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                         ),
                         SizedBox(height: 20),
                         dataRow('신체질량지수(BMI)', -1),
-                        dataRow('체지방률', -1),
                         dataRow('근육', 1),
+                        dataRow('체지방률', -1),
                         dataRow('악력', 1),
                         dataRow('걷기', 1),
                         dataRow('앉았다 일어서기', 1),
@@ -175,6 +204,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                         Text('기타 항목', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.black)),
                         SizedBox(height: 10),
                         dataRow('몸무게', -1),
+                        dataRow('근육량', 1),
                         dataRow('체지방량', -1),
                         dataRow('기초대사량', 2),
                         SizedBox(height: 25),
@@ -317,7 +347,11 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
     String state = '평균';
     String label = '${name} (${userModel.userHealthData?[name][3] ?? 0})';
     String standardDiffStr = standardDiff.toStringAsFixed(1);
-    if (standardDiff >= 0) standardDiffStr = "+$standardDiffStr";
+    if (standardDiff >= 0) {
+      standardDiffStr = " +$standardDiffStr ▲";
+    } else {
+      standardDiffStr = " $standardDiffStr ▼";
+    }
 
     Color color = Colors.greenAccent;
     if (progress <= 0.20) {

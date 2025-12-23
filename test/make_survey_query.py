@@ -43,29 +43,29 @@ def execute(sql, params=None):
 
 
 
-def insert_question(survey_id, question_no, form_type, title, answer_items):
-    print(survey_id, question_no, title, form_type)
+def insert_question(survey_id, form_type, question_type,  title, answer_items):
+    print(survey_id, title, form_type)
     sql = """
     INSERT INTO mst_survey_question
-    (SURVEY_ID, QUESTION_ID, FORM_TYPE, QUESTION, ANSWER_ITEMS)
-    VALUES (%s, %s, %s, %s, %s)
+    (SURVEY_ID, FORM_TYPE, QUESTION_TYPE, QUESTION, ANSWER_ITEMS)
+    VALUES (%s, %s,  %s, %s, %s)
     """
     return execute(sql, (
         survey_id,
-        question_no,
         form_type,
+        question_type,
         title,
         json.dumps({"items": answer_items}, ensure_ascii=False, indent=2)
     ))
 
-def update_answer_items(question_id, answer_items):
+def update_sub_question_cond(question_id, sub_question_cond):
     sql = """
     UPDATE mst_survey_question
-    SET ANSWER_ITEMS = %s
+    SET SUB_QUESTION_COND = %s
     WHERE ID = %s
     """
     execute(sql, (
-        json.dumps({"items": answer_items}, ensure_ascii=False, indent=2),
+        json.dumps({"sub_question_cond": sub_question_cond}, ensure_ascii=False, indent=2),
         question_id
     ))
 
@@ -83,67 +83,66 @@ def parse_question(q, question_no, survey_id):
             answer_items.append({
                 "id": idx,
                 "text": opt,
-                "show_if_id": None, 
             })
-
-    # insert 
+    # insert main question
+    parent_question_sub_cond = []
     parent_id = insert_question(
         survey_id,
-        question_no,
         q.get("type","none"),
+        "ROOT",
         q["title"],
-        answer_items
+        answer_items,
     )
 
-
     # sub questions iterator
-    for sub in q.get("subQuestions", []):
-        sub_id = parent_id
+    for sub in q.get("subQuestions", []): # 하위 질문
         sub_items = []
         for item in sub.get("subItems", []):
-
-            sub_item = {
+            sub_items.append({
                 "id": int(item["id"]),
                 "text": item["label"],
-                "input": {
-                    "type": "text" if item.get("input", 0) else None,
-                    "unit": item.get("unit", "")
-                },
-                "show_if_id": item.get("show_if", parent_id), 
-            }
-            sub_items.append(sub_item)
+                "type": "text" if item.get("input", 0) else None, 
+                "unit": item.get("unit", ""),
+                "input": item.get("input", ""),
+                "inItemType": item.get("inItemType", ""),
+                "items": item.get("items", ""),
+            })
+        sub_question_sub_cond = []
+        sub_id = insert_question(
+            survey_id,
+            sub.get("subType","none"),
+            "SUB",
+            sub["subTitle"],
+            sub_items,
+        )
+        parent_question_sub_cond.append(
+            {"id":sub_id, "value":sub.get("show_if",{"value":""})["value"]}
+        )
 
-            # ===== 3. detailSubQuestions =====
+        for item in sub.get("subItems", []):
             for detail in item.get("detailSubQuestions", []):
                 detail_items = []
-                if detail["detailSubType"] == "radio":
+                if "detailUnit" in detail:
                     for i, o in enumerate(detail["detailUnit"].split("|"), 1):
                         detail_items.append({
                             "id": i,
                             "text": o,
-                            "show_if_id": detail.get("show_if", sub_id), 
                         })
-
+                else:
+                    detail_items.append({})
                 detail_id = insert_question(
                     survey_id,
-                    question_no,
                     detail.get("detailSubType","none"),
+                    "SUB",
                     detail["detailSubTitle"],
-                    detail_items
+                    detail_items,
                 )
-                sub_item[0] = detail_id
-
-        # ===== 4. subQuestion INSERT =====
-        sub_id = insert_question(
-            survey_id,
-            question_no,
-            sub.get("subType","none"),
-            sub["subTitle"],
-            sub_items
-        )
-
-    # ===== 6. 메인 질문 UPDATE =====
-    update_answer_items(parent_id, answer_items)
+                sub_question_sub_cond.append(
+                    {"id":detail_id, "value":detail.get("show_if",{"value":""})["value"]}
+                )
+                update_sub_question_cond(detail_id,[])
+        update_sub_question_cond(sub_id,sub_question_sub_cond)
+    update_sub_question_cond(parent_id,parent_question_sub_cond)
     return question_no
 
 
