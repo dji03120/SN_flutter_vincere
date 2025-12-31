@@ -34,11 +34,16 @@ class ProfileCard extends StatelessWidget {
       builder: (context, animatedValue, child) {
         return Column(
           children: [
-            Text(label, style: TextStyle(fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))),
+            Text(label, style: TextStyle(fontSize: 14, color: Color(0xFFFFFF).withOpacity(0.8))),
             SizedBox(height: 2),
-            Text(animatedValue.toStringAsFixed(1), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)),
+            AutoSizeText(
+              animatedValue.toStringAsFixed(1),
+              maxLines: 1,
+              minFontSize: 14,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+            ),
             SizedBox(height: 2),
-            Text(unit, style: TextStyle(fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))),
+            Text(unit, style: TextStyle(fontSize: 14, color: Color(0xFFFFFF).withOpacity(0.8))),
           ],
         );
       },
@@ -140,11 +145,32 @@ class ProfileCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(margin: const EdgeInsets.fromLTRB(32.0, 24.0, 12.0, 24.0), child: _buildHealthMetric('키', userModel.userHealthData?['키'][0] ?? 0, 'cm')),
+                Expanded(
+                    child: Container(
+                  margin: const EdgeInsets.fromLTRB(18.0, 24.0, 0, 24.0),
+                  child: _buildHealthMetric('키', userModel.userHealthData?['키'][0] ?? 0, 'cm'),
+                )),
                 Container(height: 74, child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1)),
-                Container(margin: EdgeInsets.all(24.0), child: _buildHealthMetric('몸무게', userModel.userHealthData?['몸무게'][0] ?? 0, 'kg')),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(0.0),
+                    child: _buildHealthMetric('체중', userModel.userHealthData?['몸무게'][0] ?? 0, userModel.userHealthData?['몸무게'][3] ?? 'kg'),
+                  ),
+                ),
                 Container(height: 74, child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1)),
-                Container(margin: const EdgeInsets.fromLTRB(12.0, 24.0, 32.0, 24.0), child: _buildHealthMetric('근육', userModel.userHealthData?['근육'][0] ?? 0, '%')),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(0.0),
+                    child: _buildHealthMetric('체지방량', userModel.userHealthData?['체지방량'][0] ?? 0, userModel.userHealthData?['체지방량'][3] ?? 'kg'),
+                  ),
+                ),
+                Container(height: 74, child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1)),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 24.0, 18.0, 24.0),
+                    child: _buildHealthMetric('근육량', userModel.userHealthData?['근육량'][0] ?? 0, userModel.userHealthData?['근육량'][3] ?? 'kg'),
+                  ),
+                ),
               ],
             ),
           ],

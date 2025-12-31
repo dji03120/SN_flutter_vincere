@@ -3,14 +3,13 @@ import 'dart:async';
 import 'package:Vincere/services/page_health/insight_card.dart';
 import 'package:Vincere/utils/component/radar_chart.dart';
 import 'package:Vincere/utils/export/screens.dart';
-import 'package:Vincere/utils/http/webReqFastapi.dart';
 import 'package:Vincere/page_home/screen_home_widgets.dart';
-import 'package:Vincere/services/page_health/page_select_device.dart';
+import 'package:Vincere/services/page_ble_device/page_select_device.dart';
 import 'package:Vincere/provider_models.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:html';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class ScreenHealthInfo extends StatefulWidget {
@@ -62,6 +61,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
   Future<void> _initializeData() async {
     try {
       final userModel = Provider.of<UserModel>(context, listen: false);
+      userModel.set_user_info();
       print(userModel.userHealthData);
       _animateValue(
         userModel.userHealthData?['근육'][0] ?? 0.0,
@@ -149,7 +149,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                 Card(
                     elevation: 4,
                     margin: const EdgeInsets.symmetric(vertical: 3),
-                    color: Colors.white,
+                    color: Colors.grey[100],
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
@@ -182,35 +182,83 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                           ),
                         ),
                         SizedBox(height: 20),
-                        dataRow('신체질량지수(BMI)', -1),
-                        dataRow('근육', 1),
-                        dataRow('체지방률', -1),
-                        dataRow('악력', 1),
-                        dataRow('걷기', 1),
-                        dataRow('앉았다 일어서기', 1),
+                        Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                SizedBox(height: 25),
+                                Row(children: [
+                                  Icon(Icons.person, color: Colors.green, size: 30),
+                                  const SizedBox(width: 12),
+                                  Text("신체조성", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                ]),
+                                Divider(),
+                                SizedBox(height: 10),
+                                dataRow('신체질량지수(BMI)', -1),
+                                dataRow('근육', 1),
+                                dataRow('체지방률', -1),
+                                SizedBox(height: 25),
+                              ]),
+                            )),
+                        SizedBox(height: 20),
+                        Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                SizedBox(height: 25),
+                                Row(children: [
+                                  Icon(Icons.directions_run, color: Colors.green, size: 30),
+                                  const SizedBox(width: 12),
+                                  Text("신체기능", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                ]),
+                                Divider(),
+                                SizedBox(height: 10),
+                                dataRow('악력', 1),
+                                dataRow('걷기', 1),
+                                dataRow('앉았다 일어서기', 1),
+                                SizedBox(height: 25),
+                              ]),
+                            )),
+                        SizedBox(height: 20),
+                        Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                SizedBox(height: 25),
+                                Row(children: [
+                                  Icon(Icons.more_horiz, color: Colors.green, size: 30),
+                                  const SizedBox(width: 12),
+                                  Text("기타 항목", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                ]),
+                                Divider(),
+                                SizedBox(height: 10),
+                                dataRow('몸무게', -1),
+                                dataRow('근육량', 1),
+                                dataRow('체지방량', -1),
+                                dataRow('기초대사량', 2),
+                                dataRow('세포내 수분(ICW)', 2),
+                                dataRow('세포외 수분(ECW)', 2),
+                                dataRow('단백질량', 2),
+                                dataRow('무기질량', 2),
+                                SizedBox(height: 25),
+                              ]),
+                            )),
                         SizedBox(height: 25),
                       ]),
                     )),
                 SizedBox(height: 60),
-                Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 3),
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                      child: Column(children: [
-                        SizedBox(height: 25),
-                        Text('기타 항목', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.black)),
-                        SizedBox(height: 10),
-                        dataRow('몸무게', -1),
-                        dataRow('근육량', 1),
-                        dataRow('체지방량', -1),
-                        dataRow('기초대사량', 2),
-                        SizedBox(height: 25),
-                      ]),
-                    )),
-                SizedBox(height: 50),
               ]),
             ),
     );
@@ -400,7 +448,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                 SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    AutoSizeText(label, maxLines: 1, minFontSize: 12, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                     const Spacer(),
                     RichText(
                       text: TextSpan(
@@ -467,5 +515,3 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
     );
   }
 }
-
-//

@@ -1,7 +1,8 @@
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 
-import 'package:Vincere/services/page_ble_device/page_connect_fitrux_hand.dart';
+import 'package:Vincere/services/page_ble_device/page_connect_fitrus_hand.dart';
+import 'package:Vincere/services/page_ble_device/page_select_fitrus_measure_type.dart';
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
@@ -167,23 +168,10 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
       // 측정 완료
       if (bytes.length > 2 && bytes[2] == 0xFE) {
         final userModel = Provider.of<UserModel>(context, listen: false);
-
-        /*bfp = calculateBfpKushner(
-          weightResult,
-          userModel.userHealthData?['키'][0] ?? 0.0,
-          userModel.userInfo?['age'],
-          userModel.userInfo?['sex'],
-          impedance,
-        );*/
-
         if (weightResult > 30) {
-          userModel.userHealthData?["몸무게"][0] = weightResult;
           double height = (userModel.userHealthData?["키"][0] ?? 0.0) / 100;
+          userModel.userHealthData?["몸무게"][0] = weightResult;
           userModel.userHealthData?["신체질량지수(BMI)"][0] = weightResult / (height * height);
-          print(userModel.userHealthData?["몸무게"][0]);
-          print(userModel.userHealthData?["키"][0]);
-          print(userModel.userHealthData?["신체질량지수(BMI)"][0]);
-          print(height);
         }
         if (!_saved) {
           await saveMeasureResult();
@@ -206,16 +194,8 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scanAndConnect();
-    });
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true);
-
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scanAndConnect());
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat(reverse: true);
     _scaleAnimation = Tween<double>(begin: 0.97, end: 1.03).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -540,7 +520,7 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       onPressed: () {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PageConnectFitrusHand()));
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PageSelectMeasureType()));
                       },
                       child: const Text("예", style: TextStyle(fontSize: 16, color: Colors.black)),
                     )),

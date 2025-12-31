@@ -144,6 +144,26 @@ double calculateBfpKushner(
   return double.parse(bfp.toStringAsFixed(3));
 }
 
+//
+//
+//
+//
+// 심박수 데이터 수집
+List<int> parseRawData(Uint8List bytes) {
+  const chunkSize = 3; //
+  if (bytes.length != 18) throw Exception('Expected 18 bytes, got ${bytes.length}');
+
+  // 3bytes * 6 = 18bytes(raw) -> 0~1 정규화
+  List<int> values = List.generate(bytes.length ~/ chunkSize, (i) {
+    final raw1 = bytes[i * chunkSize + 0].toInt();
+    final raw2 = bytes[i * chunkSize + 1].toInt();
+    final raw3 = bytes[i * chunkSize + 2].toInt();
+    final value = (raw1 << 16) | (raw2 << 8) | raw3;
+    return value; // 0~1 정규화
+  }); // green, ir, green, ir, green, ir
+
+  return values;
+}
 
 
 /*

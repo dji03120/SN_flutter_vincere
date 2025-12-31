@@ -97,14 +97,12 @@ class _SurveySidePanelState extends State<SurveySidePanel> {
     final bool isTitleListValid = _currentStage == MenuStage.titleList && _selectedCategory != null && widget.groupedData[_selectedCategory]?.isNotEmpty == true;
 
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white, // ✅ 배경색을 BoxDecoration 내부에서 지정
-        border: Border(right: BorderSide(color: Colors.grey.shade300)),
-        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10.0)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
+        decoration: BoxDecoration(
+          color: Colors.white, // ✅ 배경색을 BoxDecoration 내부에서 지정
+          border: Border(right: BorderSide(color: Colors.grey.shade300)),
+          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10.0)],
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
           _buildHeader(hasData),
           const Divider(height: 1, thickness: 1),
 
@@ -129,14 +127,9 @@ class _SurveySidePanelState extends State<SurveySidePanel> {
           TextButton.icon(
               icon: const Icon(Icons.home, size: 28, color: Color(0xff333333)), // 홈 아이콘
               label: const Text('홈으로 돌아가기', style: TextStyle(fontSize: 18, color: Color(0xff333333))), // 홈 텍스트
-              onPressed: () {
-                Navigator.pop(context);
-              }),
+              onPressed: () => Navigator.pop(context)),
           SizedBox(height: 20),
-          // 1. 헤더 (뒤로가기 버튼 또는 타이틀)
-        ],
-      ),
-    );
+        ]));
   }
 
   // 헤더 위젯 빌더
@@ -236,32 +229,24 @@ class _TitleListWidgetState extends State<_TitleListWidget> {
         return MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
-            onTap: () {
-              widget.onSelect(item.id);
-            },
-            child: Container(
-              color: isSelected ? selectedColor : defaultBackgroundColor,
-              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(Icons.article, color: isSelected ? selectedHighlightColor : Colors.grey[600]),
-                  const SizedBox(width: 16.0),
-                  Expanded(
-                    child: Text(
-                      item.title,
-                      style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? selectedHighlightColor : Colors.black87,
-                        fontSize: 16.0,
-                      ),
-                    ),
-                  ),
-                  if (isSelected) const Icon(Icons.check, size: 18, color: Colors.blue)
-                ],
-              ),
-            ),
-          ),
+              onTap: () {
+                widget.onSelect(item.id);
+              },
+              child: Container(
+                  color: isSelected ? selectedColor : defaultBackgroundColor,
+                  padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                    Icon(Icons.article, color: isSelected ? selectedHighlightColor : Colors.grey[600]),
+                    const SizedBox(width: 16.0),
+                    Expanded(
+                        child: Text(item.title,
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? selectedHighlightColor : Colors.black87,
+                              fontSize: 16.0,
+                            ))),
+                    if (isSelected) const Icon(Icons.check, size: 18, color: Colors.blue)
+                  ]))),
         );
       }).toList(),
     );

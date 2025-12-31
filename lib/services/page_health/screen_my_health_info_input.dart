@@ -30,28 +30,36 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
     }
   }
 
+  double? parseDouble(String input) {
+    if (input.isEmpty || input.endsWith(".")) return null;
+    return double.tryParse(input);
+  }
+
+  double toDouble(dynamic value, {double defaultValue = 0.0}) {
+    if (value == null) return defaultValue;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      return parseDouble(value) ?? defaultValue;
+    }
+    return defaultValue;
+  }
+
   void updateCalculatedValues() {
     final userModel = Provider.of<UserModel>(context, listen: false);
-    double? height = userModel.userHealthData?['키'][0] ?? 0.0;
-    double? weight = userModel.userHealthData?['몸무게'][0] ?? 0.0;
-    double? fatPercentage = userModel.userHealthData?['체지방률'][0] ?? 0.0;
+    double height = toDouble(userModel.userHealthData?['키'][0]);
+    double weight = toDouble(userModel.userHealthData?['몸무게'][0]);
+    double fatPercentage = toDouble(userModel.userHealthData?['체지방률'][0]);
 
     if (height != null && weight != null) {
       double heightInMeters = height / 100;
       double bmi = weight / (heightInMeters * heightInMeters);
-      double stdWeight = (height - 100) * 0.9;
-
-      // BMI와 표준 체중 값을 업데이트
       userModel.userHealthData?['신체질량지수(BMI)'][0] = bmi;
-      userModel.userHealthData?['표준체중'][0] = stdWeight;
     }
 
     if (weight != null && fatPercentage != null) {
       double fatMass = weight * fatPercentage / 100;
       double muscleMass = weight - fatMass;
-
-      // 근육 값을 업데이트
-      //userModel.userHealthData?['근육'][0] = muscleMass;
     }
   }
 
@@ -61,7 +69,11 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
 
     userModel.userHealthData?.forEach((key, value) {
       if (value is List) {
-        double tmp = value[0] ?? 0.0;
+        double tmp = toDouble(value[0]) ?? 0.0;
+        print("$value $tmp");
+        if ((value[2] == "몸무게") && (tmp == 0.0)) {
+          return;
+        }
         String newText = (tmp % 1 == 0 ? tmp.toStringAsFixed(0) : tmp.toStringAsFixed(2));
 
         if (_controllers.containsKey(key)) {
@@ -122,9 +134,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
         ],
         decoration: getInputDecoration('', false, userModel.userHealthData?[keyword][3] ?? ''),
         onChanged: (value) {
-          // 입력 중에는 문자열 그대로 저장
           userModel.userHealthData?[keyword][0] = value;
-          print(userModel.userHealthData);
           updateControllers();
           setState(() {});
         },
@@ -221,6 +231,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
                     const SnackBar(content: Text('업데이트 중 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
                   );
                 }
+                userModel.set_user_info();
               } catch (e) {
                 print("저장 중 오류 발생: $e");
                 ScaffoldMessenger.of(context).showSnackBar(

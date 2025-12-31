@@ -251,20 +251,6 @@ class WorkoutModel extends ChangeNotifier {
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 class UserModel extends ChangeNotifier {
   bool _isLogin = false;
   String _userId = '';
@@ -368,20 +354,43 @@ class UserModel extends ChangeNotifier {
     print("userHealthData : ${_userHealthData}");
   }
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+  //
+  //
+  //
+  //
+  Map<String, dynamic> _surveyAnswers = {};
+  List<Map<String, dynamic>> _surveyQuestions = [];
+  Map<String, dynamic> get surveyAnswers => _surveyAnswers;
+  List<Map<String, dynamic>> get surveyQuestions => _surveyQuestions;
+  Future<void> set_survey_info(int surveyId) async {
+    try {
+      ApiServiceFast apiService = ApiServiceFast();
+      _surveyQuestions = (await apiService.select_survey_questions(surveyId));
+      notifyListeners();
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  void save_answer(String answer_key, dynamic answer_value) {
+    try {
+      _surveyAnswers[answer_key] = answer_value;
+      print(_surveyAnswers);
+      notifyListeners();
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  dynamic get_answer(String answer_key) {
+    try {
+      print(_surveyAnswers[answer_key]);
+      return _surveyAnswers[answer_key];
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
 //
 //
 //
@@ -556,15 +565,6 @@ class UserModel extends ChangeNotifier {
   notifyListeners();
 }
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //

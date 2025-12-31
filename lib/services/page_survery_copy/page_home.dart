@@ -1,5 +1,5 @@
 // page_home.dart
-import 'data_models.dart';
+import 'package:Vincere/services/page_survery_copy/data_models.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
 import 'package:flutter/material.dart';
 import 'page_survey_sidebar.dart';
@@ -97,15 +97,10 @@ class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
 
             // --- [핵심 수정: 카테고리별 페이지 계산] ---
             int categoryTotalPages = 0;
-            int currentStepInCategory = 0;
-
             if (selectedItem != null) {
               // 현재 아이템의 카테고리에 속한 리스트 추출
               final currentCategoryList = _groupedByCategory[selectedItem.category] ?? [];
               categoryTotalPages = currentCategoryList.length; // 해당 카테고리 전체 수
-
-              // 해당 카테고리 내에서 몇 번째인지 계산 (1부터 시작)
-              currentStepInCategory = currentCategoryList.indexWhere((item) => item.id == _selectedSurveyId) + 1;
             }
             // ------------------------------------------
 

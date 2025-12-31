@@ -19,7 +19,6 @@ def select(sql):
         with conn.cursor() as cursor:
             cursor.execute(sql)
             rows = cursor.fetchall()
-
             return rows
     finally:
         conn.close()
@@ -115,6 +114,7 @@ def parse_question(q, question_no, survey_id):
             sub["subTitle"],
             sub_items,
         )
+        
         parent_question_sub_cond.append(
             {"id":sub_id, "value":sub.get("show_if",{"value":""})["value"]}
         )
@@ -127,6 +127,11 @@ def parse_question(q, question_no, survey_id):
                         detail_items.append({
                             "id": i,
                             "text": o,
+                            "type": "text" if item.get("input", 0) else None, 
+                            "unit": item.get("unit", ""),
+                            "input": item.get("input", ""),
+                            "inItemType": item.get("inItemType", ""),
+                            "items": item.get("items", ""),
                         })
                 else:
                     detail_items.append({})
@@ -137,9 +142,12 @@ def parse_question(q, question_no, survey_id):
                     detail["detailSubTitle"],
                     detail_items,
                 )
-                sub_question_sub_cond.append(
-                    {"id":detail_id, "value":detail.get("show_if",{"value":""})["value"]}
-                )
+                value = detail.get("show_if",{"value":""})["value"]
+                if value not in [_item['label'] for _item in sub.get("subItems", []) if 'label' in item]:
+                    # 선택됨일 경우 선택지에는 없음, item내역에서 체크 후에 저장 필요
+                    value = item['label']
+                    
+                sub_question_sub_cond.append( {"id":detail_id, "value":value} )
                 update_sub_question_cond(detail_id,[])
         update_sub_question_cond(sub_id,sub_question_sub_cond)
     update_sub_question_cond(parent_id,parent_question_sub_cond)

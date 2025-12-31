@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:Vincere/page_home/utils.dart';
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/services/page_survery/data_models.dart';
+import 'package:Vincere/services/page_survery_copy/data_models.dart';
 import 'package:http/http.dart' as http;
 
 class ApiServiceFast {
@@ -212,5 +212,25 @@ class ApiServiceFast {
     print('$baseUrl/survery-question-one/$questionId');
     final response = await http.get(Uri.parse('$baseUrl/survery-question-one/$questionId'), headers: header);
     return checkResponse(response)['result'];
+  }
+
+  //
+  //
+  //
+  Future<void> insert_survey_answer(String userId, int surveyId, Map answers) async {
+    // survey table의 id에 해당하는 모든 question 로딩
+    print('$baseUrl/insert-survey-answer');
+    final Map<String, dynamic> param = {
+      "user_id": userId,
+      "survey_id": surveyId,
+      "answers": answers,
+    };
+    print(param);
+    final response = await http.post(
+      Uri.parse('$baseUrl/insert-survey-answer'),
+      headers: header,
+      body: jsonEncode(param),
+    );
+    checkResponse(response);
   }
 }

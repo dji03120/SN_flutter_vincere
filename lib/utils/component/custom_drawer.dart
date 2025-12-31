@@ -1,5 +1,5 @@
 import 'package:Vincere/provider_models.dart';
-import 'package:Vincere/services/page_survery/page_home.dart';
+import 'package:Vincere/services/page_survery_copy/page_home.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -109,10 +109,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           _showLogoutDialog(context);
                         } else {
                           // 로그인 화면으로 이동
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
                         }
                       },
                       style: ElevatedButton.styleFrom(

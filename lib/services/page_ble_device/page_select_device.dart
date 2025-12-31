@@ -1,6 +1,8 @@
-import 'package:Vincere/services/page_ble_device/page_connect_fitrux_hand.dart';
-import 'package:Vincere/services/page_ble_device/page_connect_fitrux_weight.dart';
+import 'package:Vincere/services/page_ble_device/page_connect_fitrus_hand.dart';
+import 'package:Vincere/services/page_ble_device/page_connect_fitrus_weight.dart';
+import 'package:Vincere/services/page_ble_device/page_select_fitrus_measure_type.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info_input.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:Vincere/utils/component/custom_drawer.dart';
 import 'package:Vincere/utils/component/header.dart';
@@ -50,10 +52,10 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
               // ---------------------- 카드 2 : 체지방 측정기 ----------------------
               _ModernCard(
                 icon: Icons.bolt_outlined,
-                title: "체지방 측정기",
+                title: "체성분 측정기",
                 subtitle: "AI 기반 정밀 체성분 측정",
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => PageConnectFitrusHand()));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => PageSelectMeasureType()));
                 },
               ),
 
@@ -128,13 +130,15 @@ class _ModernCardState extends State<_ModernCard> {
               const SizedBox(width: 20),
 
               // 텍스트
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-                  const SizedBox(height: 4),
-                  Text(widget.subtitle, style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.6))),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AutoSizeText(widget.title, maxLines: 1, minFontSize: 12, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 4),
+                    AutoSizeText(widget.subtitle, maxLines: 2, minFontSize: 12, style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.6))),
+                  ],
+                ),
               )
             ],
           ),
