@@ -671,7 +671,10 @@ class DailyEnergySection extends StatelessWidget {
               RichText(
                   text: TextSpan(children: [
                 const TextSpan(text: '총 ', style: TextStyle(fontSize: 16)),
-                TextSpan(text: NumberFormat('#,###').format(userModel.userHealthData?['기초대사량'][0] ?? dailyRequireEnergy), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
+                TextSpan(
+                  text: NumberFormat('#,###').format(dailyRequireEnergy.toInt()),
+                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
+                ),
                 const TextSpan(text: ' kcal', style: TextStyle(fontSize: 16)),
               ]))
             ],

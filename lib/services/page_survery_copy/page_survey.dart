@@ -50,7 +50,7 @@ class _QuestionDisplayWidgetState extends State<QuestionDisplayWidget> {
                   height: 36,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(color: Colors.grey.shade500, borderRadius: BorderRadius.circular(6)),
-                  child: Text(question['ID'].toString(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(question['QUESTION_ID'].toString(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(child: Text("${question['QUESTION']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),

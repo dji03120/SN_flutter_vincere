@@ -1,5 +1,4 @@
 import 'package:Vincere/utils/http/webReqFastapi.dart';
-import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
@@ -51,16 +50,12 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
     double weight = toDouble(userModel.userHealthData?['몸무게'][0]);
     double fatPercentage = toDouble(userModel.userHealthData?['체지방률'][0]);
 
-    if (height != null && weight != null) {
-      double heightInMeters = height / 100;
-      double bmi = weight / (heightInMeters * heightInMeters);
-      userModel.userHealthData?['신체질량지수(BMI)'][0] = bmi;
-    }
+    double heightInMeters = height / 100;
+    double bmi = weight / (heightInMeters * heightInMeters);
+    userModel.userHealthData?['신체질량지수(BMI)'][0] = bmi;
 
-    if (weight != null && fatPercentage != null) {
-      double fatMass = weight * fatPercentage / 100;
-      double muscleMass = weight - fatMass;
-    }
+    double fatMass = weight * fatPercentage / 100;
+    userModel.userHealthData?['체지방량'][0] = fatMass;
   }
 
   void updateControllers() {
@@ -69,7 +64,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
 
     userModel.userHealthData?.forEach((key, value) {
       if (value is List) {
-        double tmp = toDouble(value[0]) ?? 0.0;
+        double tmp = toDouble(value[0]);
         print("$value $tmp");
         if ((value[2] == "몸무게") && (tmp == 0.0)) {
           return;
@@ -145,7 +140,7 @@ class _ScreenHealthInfoState extends State<ScreenHealthInfoInput> {
   @override
   Widget build(BuildContext context) {
     UserModel userModel = Provider.of<UserModel>(context); // 상태 접근
-    final screenWidth = MediaQuery.of(context).size.width;
+    //final screenWidth = MediaQuery.of(context).size.width;
 
     List<Widget> children = [];
     children.add(const Padding(

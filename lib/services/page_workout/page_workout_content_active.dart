@@ -243,7 +243,7 @@ class Component3State extends State<WorkoutContentActive> {
             const TextCustom(text: '세기', color: Colors.white, fontSize: 24),
             const SizedBox(width: 30), // 간격
             controlButton(Icons.remove, () async {
-              await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
+              await sendCommandElexir(userModel.writeChar, elexir_commands["intense_dw"]!);
               intenseValue -= 1;
               if (intenseValue <= 0) intenseValue = 0;
               setState(() {});
@@ -252,7 +252,7 @@ class Component3State extends State<WorkoutContentActive> {
             TextCustom(text: '$intenseValue/30', color: Colors.white),
             const SizedBox(width: 12), // 간격
             controlButton(Icons.add, () async {
-              await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_up"]!);
+              await sendCommandElexir(userModel.writeChar, elexir_commands["intense_up"]!);
               intenseValue += 1;
               if (intenseValue >= 30) intenseValue = 30;
               setState(() {});
@@ -300,15 +300,15 @@ class Component3State extends State<WorkoutContentActive> {
               height: 40,
               child: ElevatedButton(
                 onPressed: () async {
-                  await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
+                  await sendCommandElexir(userModel.writeChar, elexir_commands["pause"]!);
                   if (workoutModel.workoutLevel == "mode2") {
                     workoutModel.set_workout_level(1);
-                    await sendCommandElexir(workoutModel.writeChar, elexir_commands[workoutModel.workoutLevel]!);
+                    await sendCommandElexir(userModel.writeChar, elexir_commands[workoutModel.workoutLevel]!);
                   } else if (workoutModel.workoutLevel == "mode1") {
                     workoutModel.set_workout_level(5);
-                    await sendCommandElexir(workoutModel.writeChar, elexir_commands[workoutModel.workoutLevel]!);
+                    await sendCommandElexir(userModel.writeChar, elexir_commands[workoutModel.workoutLevel]!);
                   }
-                  await sendCommandElexir(workoutModel.writeChar, elexir_commands["continue"]!);
+                  await sendCommandElexir(userModel.writeChar, elexir_commands["continue"]!);
                 },
                 style: ElevatedButton.styleFrom(
                   elevation: 6, // 그림자 높이
@@ -328,14 +328,14 @@ class Component3State extends State<WorkoutContentActive> {
             text: '운동스킵',
             margin: const EdgeInsets.fromLTRB(20, 0, 20, 5),
             onPressed: () async {
-              if (workoutModel.writeChar != null) {
+              if (userModel.writeChar != null) {
               } else {
                 print("writeChar is null, BLE not connected");
               }
               int nextWorkoutIdx = workoutModel.currentWorkout + 1;
               if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
-                await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
-                await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
+                await sendCommandElexir(userModel.writeChar, elexir_commands["mode2"]!);
+                await sendCommandElexir(userModel.writeChar, elexir_commands["stop"]!);
                 await apiService.updateWorkoutEnd(userModel.userId);
                 Navigator.push(
                   context,
@@ -347,12 +347,12 @@ class Component3State extends State<WorkoutContentActive> {
                 // reset ble value
                 int intense_value_copy = intenseValue;
                 for (int i = 0; i < intenseValue; i++) {
-                  await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
+                  await sendCommandElexir(userModel.writeChar, elexir_commands["intense_dw"]!);
                   intense_value_copy -= 1;
                   print('intense ${intense_value_copy}');
                   setState(() {});
                 }
-                await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
+                await sendCommandElexir(userModel.writeChar, elexir_commands["pause"]!);
                 workoutModel.set_current_workout(nextWorkoutIdx);
                 await apiService.updateWorkoutEnd(userModel.userId);
                 Navigator.push(
@@ -388,23 +388,23 @@ class Component3State extends State<WorkoutContentActive> {
         RoundButton(
           text: '다음운동',
           onPressed: () async {
-            if (workoutModel.writeChar != null) {
+            if (userModel.writeChar != null) {
             } else {
               print("writeChar is null, BLE not connected");
             }
             int nextWorkoutIdx = workoutModel.currentWorkout + 1;
             if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
-              await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
-              await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
+              await sendCommandElexir(userModel.writeChar, elexir_commands["mode2"]!);
+              await sendCommandElexir(userModel.writeChar, elexir_commands["stop"]!);
               await apiService.updateWorkoutEnd(userModel.userId);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const StatisticsPage()));
             } else {
               // reset ble value
               for (int i = 0; i < intenseValue; i++) {
-                await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
+                await sendCommandElexir(userModel.writeChar, elexir_commands["intense_dw"]!);
                 setState(() {});
               }
-              await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
+              await sendCommandElexir(userModel.writeChar, elexir_commands["pause"]!);
               workoutModel.set_current_workout(nextWorkoutIdx);
               await apiService.updateWorkoutEnd(userModel.userId);
               Navigator.push(

@@ -1,11 +1,11 @@
-import 'package:Vincere/services/page_ble_device/page_connect_fitrus_hand.dart';
+import 'package:Vincere/services/page_ble_device/page_inbody_blood_pressure_large.dart';
+import 'package:Vincere/services/page_ble_device/page_inbody_blood_pressure_small.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class PageSelectMeasureType extends StatelessWidget {
-  const PageSelectMeasureType({super.key});
+class PageSelectBloodPressMeasureType extends StatelessWidget {
+  const PageSelectBloodPressMeasureType({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +26,8 @@ class PageSelectMeasureType extends StatelessWidget {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 40),
-              _buildItem(context, icon: Icons.fitness_center, title: "체지방·근육량 측정", desc: "체지방률, 근육량, 기초대사량", type: MeasureType.bfp),
-              _buildItem(context, icon: Icons.self_improvement, title: "컨디션 측정", desc: "혈중 산소포화도, 심박수, 스트레스", type: MeasureType.spo2),
+              _buildItem(context, icon: Icons.medical_services, title: "병원용 악력계", desc: "의료기관 전용 고정밀 악력 측정", type: "inbody BPBIO320"),
+              _buildItem(context, icon: Icons.home_rounded, title: "가정용 악력계", desc: "집에서 간편하게 측정하는 악력 관리", type: "inbody BP170B"),
             ],
           ),
         ),
@@ -40,12 +40,17 @@ class PageSelectMeasureType extends StatelessWidget {
     required IconData icon,
     required String title,
     required String desc,
-    required MeasureType type,
+    required String type,
   }) {
     return InkWell(
         borderRadius: BorderRadius.circular(24),
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => PageConnectFitrusHand(measureType: type)));
+          if (type == "inbody BPBIO320") {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => PageInbodyBloodPressureLarge()));
+          }
+          if (type == "inbody BP170B") {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => PageInbodyBloodPressureSmall()));
+          }
         },
         child: Container(
             margin: const EdgeInsets.only(bottom: 24),

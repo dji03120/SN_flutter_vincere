@@ -1,128 +1,109 @@
 import asyncio
 from bleak import BleakScanner, BleakClient
-import traceback
+import datetime
 
-if 1 :
-    SERVICE_UUID = "0000ffb0-0000-1000-8000-00805f9b34fb"
-    WRITE_UUID = "0000fee2-0000-1000-8000-00805f9b34fb"
-    NOTIFY_UUID = "0000fee1-0000-1000-8000-00805f9b34fb"
-    DEVICE_NAME = "F_Scale_A"
+DEVICE_NAME = "BP170B_160B 4722"
 
-message_dict = {
-    "get_version":           "A5 56 00",
-    "sync_time":             "A5 55 00",
-    "sync_user":             "A5 53 01 01 32 64 00",  
-    "sync_unit_kg":          "A5 52 00",
-    "sync_history":          "A5 51 00",
-    "get_decimal_info":      "A5 57 00",
-}
-global_client = None
-            
-            
-            
-def notification_handler(sender, data):
-    try:
-        print(">>> [recv]", end=' ')
-        for b in data: print(f"{b:02X}", end=' ')
-        print()
-        #asyncio.create_task(send_message(global_client, message_dict['ack'], with_checksum=False))
-    except:
-        print(traceback.format_exc())
+WRITE_UUID  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"   # RX
+NOTIFY_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"   # TX
 
+# ================================
+# UART 수신 핸들러
+# ================================
+def noti_handler(sender, data):
+    print("<<<", " ".join(f"{b:02X}" for b in data))
 
-async def scan_device(device_name):
-    print("BLE 장치 스캔 중...")
-    devices = await BleakScanner.discover()
-    for device in devices:
-        if device.name:
-            print(f"Found: {device.name} - {device.address}")
-            if device.name == device_name:
-                return device
+# ================================
+# 장치 검색
+# ================================
+async def find_device():
+    print("🔍 scanning...")
+    devices = await BleakScanner.discover(timeout=5)
+    for d in devices:
+        if d.name:
+            print("✅ found:", d.address, d.name)
+        if d.name == DEVICE_NAME:
+            return d.address
     return None
 
+# ================================
+# Protocol command 빌드
+# ================================
+def build_command(cmd0, cmd1, data):
+    body0 = ((len(data) + 2) & 0x3F) + 0x0A
+    body1 = (((len(data) + 2) >> 6) & 0x3F) + 0x0A
+    cmd = bytearray([0x02, 0x42])   # STX, ID
+    cmd += bytearray([body0, body1]) # Length
+    cmd += bytearray([cmd0, cmd1])   # Command
+    cmd += data                      # Data
+    checksum = (sum(cmd[1:]) & 0x3F) + 0x0A
+    cmd += bytearray([checksum, 0x03])  # checksum, ETX
+    return cmd
 
-async def get_services(client):
-    client
-    services = client.services
-    for service in services:
-        print(f"🔧 Service: {service.uuid}")
-        for char in service.characteristics:
-            print(f"   📎 Characteristic: {char.uuid}")
-            print(f"      🔸 Properties: {char.properties}")
-            print()
+def build_datetime_bytes(year, month, day, hour, minute):
+    return bytearray([
+        (year - 2000) + 0x0A,
+        month + 0x0A,
+        day + 0x0A,
+        hour + 0x0A,
+        minute + 0x0A
+    ])
 
+# ================================
+# 명령 전송
+# ================================
+async def send_cmd(client, cmd):
+    empty = bytearray([])
+    now = datetime.datetime.now()
+    timebytes = build_datetime_bytes(now.year, now.month, now.day, now.hour, now.minute)
+    commands = {
+        "status_time":  build_command(0xC0, 0x00, empty),
+        "status_m1":    build_command(0xC0, 0x01, empty),
+        "status_m2":    build_command(0xC0, 0x02, empty),
+        "status_last":  build_command(0xC0, 0x03, empty),
+        "status_is_running": build_command(0xC0, 0x04, empty),
+        "status_is_complate": build_command(0xC0, 0x05, empty),
+        "time": build_command(0xB1, 0xB0, timebytes),
+        "log": build_command(0xCA, 0x00, empty)
+    }
+    if cmd not in commands:
+        print("❌ unknown cmd")
+        return
+    await client.write_gatt_char(WRITE_UUID, commands[cmd], response=True)
+    print(">>> sent:", cmd)
 
+# ================================
+# 메인 루프
+# ================================
+async def main():
+    address = None
+    while not address:
+        address = await find_device()
+        await asyncio.sleep(1)
 
-
-async def send_message(client, hex_code, with_checksum=True):
-    hex_code = bytearray.fromhex(hex_code)
-    if with_checksum:
-        checksum = 0
-        for b in hex_code: 
-            checksum ^= b
-        hex_code.append(checksum)
-        
-    print("<<< [send]", end=' ')
-    for b in hex_code: print(f"{b:02X}", end=' ')
-    print()
-    await client.write_gatt_char(WRITE_UUID, hex_code, response=False) # without response 
-    #await client.write_gatt_char(NOTIFY_UUID, hex_code) #
-    await asyncio.sleep(0.1)
-
-
-
-
-async def keep_alive(client, message, interval=0.5):
-    while client.is_connected:
-        try: 
-            await send_message(client, message)
-            #await client.write_gatt_char(WRITE_UUID, bytes(b'hello world'), response=False)
-        except Exception as e:
-            print("⚠️ keep-alive 실패:", e)
-            break
-        await asyncio.sleep(interval)
-
-
-
-
-async def user_input_loop(client, message_dict):
-    while True:
-        cmd = await asyncio.to_thread(input, "보낼 명령 입력 (예: info, battery, stop, exit) : ")
-        if cmd == "exit": break
-        if cmd in message_dict: await send_message(client, message_dict[cmd])
-        else: print("❌ 지원하지 않는 명령")
-
-
-
-
-async def run():
-    global global_client
     try:
-        print(f"🔗 {DEVICE_NAME} 장치 실행 필요")
-        device = None
-        while not device:
-            device = await scan_device(DEVICE_NAME)
-            await asyncio.sleep(0.3)
+        async with BleakClient(address) as client:
+            # notify 활성화
+            await client.start_notify(NOTIFY_UUID, noti_handler)
+            
+            # UART 깨우기
+            await client.write_gatt_char(WRITE_UUID, build_command(0x60, 0x00, bytearray([])), response=True)
+            
+            # 시간 전송
+            now = datetime.datetime.now()
+            timebytes = build_datetime_bytes(now.year, now.month, now.day, now.hour, now.minute)
+            await client.write_gatt_char(WRITE_UUID, build_command(0xB1,0xB0,timebytes), response=True)
 
-        while True:
-            print(f"🔗 {DEVICE_NAME}({device.address})에 연결 시도 중...")
-            async with BleakClient(device.address) as client:
-                await get_services(client)
-                if not client.is_connected:
-                        print("연결 실패")
-                        return
-                global_client = client
-                await client.start_notify(NOTIFY_UUID, notification_handler)
-                await asyncio.gather(
-                    #keep_alive(client, message_dict[''], interval=0.5 ),
-                    user_input_loop(client, message_dict),
-                )
+            print("📡 BLE 연결 및 notify 활성화 완료!")
 
+            while True:
+                cmd = await asyncio.to_thread(input, "cmd (status_time/log/exit): ")
+                if cmd == "exit":
+                    break
+                await send_cmd(client, cmd)
 
-    except Exception:
-        print(traceback.format_exc())
+    except Exception as e:
+        print("💥 BLE 연결 실패:", e)
 
-asyncio.run(run())
-
-
-
+# ================================
+asyncio.run(main())

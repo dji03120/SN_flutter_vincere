@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:Vincere/services/page_health/insight_card.dart';
+import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/radar_chart.dart';
 import 'package:Vincere/utils/export/screens.dart';
 import 'package:Vincere/page_home/screen_home_widgets.dart';
@@ -9,7 +10,6 @@ import 'package:Vincere/provider_models.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:html';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class ScreenHealthInfo extends StatefulWidget {
@@ -109,157 +109,185 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
       drawer: const CustomDrawer(isLogin: true),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(children: [
-                Container(
-                  decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]),
-                  child: _content_radar(context, widget, _radarNames, _radarValues),
-                ),
-                SizedBox(height: 10),
-                ProfileMuscleCard(userModel: userModel),
-                SizedBox(height: 30),
-                Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: InsightSummaryCard(
-                    title: "건강 인사이트",
-                    summary: "ex) 체지방률과 BMI가 기준보다 높습니다. 체중 관리 중심의 생활습관 개선이 권장됩니다.",
-                    insights: [
-                      {
-                        "icon": Icons.warning_amber_rounded,
-                        "color": Colors.orange,
-                        "text": "ex) 체지방률이 기준 대비 높습니다.",
-                      },
-                      {
-                        "icon": Icons.trending_up, //trending_down
-                        "color": Colors.green,
-                        "text": "ex) 최근 3개월간 근육량이 증가하였습니다.",
-                      },
-                      {
-                        "icon": Icons.directions_walk,
-                        "color": Colors.red,
-                        "text": "ex) 최근 활동량이 감소하였습니다.",
-                      },
-                    ],
-                    onActionTap: () {
-                      // 행동 가이드 페이지 이동
-                    },
+          : ScrollConfiguration(
+              behavior: DesktopDragScrollBehavior(),
+              child: SingleChildScrollView(
+                child: Column(children: [
+                  Container(
+                    decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]),
+                    child: _content_radar(context, widget, _radarNames, _radarValues),
                   ),
-                ),
-                SizedBox(height: 60),
-                Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 3),
-                    color: Colors.grey[100],
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                      child: Column(children: [
-                        SizedBox(height: 25),
-                        Container(
-                          width: width * 0.85,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.black87, width: 1.6),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6, offset: Offset(0, 3))],
-                          ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => HisHealth()));
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 18),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('나의 건강정보 이력', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black)),
-                                  Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.black),
-                                ],
+                  SizedBox(height: 10),
+                  ProfileMuscleCard(userModel: userModel),
+                  SizedBox(height: 30),
+                  Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: InsightSummaryCard(
+                      title: "건강 인사이트",
+                      summary: "ex) 체지방률과 BMI가 기준보다 높습니다. 체중 관리 중심의 생활습관 개선이 권장됩니다.",
+                      insights: [
+                        {
+                          "icon": Icons.warning_amber_rounded,
+                          "color": Colors.orange,
+                          "text": "ex) 체지방률이 기준 대비 높습니다.",
+                        },
+                        {
+                          "icon": Icons.trending_up, //trending_down
+                          "color": Colors.green,
+                          "text": "ex) 최근 3개월간 근육량이 증가하였습니다.",
+                        },
+                        {
+                          "icon": Icons.directions_walk,
+                          "color": Colors.red,
+                          "text": "ex) 최근 활동량이 감소하였습니다.",
+                        },
+                      ],
+                      onActionTap: () {
+                        // 행동 가이드 페이지 이동
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 60),
+                  Card(
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 3),
+                      color: Colors.grey[100],
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                        child: Column(children: [
+                          SizedBox(height: 25),
+                          Container(
+                            width: width * 0.85,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.black87, width: 1.6),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6, offset: Offset(0, 3))],
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => HisHealth()));
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 18),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('나의 건강정보 이력', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black)),
+                                    Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.black),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 20),
-                        Card(
-                            elevation: 4,
-                            margin: const EdgeInsets.symmetric(vertical: 6),
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                SizedBox(height: 25),
-                                Row(children: [
-                                  Icon(Icons.person, color: Colors.green, size: 30),
-                                  const SizedBox(width: 12),
-                                  Text("신체조성", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                          SizedBox(height: 20),
+                          Card(
+                              elevation: 4,
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  SizedBox(height: 25),
+                                  Row(children: [
+                                    Icon(Icons.person, color: Colors.green, size: 30),
+                                    const SizedBox(width: 12),
+                                    Text("신체조성", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                  ]),
+                                  Divider(),
+                                  SizedBox(height: 10),
+                                  dataRow('신체질량지수(BMI)', -1),
+                                  dataRow('근육', 1),
+                                  dataRow('체지방률', -1),
+                                  SizedBox(height: 25),
                                 ]),
-                                Divider(),
-                                SizedBox(height: 10),
-                                dataRow('신체질량지수(BMI)', -1),
-                                dataRow('근육', 1),
-                                dataRow('체지방률', -1),
-                                SizedBox(height: 25),
-                              ]),
-                            )),
-                        SizedBox(height: 20),
-                        Card(
-                            elevation: 4,
-                            margin: const EdgeInsets.symmetric(vertical: 6),
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                SizedBox(height: 25),
-                                Row(children: [
-                                  Icon(Icons.directions_run, color: Colors.green, size: 30),
-                                  const SizedBox(width: 12),
-                                  Text("신체기능", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                              )),
+                          SizedBox(height: 20),
+                          Card(
+                              elevation: 4,
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  SizedBox(height: 25),
+                                  Row(children: [
+                                    Icon(Icons.directions_run, color: Colors.green, size: 30),
+                                    const SizedBox(width: 12),
+                                    Text("신체기능", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                  ]),
+                                  Divider(),
+                                  SizedBox(height: 10),
+                                  dataRow('악력', 1),
+                                  dataRow('걷기', 1),
+                                  dataRow('앉았다 일어서기', 1),
+                                  SizedBox(height: 25),
                                 ]),
-                                Divider(),
-                                SizedBox(height: 10),
-                                dataRow('악력', 1),
-                                dataRow('걷기', 1),
-                                dataRow('앉았다 일어서기', 1),
-                                SizedBox(height: 25),
-                              ]),
-                            )),
-                        SizedBox(height: 20),
-                        Card(
-                            elevation: 4,
-                            margin: const EdgeInsets.symmetric(vertical: 6),
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                SizedBox(height: 25),
-                                Row(children: [
-                                  Icon(Icons.more_horiz, color: Colors.green, size: 30),
-                                  const SizedBox(width: 12),
-                                  Text("기타 항목", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                              )),
+                          SizedBox(height: 20),
+                          Card(
+                              elevation: 4,
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  SizedBox(height: 25),
+                                  Row(children: [
+                                    Icon(Icons.more_horiz, color: Colors.green, size: 30),
+                                    const SizedBox(width: 12),
+                                    Text("기타 항목", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                  ]),
+                                  Divider(),
+                                  SizedBox(height: 10),
+                                  dataRow('몸무게', -1),
+                                  dataRow('근육량', 1),
+                                  dataRow('체지방량', -1),
+                                  dataRow('기초대사량', 2),
+                                  dataRow('세포내 수분(ICW)', 2),
+                                  dataRow('세포외 수분(ECW)', 2),
+                                  dataRow('단백질량', 2),
+                                  dataRow('무기질량', 2),
+                                  SizedBox(height: 25),
                                 ]),
-                                Divider(),
-                                SizedBox(height: 10),
-                                dataRow('몸무게', -1),
-                                dataRow('근육량', 1),
-                                dataRow('체지방량', -1),
-                                dataRow('기초대사량', 2),
-                                dataRow('세포내 수분(ICW)', 2),
-                                dataRow('세포외 수분(ECW)', 2),
-                                dataRow('단백질량', 2),
-                                dataRow('무기질량', 2),
-                                SizedBox(height: 25),
-                              ]),
-                            )),
-                        SizedBox(height: 25),
-                      ]),
-                    )),
-                SizedBox(height: 60),
-              ]),
+                              )),
+                          Card(
+                              elevation: 4,
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  SizedBox(height: 25),
+                                  Row(children: [
+                                    Icon(Icons.self_improvement, color: Colors.green, size: 30),
+                                    const SizedBox(width: 12),
+                                    Text("기타 항목", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                  ]),
+                                  Divider(),
+                                  SizedBox(height: 10),
+                                  dataRow('심박수', 2),
+                                  dataRow('혈압(고)', 2),
+                                  dataRow('혈압(저)', 2),
+                                  dataRow('산소포화도', 2),
+                                  dataRow('심박변이도', 2),
+                                  dataRow('스트레스지수', 2),
+                                  SizedBox(height: 25),
+                                ]),
+                              )),
+                          SizedBox(height: 25),
+                        ]),
+                      )),
+                  SizedBox(height: 60),
+                ]),
+              ),
             ),
     );
   }
@@ -269,7 +297,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
 //
   Widget _content_radar(context, widget, List<String> _radarNames, Map _radarValues) {
     double width = MediaQuery.of(context).size.width;
-    UserModel userModel = Provider.of<UserModel>(context);
+    //UserModel userModel = Provider.of<UserModel>(context);
 
     return Column(
       children: [

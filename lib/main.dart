@@ -1,3 +1,5 @@
+import 'package:Vincere/services/page_ble_device/page_inbody_blood_pressure_large.dart';
+import 'package:Vincere/services/page_ble_device/page_inbody_blood_pressure_small.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -16,6 +18,8 @@ void main() {
     ),
   );
 }
+
+// clustering :
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/mission_card.dart';
 import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/page_home/screen_home_widgets.dart';
@@ -86,22 +87,24 @@ class _MyNutriPage extends State<MyNutriPage> with SingleTickerProviderStateMixi
       appBar: const Header(),
       drawer: CustomDrawer(isLogin: userModel.isLogin),
       body: _tabSelectedIndex == 0
-          ? SingleChildScrollView(
-              child: Column(
-                children: [
-                  ProfileCard(userModel: userModel),
-                  SizedBox(height: 20),
-                  DailyMissionCard(title: '오늘의 식단 추천', missionList: dietList),
-                  SizedBox(height: 40),
-                  DailyEnergySection(userModel: userModel),
-                  SizedBox(height: 20),
-                  PlateRiceCard(),
-                  SizedBox(height: 40),
-                  PlateSection(),
-                  RecommandFood(),
-                ],
-              ),
-            )
+          ? ScrollConfiguration(
+              behavior: DesktopDragScrollBehavior(),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ProfileCard(userModel: userModel),
+                    SizedBox(height: 20),
+                    DailyMissionCard(title: '오늘의 식단 추천', missionList: dietList),
+                    SizedBox(height: 40),
+                    DailyEnergySection(userModel: userModel),
+                    SizedBox(height: 20),
+                    PlateRiceCard(),
+                    SizedBox(height: 40),
+                    PlateSection(),
+                    RecommandFood(),
+                  ],
+                ),
+              ))
           : _tabSelectedIndex == 1
               // ? userInfoContainer(context, userData)
               ? MyPage(

@@ -42,19 +42,20 @@ def execute(sql, params=None):
 
 
 
-def insert_question(survey_id, form_type, question_type,  title, answer_items):
-    print(survey_id, title, form_type)
+def insert_question(survey_id, item_id, form_type, question_type,  title, answer_items, minWidth):
+    print(survey_id, title, form_type, item_id)
     sql = """
     INSERT INTO mst_survey_question
-    (SURVEY_ID, FORM_TYPE, QUESTION_TYPE, QUESTION, ANSWER_ITEMS)
-    VALUES (%s, %s,  %s, %s, %s)
+    (SURVEY_ID, QUESTION_ID, FORM_TYPE, QUESTION_TYPE, QUESTION, ANSWER_ITEMS)
+    VALUES (%s, %s, %s, %s, %s, %s)
     """
     return execute(sql, (
         survey_id,
+        item_id,
         form_type,
         question_type,
         title,
-        json.dumps({"items": answer_items}, ensure_ascii=False, indent=2)
+        json.dumps({"items": answer_items, "minWidth": minWidth}, ensure_ascii=False, indent=2)
     ))
 
 def update_sub_question_cond(question_id, sub_question_cond):
@@ -75,6 +76,8 @@ def update_sub_question_cond(question_id, sub_question_cond):
 
 def parse_question(q, question_no, survey_id):
 
+    question_id = f"{question_no}"
+    
     # main quesiton
     answer_items = []
     if q.get("type"):
@@ -87,15 +90,18 @@ def parse_question(q, question_no, survey_id):
     parent_question_sub_cond = []
     parent_id = insert_question(
         survey_id,
+        question_id,
         q.get("type","none"),
         "ROOT",
         q["title"],
         answer_items,
+        0
     )
 
     # sub questions iterator
-    for sub in q.get("subQuestions", []): # 하위 질문
+    for sub_q_no, sub in enumerate(q.get("subQuestions", [])): # 하위 질문
         sub_items = []
+        sub_question_id = question_id+f"-{sub_q_no+1}"
         for item in sub.get("subItems", []):
             sub_items.append({
                 "id": int(item["id"]),
@@ -109,18 +115,22 @@ def parse_question(q, question_no, survey_id):
         sub_question_sub_cond = []
         sub_id = insert_question(
             survey_id,
+            sub_question_id,
             sub.get("subType","none"),
             "SUB",
             sub["subTitle"],
             sub_items,
+            sub.get("subMinWidth",0),
+            
         )
         
         parent_question_sub_cond.append(
             {"id":sub_id, "value":sub.get("show_if",{"value":""})["value"]}
         )
 
-        for item in sub.get("subItems", []):
-            for detail in item.get("detailSubQuestions", []):
+        for _, item in enumerate(sub.get("subItems", [])):
+            for detail_q_no, detail in enumerate(item.get("detailSubQuestions", [])):
+                detail_question_id = sub_question_id+f"-{detail_q_no+1}"
                 detail_items = []
                 if "detailUnit" in detail:
                     for i, o in enumerate(detail["detailUnit"].split("|"), 1):
@@ -137,10 +147,12 @@ def parse_question(q, question_no, survey_id):
                     detail_items.append({})
                 detail_id = insert_question(
                     survey_id,
+                    detail_question_id,
                     detail.get("detailSubType","none"),
                     "SUB",
                     detail["detailSubTitle"],
                     detail_items,
+                    detail.get("detailItemMinWidth",0),
                 )
                 value = detail.get("show_if",{"value":""})["value"]
                 if value not in [_item['label'] for _item in sub.get("subItems", []) if 'label' in item]:

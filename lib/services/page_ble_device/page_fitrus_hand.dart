@@ -61,22 +61,23 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
 
   double stress = 0.0;
   double impedance = 0.0;
-  List<double> ppgGrAc = List.generate(100, (index) => 0.0); //green
-  List<double> ppgIrAc = List.generate(100, (index) => 0.0);
-  double ppgGrIir = 0.5;
-  double ppgIrIir = 0.5;
+  List<int> ppgList = []; //green
   double bpm = 0.0;
   String _notifyStr = '';
+  DateTime lastUpdate = DateTime.now();
 
   //
   //
   //
   //
   // notify setState 동기화
-  void safeSetState(VoidCallback fn) {
+  void safeSetState(VoidCallback fn, {int ms = 50}) {
     if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(fn);
+      // throttle
+      if (DateTime.now().difference(lastUpdate).inMilliseconds > ms) {
+        if (mounted) setState(fn);
+      }
     });
   }
 
@@ -86,6 +87,7 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
   //
   /// BLE 연결
   Future<void> _scanAndConnect() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
     safeSetState(() {
       _connectFailed = false;
       measureState = MeasureState.connecting;
@@ -108,6 +110,8 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
           final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
           _writeChar = await service?.getCharacteristic(WRITE_UUID);
           _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
+          userModel.set_notify_char(_notifyChar!);
+          userModel.set_write_char(_writeChar!);
 
           await _notifyChar!.startNotifications();
           js_util.callMethod(_notifyChar!, 'addEventListener', ['characteristicvaluechanged', js_util.allowInterop(_onNotify)]);
@@ -122,6 +126,22 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
       }
     } catch (e) {
       safeSetState(() => _connectFailed = true);
+    }
+  }
+
+  Future<void> ble_disconnect() async {
+    if (_device != null) {
+      try {
+        _device!.gatt?.disconnect();
+      } catch (e) {
+        print('BLE disconnect failed: $e');
+      } finally {
+        safeSetState(() {
+          _device = null;
+          _writeChar = null;
+          _notifyChar = null;
+        });
+      }
     }
   }
 
@@ -150,57 +170,31 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
         if (endRawMatch != null) {
           sendCommandFitrus(_writeChar, fitrus_hand_commands['bfp_stop'] ?? '');
           impedance = double.parse(endRawMatch.group(1)!);
+          ble_disconnect();
           safeSetState(() => measureState = MeasureState.requestAiAnalysis);
         }
       }
 
+      //
+      //
+      //
+      //
       if (widget.measureType == MeasureType.spo2) {
-        //bpm 측정
-        final ppgData = parseRawData(bytes);
-        double gr = (ppgData[0] + ppgData[2] + ppgData[4]) / 3; // green 3 channal
-        double ir = (ppgData[1] + ppgData[3] + ppgData[5]) / 3; // ir 3 channal
-        final dGr = gr - ppgGrIir;
-        final dIr = ir - ppgIrIir;
-        ppgGrIir = ppgGrIir * 0.99 + gr * 0.01;
-        ppgIrIir = ppgIrIir * 0.99 + ir * 0.01;
-        ppgGrAc.add(dGr); // dGr
-        ppgIrAc.add(dIr); // dIr
+        List<int> ppgData = parseRawData(bytes);
+        ppgList.addAll(ppgData);
 
-        // 100hz로 가정함
-        int peakCount = 0;
-        double threshold = 0.2; // 신호 세기에 맞춰 조정
-        int minInterval = 20; // 최대 bpm 300 (bpm limit and noise peak filter)
-        int lastPeak = -minInterval;
-        int bpm = peakCount * 60; // 1sec * 60
-
-        if (ppgGrAc.length > 100) {
-          // min/max 계산
-          final recent = ppgGrAc.sublist(ppgGrAc.length - 100);
-          double minV = 0, maxV = 0, alpha = 0.03;
-          for (var v in recent) {
-            minV = minV * (1 - alpha) + min(v.abs(), minV) * alpha;
-            maxV = maxV * (1 - alpha) + max(v.abs(), maxV) * alpha;
+        if (ppgList.length % (6 * 100) == 0) {
+          progress = (ppgList.length / 18000 * 100).toInt();
+          safeSetState(() {});
+          if (ppgList.length >= 6000) {
+            // 10초 이후부터는 1초마다 api 요청
+            _requestOSDPPG(ppgList);
           }
-
-          for (int i = minInterval; i < recent.length - minInterval; i++) {
-            final v1 = (recent[i - minInterval].abs() - minV) / (maxV - minV);
-            final v2 = (recent[i + 0].abs() - minV) / (maxV - minV);
-            final v3 = (recent[i + minInterval].abs() - minV) / (maxV - minV);
-
-            if (v2 > v1 && v2 > v3 && v2 > threshold && i > lastPeak + minInterval) {
-              bpm = ((100 / (i - lastPeak)) * 60 / 2).toInt(); // 1sec * 60
-              peakCount += 1;
-              lastPeak = i;
-              safeSetState(() => _notifyStr = "${dGr}_\n${v2}_\n${bpm}_\n${ppgGrAc.length}");
-            }
-          }
-          safeSetState(() => _notifyStr = "${dGr}_\n${bpm}_\n${ppgGrAc.length}");
-        } else {
-          safeSetState(() => _notifyStr = "${dGr}_\n${dIr}_\n${bpm}_\n${ppgData}_\n${ppgGrAc.length}");
         }
-        if (ppgGrAc.length > 3000) {
+        if (ppgList.length > (6 * 3000)) {
           sendCommandFitrus(_writeChar, fitrus_hand_commands['spo2_stop'] ?? '');
-          safeSetState(() => measureState = MeasureState.done);
+          ble_disconnect();
+          safeSetState(() => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ScreenHealthInfo())));
         }
       }
     } catch (e) {
@@ -245,15 +239,29 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-        appBar: const Header(),
-        body: Container(
-            color: const Color(0xFFf5f4f9),
-            child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(children: [
-                  SizedBox(height: screenHeight * 0.04),
-                  Expanded(child: Center(child: _buildCurrentUI(screenHeight))),
-                ]))));
+      appBar: const Header(),
+      body: Container(
+        color: const Color(0xFFf5f4f9),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // 기본값이 min이어서 공간이 남음
+              children: [
+                SizedBox(height: screenHeight * 0.04),
+
+                // Expanded 제거
+                Center(
+                  child: _buildCurrentUI(screenHeight),
+                ),
+
+                SizedBox(height: 100), // 하단 여백 (선택)
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   //
@@ -328,7 +336,8 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
                 child: Padding(
                   padding: const EdgeInsets.all(32),
                   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Image.asset('assets/images/grip_fitrus.png'),
+                    if (widget.measureType == MeasureType.bfp) Image.asset('assets/images/fitrus_bfp_grip.png'),
+                    if (widget.measureType == MeasureType.spo2) Image.asset('assets/images/fitrus_ppg_grip.png'),
                   ]),
                 )),
           ),
@@ -375,41 +384,19 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
           Stack(
             alignment: Alignment.center,
             children: [
-              if (widget.measureType == MeasureType.bfp) ...[
-                SizedBox(
-                    width: 160,
-                    height: 160,
-                    child: CircularProgressIndicator(
-                      value: progress / 100,
-                      strokeWidth: 12,
-                      backgroundColor: Colors.grey.shade300,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-                    )),
-              ],
-              if (widget.measureType == MeasureType.spo2) ...[
-                Container(
-                  height: 200,
-                  width: 220,
-                  child: LineChart(
-                    LineChartData(
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: List.generate(100, (i) => FlSpot(i.toDouble(), ppgGrAc[ppgGrAc.length - 100 + i])),
-                          isCurved: true,
-                          color: Colors.green,
-                        )
-                      ],
-                      titlesData: FlTitlesData(show: false),
-                      gridData: FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                    ),
-                  ),
-                ),
-              ],
+              SizedBox(
+                  width: 160,
+                  height: 160,
+                  child: CircularProgressIndicator(
+                    value: progress / 100,
+                    strokeWidth: 12,
+                    backgroundColor: Colors.grey.shade300,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                  )),
               Text(
                 "$progress%",
                 style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 30),
@@ -429,7 +416,7 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
   //
   Widget _buildRequestAIAnalysis() {
     return FutureBuilder<Map>(
-      future: _requestAi(),
+      future: _requestOSDBFP(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Column(
@@ -443,7 +430,12 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
         }
 
         if (snapshot.hasError) {
-          return Text("AI 분석 실패: ${snapshot.error}");
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ScreenHealthInfo()));
+            }
+          });
+          return Text("AI 서버 분석 오류 : 관리자에게 문의하여 주세요.");
         }
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -459,10 +451,10 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
   //
   //
   //
-  Future<Map<String, dynamic>> _requestAi() async {
+  Future<Map<String, dynamic>> _requestOSDBFP() async {
     ApiServiceFast apiService = ApiServiceFast();
     UserModel userModel = Provider.of<UserModel>(context, listen: false);
-    Map<String, dynamic> response = await apiService.requestOSDResult(userModel, impedance);
+    Map<String, dynamic> response = await apiService.requestOSDBFP(userModel, impedance);
 
     try {
       userModel.userHealthData?['체지방률'][0] = response['result']['bfp'];
@@ -473,10 +465,26 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
       userModel.userHealthData?['세포외 수분(ECW)'][0] = response['result']['ecw'];
       userModel.userHealthData?['단백질량'][0] = response['result']['protein'];
       userModel.userHealthData?['무기질량'][0] = response['result']['mineral'];
-      await saveMeasureResult();
+      await saveMeasureResult(context);
     } catch (_) {}
 
     return response;
+  }
+
+  //
+  //
+  //
+  //
+  Future<void> _requestOSDPPG(List<int> ppgList) async {
+    ApiServiceFast apiService = ApiServiceFast();
+    UserModel userModel = Provider.of<UserModel>(context, listen: false);
+    Map<String, dynamic> response = await apiService.requestOSDPPG(userModel, ppgList);
+    userModel.userHealthData?['산소포화도'][0] = response['result']['spo2'];
+    userModel.userHealthData?['스트레스지수'][0] = response['result']['value'];
+    userModel.userHealthData?['심박수'][0] = response['result']['hr'];
+    userModel.userHealthData?['심박변이도'][0] = response['result']['hrv'];
+    safeSetState(() => _notifyStr = response.toString());
+    await apiService.insertUserHealth(userModel.userId, userModel.userHealthData ?? {}); //save
   }
 
   void _onAiAnalyzeFinished(Map result) {
@@ -486,38 +494,8 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const ScreenHealthInfo()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ScreenHealthInfo()));
       }
     });
-  }
-
-  //
-  //
-  //
-  //
-  Future<void> saveMeasureResult() async {
-    final userModel = Provider.of<UserModel>(context, listen: false);
-    try {
-      // API 호출
-      ApiServiceFast apiService = ApiServiceFast();
-      Map<String, dynamic> result = await apiService.insertUserHealth(userModel.userId, userModel.userHealthData ?? {});
-      // 결과 처리
-      if (result.containsKey("result")) {
-        await userModel.set_user_info();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('건강정보가 성공적으로 업데이트되었습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.green),
-        );
-      }
-      if (result.containsKey("error")) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('업데이트 중 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      print("저장 중 오류 발생: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('알 수 없는 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
-      );
-    }
   }
 }

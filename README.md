@@ -24,4 +24,8 @@ flutter build web --release
 cd build/web
 python -m http.server 8000
 
+or C:/nginx.exe
 cloudflared tunnel --url http://localhost:8000
+
+
+flutter run -d web-server --web-port=5000 --web-hostname=0.0.0.0

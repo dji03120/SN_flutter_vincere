@@ -119,8 +119,8 @@ class WorkoutPlanState extends State<WorkoutPlan> {
 
                     // set mode intensity
                     print(workoutModel.workoutLevel);
-                    await sendCommandElexir(workoutModel.writeChar, elexir_commands[workoutModel.workoutLevel]!);
-                    await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
+                    await sendCommandElexir(userModel.writeChar, elexir_commands[workoutModel.workoutLevel]!);
+                    await sendCommandElexir(userModel.writeChar, elexir_commands["pause"]!);
                     Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutStart()));
                   },
                   borderRadius: 10,

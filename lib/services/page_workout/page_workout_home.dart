@@ -59,7 +59,7 @@ class _MyWorkoutPage extends State<MyWorkoutPage> with SingleTickerProviderState
       print(missionList);
 
       final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
-      await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
+      await sendCommandElexir(userModel.writeChar, elexir_commands["stop"]!);
 
       setState(() {});
     } catch (e) {
@@ -88,14 +88,16 @@ class _MyWorkoutPage extends State<MyWorkoutPage> with SingleTickerProviderState
       appBar: const Header(),
       drawer: CustomDrawer(isLogin: userModel.isLogin),
       body: _tabSelectedIndex == 0
-          ? SingleChildScrollView(
-              child: Column(children: [
-              ProfileCard(userModel: userModel),
-              SizedBox(height: 20),
-              DailyMissionCard(title: '오늘의 운동 목표', missionList: missionList),
-              SizedBox(height: 40),
-              ExerciseSection(),
-            ]))
+          ? ScrollConfiguration(
+              behavior: DesktopDragScrollBehavior(),
+              child: SingleChildScrollView(
+                  child: Column(children: [
+                ProfileCard(userModel: userModel),
+                SizedBox(height: 20),
+                DailyMissionCard(title: '오늘의 운동 목표', missionList: missionList),
+                SizedBox(height: 40),
+                ExerciseSection(),
+              ])))
           : _tabSelectedIndex == 1
               ? MyPage(
                   userData: userModel.userInfo,

@@ -62,7 +62,7 @@ class Component3State extends State<WorkoutContentPassive> {
     // 운동 강도 초기 세팅
     for (int i = 0; i < workoutSetting['scenario1']['intensity']; i++) {
       intenseValue += 1;
-      await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_up"]!); // 다시시작
+      await sendCommandElexir(userModel.writeChar, elexir_commands["intense_up"]!); // 다시시작
     }
 
     //
@@ -94,12 +94,12 @@ class Component3State extends State<WorkoutContentPassive> {
           int intensity_curr = workoutSetting['scenario${scenario_idx}']['intensity'];
           if (intensity_curr > intensity_prev) {
             for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-              await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_up"]!);
+              await sendCommandElexir(userModel.writeChar, elexir_commands["intense_up"]!);
               intenseValue += 1;
             }
           } else {
             for (int i = 0; i < intensity_curr - intensity_prev; i++) {
-              await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
+              await sendCommandElexir(userModel.writeChar, elexir_commands["intense_dw"]!);
               intenseValue -= 1;
             }
           }
@@ -203,15 +203,15 @@ class Component3State extends State<WorkoutContentPassive> {
                   RoundButton(
                     text: '운동 스킵',
                     onPressed: () async {
-                      if (workoutModel.writeChar != null) {
+                      if (userModel.writeChar != null) {
                       } else {
                         print("writeChar is null, BLE not connected");
                       }
                       //
                       int nextWorkoutIdx = workoutModel.currentWorkout + 1;
                       if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
-                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
-                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
+                        await sendCommandElexir(userModel.writeChar, elexir_commands["mode2"]!);
+                        await sendCommandElexir(userModel.writeChar, elexir_commands["stop"]!);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.push(
                           context,
@@ -224,13 +224,13 @@ class Component3State extends State<WorkoutContentPassive> {
                         // reset ble value
                         int intense_value_copy = intenseValue;
                         for (int i = 0; i < intenseValue; i++) {
-                          await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
+                          await sendCommandElexir(userModel.writeChar, elexir_commands["intense_dw"]!);
                           intense_value_copy -= 1;
                           print('intense ${intense_value_copy}');
                           setState(() {});
                         }
                         //
-                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
+                        await sendCommandElexir(userModel.writeChar, elexir_commands["pause"]!);
                         workoutModel.set_current_workout(nextWorkoutIdx);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.push(
@@ -254,14 +254,14 @@ class Component3State extends State<WorkoutContentPassive> {
                   RoundButton(
                     text: '다음운동',
                     onPressed: () async {
-                      if (workoutModel.writeChar != null) {
+                      if (userModel.writeChar != null) {
                       } else {
                         print("writeChar is null, BLE not connected");
                       }
                       int nextWorkoutIdx = workoutModel.currentWorkout + 1;
                       if (nextWorkoutIdx >= workoutModel.workoutPlan.length) {
-                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["mode2"]!);
-                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
+                        await sendCommandElexir(userModel.writeChar, elexir_commands["mode2"]!);
+                        await sendCommandElexir(userModel.writeChar, elexir_commands["stop"]!);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.push(
                           context,
@@ -272,12 +272,12 @@ class Component3State extends State<WorkoutContentPassive> {
                         // reset ble value
                         int intense_value_copy = intenseValue;
                         for (int i = 0; i < intenseValue; i++) {
-                          await sendCommandElexir(workoutModel.writeChar, elexir_commands["intense_dw"]!);
+                          await sendCommandElexir(userModel.writeChar, elexir_commands["intense_dw"]!);
                           intense_value_copy -= 1;
                           print('intense ${intense_value_copy}');
                           setState(() {});
                         }
-                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
+                        await sendCommandElexir(userModel.writeChar, elexir_commands["pause"]!);
                         workoutModel.set_current_workout(nextWorkoutIdx);
                         await apiService.updateWorkoutEnd(userModel.userId);
                         Navigator.push(

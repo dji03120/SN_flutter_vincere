@@ -74,7 +74,7 @@ class MainQuestionBuilder {
         children: questionCond.expand((cond) {
           return [
             Padding(
-                padding: const EdgeInsets.only(left: 25.0, top: 4.0, bottom: 4.0),
+                padding: const EdgeInsets.only(left: 12.0, top: 4.0, bottom: 4.0),
                 child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12.0),
@@ -124,7 +124,7 @@ class MainQuestionBuilder {
                   .expand((cond) {
                 return [
                   Padding(
-                      padding: const EdgeInsets.only(left: 20.0, top: 4.0, bottom: 4.0),
+                      padding: const EdgeInsets.only(left: 12.0, top: 4.0, bottom: 4.0),
                       child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12.0),
@@ -174,10 +174,10 @@ class MainQuestionBuilder {
               });
             }),
         if (checked)
-          ...questionCond.expand((sub) {
+          ...questionCond.where((sub) => sub['value'].contains(opt['text'])).expand((sub) {
             return [
               Padding(
-                  padding: const EdgeInsets.only(left: 40.0, top: 4.0, bottom: 4.0),
+                  padding: const EdgeInsets.only(left: 12.0, top: 4.0, bottom: 4.0),
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12.0), // 내용물 내부 패딩
@@ -278,7 +278,7 @@ class MainQuestionBuilder {
                     decoration: const InputDecoration(
                       isDense: true,
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                     ),
                   ))
             ]

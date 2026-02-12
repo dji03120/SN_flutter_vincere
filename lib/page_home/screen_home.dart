@@ -6,6 +6,7 @@ import 'package:Vincere/services/page_health/screen_my_health_info.dart';
 import 'package:Vincere/page_account/screen_my_page.dart';
 import 'package:Vincere/services/page_consult/screen_newsboard_list.dart';
 import 'package:Vincere/provider_models.dart';
+import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:flutter/services.dart';
 
 import 'package:Vincere/utils/export/screens.dart';
@@ -52,8 +53,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         await userModel.set_user_info();
       }
 
-      final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
-      await sendCommandElexir(workoutModel.writeChar, elexir_commands["stop"]!);
+      await sendCommandElexir(userModel.writeChar, elexir_commands["stop"]!);
+      await sendCommandElexir(userModel.writeChar, fitrus_hand_commands["bfp_stop"]!);
+      await sendCommandElexir(userModel.writeChar, fitrus_hand_commands["spo2_stop"]!);
       print("initialize user done");
       setState(() {});
     } catch (e) {
@@ -80,16 +82,19 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       appBar: const Header(),
       drawer: CustomDrawer(isLogin: userModel.isLogin),
       body: _tabSelectedIndex == 0
-          ? SingleChildScrollView(
-              child: Column(
-                children: [
-                  ProfileCard(userModel: userModel),
-                  SizedBox(height: 10),
-                  ProfileMuscleCard(userModel: userModel),
-                  SizedBox(height: 50),
-                  pageViewContents(),
-                  SizedBox(height: 60),
-                ],
+          ? ScrollConfiguration(
+              behavior: DesktopDragScrollBehavior(),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ProfileCard(userModel: userModel),
+                    SizedBox(height: 10),
+                    ProfileMuscleCard(userModel: userModel),
+                    SizedBox(height: 50),
+                    pageViewContents(),
+                    SizedBox(height: 60),
+                  ],
+                ),
               ),
             )
           : _tabSelectedIndex == 1

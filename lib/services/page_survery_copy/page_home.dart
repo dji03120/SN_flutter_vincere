@@ -1,5 +1,6 @@
 // page_home.dart
 import 'package:Vincere/services/page_survery_copy/data_models.dart';
+import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
 import 'package:flutter/material.dart';
 import 'page_survey_sidebar.dart';
@@ -107,11 +108,14 @@ class _HealthSurveyScreenState extends State<HealthSurveyScreen> {
             return Stack(
               children: <Widget>[
                 // 1. 설문 콘텐츠 영역 (전달 인자 수정)
-                RightContentPanel(
-                  selectedItem: selectedItem, // 전체 개수가 아닌 카테고리별 개수를 전달
-                  maxPageNumber: categoryTotalPages, // 현재 카테고리 내 번호를 넘기고 싶다면 RightContentPanel 정의를 수정하여 활용 가능
-                  onPrevItem: _goToPrevItem,
-                  onNextItem: _goToNextItem,
+                ScrollConfiguration(
+                  behavior: DesktopDragScrollBehavior(),
+                  child: RightContentPanel(
+                    selectedItem: selectedItem, // 전체 개수가 아닌 카테고리별 개수를 전달
+                    maxPageNumber: categoryTotalPages, // 현재 카테고리 내 번호를 넘기고 싶다면 RightContentPanel 정의를 수정하여 활용 가능
+                    onPrevItem: _goToPrevItem,
+                    onNextItem: _goToNextItem,
+                  ),
                 ),
 
                 // 2. 사이드바

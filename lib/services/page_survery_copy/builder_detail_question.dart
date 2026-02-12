@@ -20,6 +20,7 @@ class DetailQuestionBuilder {
   late final List<Map<String, dynamic>> questionCond;
   late final String? currentValue;
   late final Widget titleText;
+  late final double minWidth;
   late final Map ans;
 
   DetailQuestionBuilder({
@@ -41,6 +42,7 @@ class DetailQuestionBuilder {
       }
     }
     answerItems = (jsonDecode(detailQuestion['ANSWER_ITEMS'])['items'] as List).cast<Map<String, dynamic>>();
+    minWidth = jsonDecode(detailQuestion['ANSWER_ITEMS'])['minWidth'] as double;
     questionCond = (jsonDecode(detailQuestion['SUB_QUESTION_COND'])['sub_question_cond'] as List).cast<Map<String, dynamic>>();
     final did = detailQuestion['ID'].toString();
     answers.putIfAbsent(did, () => {});
@@ -49,7 +51,7 @@ class DetailQuestionBuilder {
     titleText = Column(
       children: [
         const SizedBox(height: 6),
-        Text("${detailQuestion['ID']}. ${detailQuestion['QUESTION']}", style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text("${detailQuestion['QUESTION_ID']}. ${detailQuestion['QUESTION']}", style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 14),
       ],
     );
@@ -62,10 +64,10 @@ class DetailQuestionBuilder {
     // 박스모양
     return [
       Padding(
-          padding: const EdgeInsets.only(left: 8, top: 4, bottom: 12),
+          padding: const EdgeInsets.only(top: 4, bottom: 12),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 8, 16),
             decoration: BoxDecoration(
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(6),
@@ -110,7 +112,7 @@ class DetailQuestionBuilder {
         if (answerItems.length <= 1) {
           widgets.add(const SizedBox(width: 6));
           widgets.add(SizedBox(
-              width: 100,
+              width: MediaQuery.of(context).size.width * 0.7,
               child: TextField(
                 controller: controllers[0],
                 decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),

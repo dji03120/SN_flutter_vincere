@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 
-import 'package:Vincere/services/page_ble_device/page_connect_fitrus_hand.dart';
-import 'package:Vincere/services/page_ble_device/page_select_fitrus_measure_type.dart';
+import 'package:Vincere/services/page_ble_device/page_fitrus_hand.dart';
+import 'package:Vincere/services/page_ble_device/page_select_measure_type_fitrus.dart';
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
@@ -58,32 +58,6 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(fn);
     });
-  }
-
-//
-//
-//
-  /// 데이터 저장
-  Future<void> saveMeasureResult() async {
-    final userModel = Provider.of<UserModel>(context, listen: false);
-
-    try {
-      ApiServiceFast apiService = ApiServiceFast();
-      Map<String, dynamic> result = await apiService.insertUserHealth(
-        userModel.userId,
-        userModel.userHealthData ?? {},
-      );
-
-      if (result.containsKey("result")) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('건강정보가 업데이트되었습니다.')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
-      );
-    }
   }
 
 //
@@ -174,7 +148,7 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
           userModel.userHealthData?["신체질량지수(BMI)"][0] = weightResult / (height * height);
         }
         if (!_saved) {
-          await saveMeasureResult();
+          await saveMeasureResult(context);
           _saved = true;
         }
 
@@ -220,15 +194,21 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
       appBar: const Header(),
       body: Container(
         color: const Color(0xFFf5f4f9),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              SizedBox(height: screenHeight * 0.04),
-              Expanded(
-                child: Center(child: _buildCurrentUI(screenHeight)),
-              ),
-            ],
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SizedBox(height: screenHeight * 0.02),
+
+                // Expanded 제거
+                Center(
+                  child: _buildCurrentUI(screenHeight),
+                ),
+
+                SizedBox(height: 200), // 하단 여백 (선택)
+              ],
+            ),
           ),
         ),
       ),
@@ -259,7 +239,6 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        SizedBox(height: 50),
         Card(
           elevation: 4,
           margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -330,8 +309,6 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
 
     // 도넛 진행률 (BMI 5~35 범위)
     double progress = ((bmi - 5) / 30).clamp(0.0, 1.0);
-
-    // BMI 단계별 색상
     String bmiLabel;
     Color gaugeColor;
     if (bmi < 18.5) {
@@ -356,7 +333,7 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
 
     return Column(
       children: [
-        SizedBox(height: 100),
+        SizedBox(height: 50),
         SizedBox(
           width: screenWidth * 0.62,
           height: screenWidth * 0.62,
@@ -395,7 +372,7 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
                 ]);
               }),
         ),
-        SizedBox(height: 100),
+        SizedBox(height: 50),
         Text("측정중입니다.", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         Text("잠시만 기다려주세요...", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 40),
@@ -520,7 +497,7 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       onPressed: () {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PageSelectMeasureType()));
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PageSelectFitrusMeasureType()));
                       },
                       child: const Text("예", style: TextStyle(fontSize: 16, color: Colors.black)),
                     )),

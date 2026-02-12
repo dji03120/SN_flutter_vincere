@@ -130,9 +130,9 @@ class Component3State extends State<WorkoutStart> {
                   RoundButton(
                     text: "운동시작",
                     onPressed: () async {
-                      if (workoutModel.writeChar != null) {
-                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["pause"]!);
-                        await sendCommandElexir(workoutModel.writeChar, elexir_commands["continue"]!); // 다시시작
+                      if (userModel.writeChar != null) {
+                        await sendCommandElexir(userModel.writeChar, elexir_commands["pause"]!);
+                        await sendCommandElexir(userModel.writeChar, elexir_commands["continue"]!); // 다시시작
                       } else {
                         print("writeChar is null, BLE not connected");
                       }

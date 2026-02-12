@@ -3,7 +3,10 @@ import 'dart:typed_data';
 import 'package:Vincere/page_home/utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/services/page_survery_copy/data_models.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 
 class ApiServiceFast {
   final String baseUrl = 'https://vincerebiohealth.kr/api/vincere'; // 운영
@@ -96,7 +99,7 @@ class ApiServiceFast {
   //
   //
   //
-  Future<Map<String, dynamic>> requestOSDResult(UserModel userModel, double voltage) async {
+  Future<Map<String, dynamic>> requestOSDBFP(UserModel userModel, double voltage) async {
     print('$baseUrl/proxy-osd-bodyfat');
     final Map<String, dynamic> param = {
       'param': {
@@ -110,6 +113,23 @@ class ApiServiceFast {
     print(param);
     final response = await http.post(
       Uri.parse('$baseUrl/proxy-osd-bodyfat'),
+      headers: header,
+      body: jsonEncode(param),
+    );
+    return checkResponse(response);
+  }
+
+  //
+  //
+  //
+  Future<Map<String, dynamic>> requestOSDPPG(UserModel userModel, List<int> ppgList) async {
+    print('$baseUrl/proxy-osd-ppg');
+    final Map<String, dynamic> param = {
+      "age": calculateAge(userModel.userInfo?["bym"]),
+      "ppg_raw_list": ppgList,
+    };
+    final response = await http.post(
+      Uri.parse('$baseUrl/proxy-osd-ppg'),
       headers: header,
       body: jsonEncode(param),
     );
@@ -232,5 +252,31 @@ class ApiServiceFast {
       body: jsonEncode(param),
     );
     checkResponse(response);
+  }
+}
+
+Future<void> saveMeasureResult(BuildContext context) async {
+  final userModel = Provider.of<UserModel>(context, listen: false);
+  try {
+    // API 호출
+    ApiServiceFast apiService = ApiServiceFast();
+    Map<String, dynamic> result = await apiService.insertUserHealth(userModel.userId, userModel.userHealthData ?? {});
+    // 결과 처리
+    if (result.containsKey("result")) {
+      await userModel.set_user_info();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('건강정보가 성공적으로 업데이트되었습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.green),
+      );
+    }
+    if (result.containsKey("error")) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('업데이트 중 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
+      );
+    }
+  } catch (e) {
+    print("저장 중 오류 발생: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('알 수 없는 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
+    );
   }
 }

@@ -179,24 +179,6 @@ class WorkoutModel extends ChangeNotifier {
   //
   //
   //
-  WebBluetoothRemoteGATTCharacteristic? _writeChar;
-  WebBluetoothRemoteGATTCharacteristic? get writeChar => _writeChar;
-  void set_write_char(WebBluetoothRemoteGATTCharacteristic writeChar) {
-    _writeChar = writeChar;
-  }
-
-  //
-  //
-  //
-  WebBluetoothRemoteGATTCharacteristic? _notifyChar;
-  WebBluetoothRemoteGATTCharacteristic? get notifyChar => _notifyChar;
-  void set_notify_char(WebBluetoothRemoteGATTCharacteristic notifyChar) {
-    _notifyChar = notifyChar;
-  }
-
-  //
-  //
-  //
   String _workoutMode = "passive";
   String get workoutMode => _workoutMode;
   void set_workout_mode(String workoutMode) {
@@ -283,12 +265,21 @@ class UserModel extends ChangeNotifier {
     }
   }
 
-//
-//
-//
-//
-//
-//
+  //
+  //
+  //
+  WebBluetoothRemoteGATTCharacteristic? _writeChar;
+  WebBluetoothRemoteGATTCharacteristic? get writeChar => _writeChar;
+  WebBluetoothRemoteGATTCharacteristic? _notifyChar;
+  WebBluetoothRemoteGATTCharacteristic? get notifyChar => _notifyChar;
+  void set_write_char(WebBluetoothRemoteGATTCharacteristic writeChar) {
+    _writeChar = writeChar;
+  }
+
+  void set_notify_char(WebBluetoothRemoteGATTCharacteristic notifyChar) {
+    _notifyChar = notifyChar;
+  }
+
 //
 //
 //
@@ -415,9 +406,15 @@ class UserModel extends ChangeNotifier {
       if (_userHealthData?['기초대사량'][0] != null) {
         if (_userHealthData?['기초대사량'][0] != 0) {
           _plateData['recDailyEnergy'] = _userHealthData?['기초대사량'][0];
+          print("updated rec daily energy");
         }
       }
-
+      if ((_userInfo?['activityLevel'] ?? 'LOW') == 'NORMAL') _plateData['recDailyEnergy'] += 100;
+      if ((_userInfo?['activityLevel'] ?? 'LOW') == 'HIGH') _plateData['recDailyEnergy'] += 300;
+    } catch (e) {
+      print('Error rec daily energy: $e');
+    }
+    try {
       //
       //
       //

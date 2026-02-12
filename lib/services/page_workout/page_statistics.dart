@@ -138,7 +138,7 @@ class Component4State extends State<StatisticsPage> {
             for (int i = 0; i < keys.length; i++) {
               final muscle = keys[i];
               if (workoutData['60hz'][muscle]['type'] == 'paid') {
-                if (userModel.userInfo?['authCd'].contains('PAID') == false) {
+                if ((userModel.userInfo?['authCd'] ?? '').contains('PAID') == false) {
                   continue;
                 }
               }

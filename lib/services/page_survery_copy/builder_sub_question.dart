@@ -35,6 +35,7 @@ class SubQuestionBuilder {
   late Map<String, dynamic> subQuestion;
   late List<Map<String, dynamic>> answerItems;
   late final List<Map<String, dynamic>> questionCond;
+  late final double minWidth;
   late final String? currentValue;
   late final Widget titleText;
   late UserModel userModel;
@@ -57,12 +58,13 @@ class SubQuestionBuilder {
       }
     }
     answerItems = (jsonDecode(subQuestion['ANSWER_ITEMS'])['items'] as List).cast<Map<String, dynamic>>();
+    minWidth = jsonDecode(subQuestion['ANSWER_ITEMS'])['minWidth'] as double;
     questionCond = (jsonDecode(subQuestion['SUB_QUESTION_COND'])['sub_question_cond'] as List).cast<Map<String, dynamic>>();
     currentValue = answers[subQuestion['ID']];
 
     titleText = Column(children: [
       const SizedBox(height: 6),
-      Text("${subQuestion['ID']}. ${subQuestion['QUESTION']}", style: const TextStyle(fontWeight: FontWeight.bold)),
+      Text("${subQuestion['QUESTION_ID']}. ${subQuestion['QUESTION']}", style: const TextStyle(fontWeight: FontWeight.bold)),
       const SizedBox(height: 14),
     ]);
   }
@@ -111,23 +113,11 @@ class SubQuestionBuilder {
 //
 //
   List<Widget> _build_checkbox_with_input() {
-    // [수정 1] subMinWidth 값을 가져옴 (기본값 200, 0이 들어오면 0으로 처리)
-    const double subMinWidth = 200.0;
     const double spacing = 12;
 
     return [
       titleText,
       LayoutBuilder(builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth;
-        int perRow;
-        if (subMinWidth <= 0) {
-          perRow = 1;
-        } else {
-          // 공간 계산: (전체너비 + 간격) / (최소너비 + 간격)
-          int calculatedPerRow = (availableWidth + spacing) ~/ (subMinWidth + spacing);
-          if (calculatedPerRow < 1) calculatedPerRow = 1; // 최소 1개는 출력
-          perRow = calculatedPerRow;
-        }
         final qid = subQuestion['ID'].toString();
         answers.putIfAbsent(qid, () => {});
         for (int i = 0; i < answerItems.length; i++) {
@@ -135,46 +125,49 @@ class SubQuestionBuilder {
             answers[qid]!.putIfAbsent(answerItems[i]['id'].toString(), () => {});
           }
         }
-
-        // [수정 3] 아이템 하나의 정확한 너비 계산
-        // perRow가 1이면 (availableWidth / 1)이 되어 꽉 차게 됨
-        final itemWidth = (availableWidth - (spacing * (perRow - 1))) / perRow;
         return Wrap(
           spacing: spacing,
           runSpacing: 8,
           children: answerItems.map<Widget>((item) {
             return ConstrainedBox(
-              constraints: BoxConstraints(minWidth: subMinWidth, maxWidth: itemWidth),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SurveySubItem(
-                  item: item,
-                  subQuestion: subQuestion,
-                  isRadio: false,
-                  context: context,
-                  onChanged: onChanged,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ...questionCond.where((cond) {
-                      print(answers["${subQuestion['ID']}"]["${item['id']}"]);
-                      print(cond);
-                      print(item);
-                      return hasValue(answers["${subQuestion['ID']}"]["${item['id']}"]) && (cond['value'] == item['text']);
-                    }).expand((cond) {
-                      return DetailQuestionBuilder(
-                        subQuestion: subQuestion,
-                        mainQuestion: mainQuestion,
-                        subQuestionItemId: item['id'],
-                        detailQuestionId: cond['id'],
-                        setState: setState,
-                        context: context,
-                      ).build();
-                    })
-                  ],
-                ),
-                const SizedBox(height: 6),
-              ]),
+              constraints: BoxConstraints(
+                minWidth: minWidth <= 0 ? 10 : minWidth,
+                maxWidth: minWidth <= 0 ? 115 : minWidth + 100,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SurveySubItem(
+                    item: item,
+                    subQuestion: subQuestion,
+                    isRadio: false,
+                    context: context,
+                    onChanged: onChanged,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ...questionCond.where((cond) {
+                        print(answers["${subQuestion['ID']}"]["${item['id']}"]);
+                        print(cond);
+                        print(item);
+                        return hasValue(answers["${subQuestion['ID']}"]["${item['id']}"]) && (cond['value'] == item['text']);
+                      }).expand((cond) {
+                        return DetailQuestionBuilder(
+                          subQuestion: subQuestion,
+                          mainQuestion: mainQuestion,
+                          subQuestionItemId: item['id'],
+                          detailQuestionId: cond['id'],
+                          setState: setState,
+                          context: context,
+                        ).build();
+                      })
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                ],
+              ),
             );
           }).toList(),
         );
@@ -253,25 +246,12 @@ class SubQuestionBuilder {
   }
 
   List<Widget> _build_radio_with_input() {
-    final double subMinWidth = 200.0;
     const double spacing = 12;
-
     return [
       titleText,
       LayoutBuilder(builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
-
-        int perRow;
-        if (subMinWidth <= 0) {
-          perRow = 1;
-        } else {
-          int calculatedPerRow = (availableWidth + spacing) ~/ (subMinWidth + spacing);
-          if (calculatedPerRow < 1) calculatedPerRow = 1;
-          perRow = calculatedPerRow;
-        }
-
-        final itemWidth = (availableWidth - spacing * (perRow - 1)) / perRow;
-
+        final double effectiveMinWidth = minWidth <= 0 ? availableWidth : minWidth;
         final qid = subQuestion['ID'].toString();
         answers.putIfAbsent(qid, () => {});
         for (int i = 0; i < answerItems.length; i++) {
@@ -282,13 +262,15 @@ class SubQuestionBuilder {
         return Wrap(
           spacing: spacing,
           runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: answerItems.map<Widget>((item) {
             return ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: subMinWidth <= 0 ? availableWidth : subMinWidth,
-                maxWidth: itemWidth,
+                minWidth: minWidth <= 0 ? 10 : minWidth,
+                maxWidth: minWidth <= 0 ? 115 : minWidth + 100,
               ),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SurveySubItem(
@@ -496,11 +478,12 @@ class _SurveySubItemState extends State<SurveySubItem> {
     final inputType = item['input'].toString();
     final inItemType = item['inItemType'] ?? '';
     final itemsStr = item['items'] ?? '';
+    print(inputType);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: inputType == '0' ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
           widget.isRadio
               ? Radio<String>(
@@ -562,26 +545,38 @@ class _SurveySubItemState extends State<SurveySubItem> {
     }
 
     return Wrap(
-      spacing: 6,
+      spacing: 3,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(label),
+        SizedBox(width: 10),
         ...List.generate(units.isEmpty ? 1 : units.length, (i) {
           final key = units[i]; //'${i + 1}';
-          return Row(mainAxisSize: MainAxisSize.min, children: [
-            SizedBox(
-              width: 70,
-              child: TextField(
-                  controller: ctrl('$iid-$key', ans[key] ?? ''),
-                  decoration: const InputDecoration(isDense: true, border: OutlineInputBorder()),
-                  onChanged: (v) {
-                    ans[key] = v;
-                    widget.onChanged(v);
-                  }),
+          return Container(
+            padding: EdgeInsets.fromLTRB(0, 0, 0, 3),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 35,
+                  width: 60,
+                  child: TextField(
+                      controller: ctrl('$iid-$key', ans[key] ?? ''),
+                      decoration: const InputDecoration(isDense: true, border: OutlineInputBorder()),
+                      onChanged: (v) {
+                        ans[key] = v;
+                        widget.onChanged(v);
+                      }),
+                ),
+                if (units.isNotEmpty) ...[
+                  SizedBox(width: 3),
+                  Text(units[i]),
+                  SizedBox(width: 3),
+                ],
+              ],
             ),
-            if (units.isNotEmpty) Text(units[i]),
-          ]);
-        })
+          );
+        }),
       ],
     );
   }
@@ -591,30 +586,36 @@ class _SurveySubItemState extends State<SurveySubItem> {
   //
   //
   Widget _inputType2(Map ans, String iid, String label, String unit) {
-    return Wrap(children: [
-      Text(label),
-      SizedBox(
-          width: 70,
-          child: TextField(
-            controller: ctrl('$iid-1', ans['1'] ?? ''),
-            onChanged: (v) {
-              ans['1'] = v;
-              widget.onChanged(v);
-            },
-          )),
-      const Text('('),
-      SizedBox(
-          width: 70,
-          child: TextField(
-            controller: ctrl('$iid-2', ans['2'] ?? ''),
-            onChanged: (v) {
-              ans['2'] = v;
-              widget.onChanged(v);
-            },
-          )),
-      const Text(')'),
-      if (unit.isNotEmpty) Text(unit),
-    ]);
+    return Wrap(
+      spacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(label),
+        SizedBox(
+            height: 35,
+            width: 70,
+            child: TextField(
+              controller: ctrl('$iid-1', ans['1'] ?? ''),
+              onChanged: (v) {
+                ans['1'] = v;
+                widget.onChanged(v);
+              },
+            )),
+        const Text('('),
+        SizedBox(
+            height: 35,
+            width: 70,
+            child: TextField(
+              controller: ctrl('$iid-2', ans['2'] ?? ''),
+              onChanged: (v) {
+                ans['2'] = v;
+                widget.onChanged(v);
+              },
+            )),
+        const Text(')'),
+        if (unit.isNotEmpty) Text(unit),
+      ],
+    );
   }
 
   //
@@ -622,32 +623,49 @@ class _SurveySubItemState extends State<SurveySubItem> {
   //
   //
   Widget _inputType3(Map ans, String iid, String label, String unit) {
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label),
-        SizedBox(
-          width: 70,
-          child: TextField(
-            controller: ctrl('$iid-1', ans['1'] ?? ''),
-            decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
-            onChanged: (v) {
-              ans['1'] = v;
-              widget.onChanged(v);
-            },
-          ),
+        Wrap(
+          spacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(label),
+            SizedBox(
+              height: 35,
+              width: 60,
+              child: TextField(
+                controller: ctrl('$iid-1', ans['1'] ?? ''),
+                decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
+                onChanged: (v) {
+                  ans['1'] = v;
+                  widget.onChanged(v);
+                },
+              ),
+            ),
+            Spacer(),
+          ],
         ),
-        if (unit.isNotEmpty) Text(unit),
-        SizedBox(
-          width: 70,
-          child: TextField(
-            controller: ctrl('$iid-2', ans['2'] ?? ''),
-            decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
-            onChanged: (v) {
-              ans['2'] = v;
-              widget.onChanged(v);
-            },
-          ),
+        SizedBox(height: 4),
+        Wrap(
+          spacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (unit.isNotEmpty) Text(unit),
+            SizedBox(
+              height: 35,
+              width: 60,
+              child: TextField(
+                controller: ctrl('$iid-2', ans['2'] ?? ''),
+                decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
+                onChanged: (v) {
+                  ans['2'] = v;
+                  widget.onChanged(v);
+                },
+              ),
+            ),
+            Spacer(),
+          ],
         ),
       ],
     );
@@ -660,14 +678,16 @@ class _SurveySubItemState extends State<SurveySubItem> {
   Widget _inputType4(Map ans, String iid, String label, String unit) {
     final c = ctrl('$iid-year', ans['1'] ?? '');
     return Row(
+      spacing: 6,
       crossAxisAlignment: CrossAxisAlignment.center, // 중앙 정렬
       children: [
         Text(label),
         SizedBox(
-          width: 70,
+          width: 60,
+          height: 35,
           child: TextField(
             controller: c,
-            decoration: InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
+            decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
             onChanged: (v) {
               ans['1'] = v;
               widget.onChanged(v);
@@ -716,28 +736,31 @@ class _SurveySubItemState extends State<SurveySubItem> {
     List<dynamic> checkboxKeys = ans.keys.toList();
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label),
-      Wrap(
-          spacing: 6,
-          children: itemsStr.split('|').map((label) {
-            return Column(children: [
-              Row(mainAxisSize: MainAxisSize.min, children: [
-                Checkbox(
-                    value: checkboxKeys.contains(label),
-                    onChanged: (v) {
-                      if (v == true) {
-                        ans[label] = true;
-                      } else {
-                        ans.remove(label);
-                      }
-                      widget.onChanged(v);
-                    }),
-                Text(label),
-              ])
-            ]);
-          }).toList()),
+      if (unit != '') ...[
+        Wrap(
+            spacing: 6,
+            children: itemsStr.split('|').map((label) {
+              return Column(children: [
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  Checkbox(
+                      value: checkboxKeys.contains(label),
+                      onChanged: (v) {
+                        if (v == true) {
+                          ans[label] = true;
+                        } else {
+                          ans.remove(label);
+                        }
+                        widget.onChanged(v);
+                      }),
+                  Text(label),
+                ])
+              ]);
+            }).toList()),
+      ],
       Row(spacing: 6, children: [
         SizedBox(
-            width: 70,
+            height: 35,
+            width: 60,
             child: TextField(
                 controller: ctrl('$iid-2', ans['1'] ?? ''),
                 decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),

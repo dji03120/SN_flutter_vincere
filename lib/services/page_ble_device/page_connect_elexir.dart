@@ -39,10 +39,11 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
   //
   // BLE Connect
   //
-  Future<void> _scanAndConnect(WorkoutModel workoutModel) async {
+  Future<void> _scanAndConnect() async {
     setState(() => _connectFailed = false);
 
     try {
+      final userModel = Provider.of<UserModel>(context, listen: false);
       final device = await bluetooth.requestDevice(RequestOptionsBuilder(
         [RequestFilterBuilder(namePrefix: "VINCERE")],
         optionalServices: [SERVICE_UUID],
@@ -57,10 +58,10 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
           _writeChar = await service?.getCharacteristic(WRITE_UUID);
           _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
 
-          workoutModel.set_write_char(_writeChar!);
-          workoutModel.set_notify_char(_notifyChar!);
+          userModel.set_write_char(_writeChar!);
+          userModel.set_notify_char(_notifyChar!);
 
-          if (workoutModel.notifyChar != null) {
+          if (userModel.notifyChar != null) {
             await _notifyChar!.startNotifications();
             js_util.callMethod(_notifyChar!, 'addEventListener', [
               'characteristicvaluechanged',
@@ -76,8 +77,8 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
             ]);
           }
 
-          await sendCommandElexir(workoutModel.writeChar, "000C0E050100");
-          await sendCommandElexir(workoutModel.writeChar, elexir_commands['pause']!);
+          await sendCommandElexir(userModel.writeChar, "000C0E050100");
+          await sendCommandElexir(userModel.writeChar, elexir_commands['pause']!);
 
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('디바이스가 연결되었습니다.')));
 
@@ -103,19 +104,11 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
-      _scanAndConnect(workoutModel);
+      _scanAndConnect();
     });
-
     // breathing animation
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true);
-
-    _scaleAnimation = Tween<double>(begin: 0.98, end: 1.02).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat(reverse: true);
+    _scaleAnimation = Tween<double>(begin: 0.98, end: 1.02).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -143,21 +136,14 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
             /// Title
             Text(
               _connectFailed ? "연결 실패" : "디바이스 연결 중...",
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF003366),
-              ),
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF003366)),
               textAlign: TextAlign.center,
             ),
 
             const SizedBox(height: 8),
             Text(
               _connectFailed ? "다시 시도해주세요." : "장치 전원을 켜고 가까이 두세요.",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black.withOpacity(0.65),
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.black.withOpacity(0.65)),
               textAlign: TextAlign.center,
             ),
 
@@ -170,20 +156,11 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  )
-                ],
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8))],
               ),
               child: Column(
                 children: [
-                  Image.asset(
-                    'assets/images/image_ble_2.png',
-                    height: 40,
-                  ),
+                  Image.asset('assets/images/image_ble_2.png', height: 40),
                   const SizedBox(height: 10),
                   ScaleTransition(
                     scale: _scaleAnimation,
@@ -201,8 +178,7 @@ class _BLEPageState extends State<PageConnectBle> with SingleTickerProviderState
                     text: "재연결 시도",
                     margin: const EdgeInsets.symmetric(horizontal: 60),
                     onPressed: () {
-                      final workoutModel = Provider.of<WorkoutModel>(context, listen: false);
-                      _scanAndConnect(workoutModel);
+                      _scanAndConnect();
                     },
                   )
                 : Column(

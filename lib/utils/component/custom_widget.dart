@@ -1,4 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+
+class DesktopDragScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch, // 터치
+        PointerDeviceKind.mouse, // 마우스
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.unknown,
+      };
+}
 
 class RoundButton extends StatelessWidget {
   final String text; // 버튼에 표시할 텍스트
@@ -7,7 +18,6 @@ class RoundButton extends StatelessWidget {
   final Color color; // 둥근 정도 조절
   final double textSize;
   final EdgeInsets margin;
-
   const RoundButton({
     super.key,
     required this.text,

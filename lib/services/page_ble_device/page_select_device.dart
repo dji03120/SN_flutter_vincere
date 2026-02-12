@@ -1,6 +1,8 @@
-import 'package:Vincere/services/page_ble_device/page_connect_fitrus_hand.dart';
-import 'package:Vincere/services/page_ble_device/page_connect_fitrus_weight.dart';
-import 'package:Vincere/services/page_ble_device/page_select_fitrus_measure_type.dart';
+import 'package:Vincere/services/page_ble_device/page_fitrus_weight.dart';
+import 'package:Vincere/services/page_ble_device/page_inbody_blood_sugar.dart';
+import 'package:Vincere/services/page_ble_device/page_inbody_hand_pressure.dart';
+import 'package:Vincere/services/page_ble_device/page_select_measure_type_fitrus.dart';
+import 'package:Vincere/services/page_ble_device/page_select_measure_type_bloodpress.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info_input.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -25,52 +27,88 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
         isLogin: true,
       ),
       backgroundColor: const Color(0xFFF5F4F9),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 26),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "측정 장비를 선택해주세요",
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black87),
-              ),
-              const SizedBox(height: 40),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 26),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "측정 장비를 선택해주세요",
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black87),
+                ),
+                const SizedBox(height: 40),
 
-              // ---------------------- 카드 1 : 체중계 ----------------------
-              _ModernCard(
-                icon: Icons.monitor_weight_outlined,
-                title: "스마트 체중계 측정",
-                subtitle: "BLE 체중계 연동하여 자동 측정",
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => PageConnectFitrusWeight()));
-                },
-              ),
+                // ---------------------- 카드 1 : 체중계 ----------------------
+                _ModernCard(
+                  icon: Icons.monitor_weight_outlined,
+                  title: "스마트 체중계 측정",
+                  subtitle: "체중계와 연동하여 자동 측정",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageConnectFitrusWeight()));
+                  },
+                ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // ---------------------- 카드 2 : 체지방 측정기 ----------------------
-              _ModernCard(
-                icon: Icons.bolt_outlined,
-                title: "체성분 측정기",
-                subtitle: "AI 기반 정밀 체성분 측정",
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => PageSelectMeasureType()));
-                },
-              ),
+                // ---------------------- 카드 2 : 체지방 측정기 ----------------------
+                _ModernCard(
+                  icon: Icons.accessibility_new,
+                  title: "체성분 및 스트레스 측정",
+                  subtitle: "AI 기반 정밀 체성분 측정",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageSelectFitrusMeasureType()));
+                  },
+                ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // ---------------------- 카드 3 : 직접 입력 ----------------------
-              _ModernCard(
-                icon: Icons.edit_note_outlined,
-                title: "직접 입력하기",
-                subtitle: "측정 없이 수동으로 입력",
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => ScreenHealthInfoInput()));
-                },
-              ),
-            ],
+                // ---------------------- 카드 3 : 악력계 ----------------------
+                _ModernCard(
+                  icon: Icons.fitness_center,
+                  title: "악력 측정",
+                  subtitle: "악력계와 연동하여 자동 측정",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageInbodyHandPressure()));
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                // ---------------------- 카드 4 : 혈압계 ----------------------
+                _ModernCard(
+                  icon: Icons.monitor_heart,
+                  title: "혈압 측정",
+                  subtitle: "혈압계와 연동하여 자동 측정",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageSelectBloodPressMeasureType()));
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                // ---------------------- 카드 4 : 혈당계 ----------------------
+                _ModernCard(
+                  icon: Icons.bloodtype,
+                  title: "혈당 측정 (추가 예정)",
+                  subtitle: "혈당 측정기와 연동하여 자동 측정",
+                  onTap: () {
+                    //Navigator.push(context, MaterialPageRoute(builder: (_) => PageInbodyBloodSugar()));
+                  },
+                ),
+
+                const SizedBox(height: 20),
+                // ---------------------- 카드 3 : 직접 입력 ----------------------
+                _ModernCard(
+                  icon: Icons.edit_note_outlined,
+                  title: "직접 입력하기",
+                  subtitle: "측정 없이 수동으로 입력",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => ScreenHealthInfoInput()));
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -78,7 +116,10 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
   }
 }
 
-/// 현대적인 유리모피즘 스타일 카드
+//
+//
+//
+//
 class _ModernCard extends StatefulWidget {
   final IconData icon;
   final String title;
