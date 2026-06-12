@@ -1,3 +1,4 @@
+import 'package:Vincere/main.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:Vincere/utils/export/screens.dart';
@@ -37,7 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ApiService apiService = ApiService();
       Map<String, dynamic> result = await apiService.fetchUserLogin(userId, password);
       if (!mounted) return;
-
       if (userId.isEmpty || password.isEmpty) return;
       if (result['result'] == true) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SplashPage()));
@@ -55,7 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     ApiService apiService = ApiService();
     Map<String, dynamic> result = await apiService.fetchUserLogin(id, password);
-
     if (result['result'] == true) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('userId', id);
@@ -225,4 +224,12 @@ void showSnackBar(BuildContext context, Text text) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: text, backgroundColor: const Color.fromARGB(255, 112, 48, 48)),
   );
+}
+
+Future<void> logout(BuildContext context) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.clear();
+  UserModel userModel = Provider.of<UserModel>(context, listen: false);
+  userModel.reset();
+  appRootKey.currentState?.resetProviders();
 }

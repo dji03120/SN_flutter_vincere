@@ -56,16 +56,6 @@ class _HeaderState extends State<Header> {
     }
   }
 
-  static Future<void> logout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('userId');
-    await prefs.remove('password');
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
-  }
-
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -74,9 +64,9 @@ class _HeaderState extends State<Header> {
           title: const Text('로그아웃 하시겠습니까?'),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop(); // '예'를 선택하면 먼저 알림창을 닫음
-                logout(context); // 로그아웃 처리
+                await logout(context); // 로그아웃 처리
               },
               child: const Text('예'),
             ),

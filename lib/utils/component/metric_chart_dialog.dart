@@ -81,12 +81,7 @@ class MetricBarGraph extends StatelessWidget {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               formattedData[value.toInt()]['date'],
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 10,
-                                letterSpacing: -0.05,
-                              ),
+                              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w500, fontSize: 10, letterSpacing: -0.05),
                               textAlign: TextAlign.center,
                             ),
                           );
@@ -104,11 +99,7 @@ class MetricBarGraph extends StatelessWidget {
                       getTitlesWidget: (value, meta) {
                         return Text(
                           value.toInt().toString(),
-                          style: TextStyle(
-                            color: Color(0xFF555555),
-                            fontWeight: FontWeight.w500,
-                            fontSize: 12,
-                          ),
+                          style: const TextStyle(color: Color(0xFF555555), fontWeight: FontWeight.w500, fontSize: 12),
                         );
                       },
                     ),
@@ -121,10 +112,7 @@ class MetricBarGraph extends StatelessWidget {
                   drawVerticalLine: false,
                   horizontalInterval: 20,
                   getDrawingHorizontalLine: (value) {
-                    return FlLine(
-                      color: Colors.black12,
-                      strokeWidth: 1,
-                    );
+                    return const FlLine(color: Colors.black12, strokeWidth: 1);
                   },
                 ),
                 borderData: FlBorderData(
@@ -227,10 +215,7 @@ class _MetricChartDialogState extends State<MetricChartDialog> {
 
     if (chartData == null || (chartData?['chartDataList'] ?? []).isEmpty) {
       return AlertDialog(
-        content: Text(
-          "데이터가 존재하지 않습니다.",
-          textAlign: TextAlign.center,
-        ),
+        content: Text("데이터가 존재하지 않습니다.", textAlign: TextAlign.center),
         actions: <Widget>[
           TextButton(
             child: Text("확인"),
@@ -249,21 +234,12 @@ class _MetricChartDialogState extends State<MetricChartDialog> {
           children: [
             Text(
               '${widget.title ?? '제목 없음'} 변화추이',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF000000),
-                letterSpacing: -0.02,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF000000), letterSpacing: -0.02),
             ),
             const SizedBox(height: 8),
             Container(
               height: 250,
-              child: MetricBarGraph(
-                title: widget.title ?? '',
-                chartData: chartData?['chartDataList'] ?? [],
-                code: widget.code ?? '',
-              ),
+              child: MetricBarGraph(title: widget.title ?? '', chartData: chartData?['chartDataList'] ?? [], code: widget.code ?? ''),
             ),
             Container(
               margin: EdgeInsets.only(bottom: 6.0), // 하단 여백 16 추가
@@ -271,10 +247,7 @@ class _MetricChartDialogState extends State<MetricChartDialog> {
               height: 48,
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  '닫기',
-                  style: TextStyle(color: Colors.white),
-                ),
+                child: Text('닫기', style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF007130),
                   minimumSize: Size.fromHeight(48),

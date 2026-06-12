@@ -96,7 +96,7 @@ class _DailyMissionState extends State<DailyMissionCard> {
                                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                                                 padding: EdgeInsets.symmetric(vertical: 14),
                                                               ),
-                                                              onPressed: () => Navigator.of(context).pop(),
+                                                              onPressed: () => {Navigator.of(context).pop()},
                                                               child: Text("확인", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                                                             ),
                                                           ),

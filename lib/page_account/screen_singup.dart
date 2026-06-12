@@ -362,38 +362,23 @@ class _SingUpScreenState extends State<SingUpScreen> {
       // 에러 상태에 따라 보더 색상 변경
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
-        borderSide: BorderSide(
-          color: isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), // 에러 상태 시 빨간색 보더
-          width: 1.0,
-        ),
+        borderSide: BorderSide(color: isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), width: 1.0),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
-        borderSide: BorderSide(
-          color: isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), // 에러 상태 시 빨간색 포커스 보더
-          width: 1.0,
-        ),
+        borderSide: BorderSide(color: isError ? Color(0xFFAA4743) : Color(0xFFEDEDED), width: 1.0),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
-        borderSide: const BorderSide(
-          color: Color(0xFFAA4743), // 에러 상태
-          width: 1.0,
-        ),
+        borderSide: const BorderSide(color: Color(0xFFAA4743), width: 1.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
-        borderSide: const BorderSide(
-          color: Color(0xFFAA4743),
-          width: 1.0,
-        ),
+        borderSide: const BorderSide(color: Color(0xFFAA4743), width: 1.0),
       ),
       suffixIcon: obscureToggle
           ? IconButton(
-              icon: Icon(
-                obscureText ? Icons.visibility_off : Icons.visibility,
-                color: Colors.grey,
-              ),
+              icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
               onPressed: onToggleObscure,
             )
           : null,
@@ -437,11 +422,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                       //const SizedBox(height: 48), // 로고 아래 여백 추가
                       const Text(
                         '회원가입하기', // 여기에 원하는 텍스트 입력
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -449,30 +430,18 @@ class _SingUpScreenState extends State<SingUpScreen> {
                         children: [
                           const Text(
                             '아이디',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
                           ),
                           const SizedBox(width: 8), // 라벨과 문구 간 간격
                           if (_validateUserId) // 아이디 입력 검증 실패 시
                             const Text(
                               '아이디를 입력해 주세요',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFFAA4743), // 빨간색
-                              ),
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFFAA4743)),
                             ),
                           if (_isUserIdChecked && !_validateUserId) // 중복 확인 성공 시
                             const Text(
                               '사용 가능한 아이디입니다',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF00914B), // 초록색
-                              ),
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF00914B)),
                             ),
                         ],
                       ),
@@ -522,22 +491,11 @@ class _SingUpScreenState extends State<SingUpScreen> {
                             child: ElevatedButton(
                               onPressed: _checkDuplicateUserId, // 버튼 동작
                               style: ElevatedButton.styleFrom(
-                                // 버튼 배경색
-                                backgroundColor: Colors.white, // 배경 흰색
-                                // 버튼 텍스트 색상
-                                foregroundColor: Color(0xFF555555), // 텍스트 색상
-                                // 버튼 테두리 색상과 굵기
-                                side: const BorderSide(
-                                  color: Color(0xFF555555), // 테두리 색상
-                                  width: 1.0, // 테두리 굵기
-                                ),
-                                // 그림자 높이 (0이면 그림자 없음)
+                                backgroundColor: Colors.white,
+                                foregroundColor: Color(0xFF555555),
+                                side: const BorderSide(color: Color(0xFF555555), width: 1.0),
                                 elevation: 0,
-                                // 둥근 모서리 설정
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16.0), // 둥글기 조절
-                                ),
-                                // 버튼 내부 패딩 조정
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
                                 padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                               ),
                               child: const Text(
@@ -663,7 +621,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                 flex: 3,
                                 child: TextFormField(
                                   controller: zipCdCon,
-                                  readOnly: true,
+                                  //readOnly: true,
                                   decoration: getInputDecoration('우편번호', isError: _validateZipCd // 우편번호 미입력 시 에러 처리
                                       ),
                                 ),
@@ -714,7 +672,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                           // 주소 입력 필드
                           TextFormField(
                             controller: addressCon,
-                            readOnly: true,
+                            //readOnly: true,
                             decoration: getInputDecoration('주소', isError: _validateAddr && addressDtCon.text.isEmpty),
                           ),
                           const SizedBox(height: 8),
@@ -872,21 +830,13 @@ class _SingUpScreenState extends State<SingUpScreen> {
                         children: [
                           const Text(
                             '생년월일',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
                           ),
                           const SizedBox(width: 8),
                           if (_validateBym)
                             const Text(
                               '생년월일을 입력해 주세요',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFFAA4743),
-                              ),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFFAA4743)),
                             ),
                         ],
                       ),
@@ -905,7 +855,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                         width: MediaQuery.of(context).size.width * 0.95,
                         child: Row(
                           children: [
-                            Expanded(
+                            const Expanded(
                               flex: 3, // 좌측 title 영역
                               child: Text(
                                 '육체활동 설정',
@@ -929,13 +879,13 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                     value: currentActivityLevel,
                                     isExpanded: true,
                                     borderRadius: BorderRadius.circular(16.0),
-                                    hint: Center(
+                                    hint: const Center(
                                       child: Text(
                                         '선택',
                                         style: TextStyle(color: Color(0xFF555555), fontWeight: FontWeight.w500, fontSize: 18),
                                       ),
                                     ),
-                                    items: [
+                                    items: const [
                                       DropdownMenuItem(
                                         value: 'LOW',
                                         child: Row(
@@ -946,10 +896,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                               child: Text('좌업자', style: TextStyle(fontWeight: FontWeight.bold)),
                                             ),
                                             Expanded(
-                                              child: Text(
-                                                '일일활동량 30분 미만',
-                                                style: TextStyle(color: Color(0xFF00914B), fontSize: 13, fontWeight: FontWeight.w500),
-                                              ),
+                                              child: Text('일일활동량 30분 미만', style: TextStyle(color: Color(0xFF00914B), fontSize: 13, fontWeight: FontWeight.w500)),
                                             ),
                                           ],
                                         ),
@@ -1003,10 +950,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(
-                        height: 30,
-                        child: Container(),
-                      ),
+                      SizedBox(height: 30, child: Container()),
                       // 성별 select box
                       Container(
                         width: MediaQuery.of(context).size.width * 0.95,
@@ -1015,13 +959,9 @@ class _SingUpScreenState extends State<SingUpScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center, // 수직 가운데 정렬
                           children: [
                             // 성별 라벨
-                            Text(
+                            const Text(
                               '성별',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                              ),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
                             ),
                             const SizedBox(width: 16), // 라벨과 라디오 버튼 사이의 간격
                             // 라디오 버튼 그룹
@@ -1040,10 +980,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                       },
                                     ),
                                     const SizedBox(width: 8), // 라디오 버튼과 "남성" 라벨 간의 간격
-                                    const Text(
-                                      '남성',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                    ),
+                                    const Text('남성', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                                   ],
                                 ),
                                 const SizedBox(width: 30), // 남성 버튼과 여성 버튼 사이 간격
@@ -1060,10 +997,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                                       },
                                     ),
                                     const SizedBox(width: 8), // 라디오 버튼과 "여성" 라벨 간의 간격
-                                    const Text(
-                                      '여성',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                    ),
+                                    const Text('여성', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                                   ],
                                 ),
                               ],
@@ -1129,12 +1063,7 @@ class _SingUpScreenState extends State<SingUpScreen> {
                             },
                             child: const Text(
                               '전체보기',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF8D8D8D),
-                                decoration: TextDecoration.underline, // 밑줄 추가
-                              ),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF8D8D8D), decoration: TextDecoration.underline),
                             ),
                           ),
                         ],

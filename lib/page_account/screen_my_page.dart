@@ -242,11 +242,7 @@ class _MyPageState extends State<MyPage> {
                           const SizedBox(height: 10), // 위쪽 간격 추가
                           const Text(
                             '회원정보',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                            ),
+                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black),
                           ),
                           const SizedBox(height: 30),
                           GestureDetector(
@@ -260,11 +256,7 @@ class _MyPageState extends State<MyPage> {
                               children: const [
                                 Text(
                                   '비밀번호 변경',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF555555),
-                                  ),
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF555555)),
                                 ),
                                 Icon(Icons.chevron_right, color: Color(0xFF555555)),
                               ],
@@ -963,6 +955,7 @@ class _MyPageState extends State<MyPage> {
         });
       } else {
         print('Failed to get profile image: ${result['message']}');
+        widget.onProfileImageChange(null);
       }
     } catch (e) {
       print('Error getting profile image: $e');

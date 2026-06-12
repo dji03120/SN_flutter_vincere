@@ -1,5 +1,6 @@
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/services/page_ble_device/page_fitrus_weight.dart';
-import 'package:Vincere/services/page_ble_device/page_inbody_blood_sugar.dart';
+import 'package:Vincere/services/page_ble_device/page_blood_sugar.dart';
 import 'package:Vincere/services/page_ble_device/page_inbody_hand_pressure.dart';
 import 'package:Vincere/services/page_ble_device/page_select_measure_type_fitrus.dart';
 import 'package:Vincere/services/page_ble_device/page_select_measure_type_bloodpress.dart';
@@ -20,6 +21,11 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+
+    void initState() {
+      super.initState();
+      permissionCheck(context);
+    }
 
     return Scaffold(
       appBar: const Header(),
@@ -90,10 +96,10 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                 // ---------------------- 카드 4 : 혈당계 ----------------------
                 _ModernCard(
                   icon: Icons.bloodtype,
-                  title: "혈당 측정 (추가 예정)",
+                  title: "혈당 측정",
                   subtitle: "혈당 측정기와 연동하여 자동 측정",
                   onTap: () {
-                    //Navigator.push(context, MaterialPageRoute(builder: (_) => PageInbodyBloodSugar()));
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageBloodSugar()));
                   },
                 ),
 

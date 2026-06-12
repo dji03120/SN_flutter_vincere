@@ -238,18 +238,6 @@ class UserModel extends ChangeNotifier {
   String _userId = '';
   String _password = '';
   bool get isLogin => _isLogin;
-  void set_user_id(String user_id) {
-    _userId = user_id;
-  }
-
-  void set_password(String password) {
-    _password = password;
-  }
-
-  void set_islogin(bool isLogin) {
-    _isLogin = isLogin;
-  }
-
   String get password => _password;
   String get userId => _userId;
   Future<void> set_login_data() async {
@@ -294,6 +282,7 @@ class UserModel extends ChangeNotifier {
   Map<String, dynamic>? get userInfo => _userInfo;
   Map<String, dynamic>? get userHealthData => _userHealthData;
   List<Map<String, dynamic>> get muscleAgeData => _muscleAgeData;
+
   Future<void> set_user_info() async {
     try {
       //
@@ -310,6 +299,7 @@ class UserModel extends ChangeNotifier {
       if (profileRes['success'] == true && profileRes['imageUrl'] != null) {
         _profileImageUrl = profileRes['imageUrl'];
       } else {
+        _profileImageUrl = '';
         print('Failed to get profile image: ${profileRes['message']}');
       }
 
@@ -382,13 +372,29 @@ class UserModel extends ChangeNotifier {
     }
   }
 
+  void reset() {
+    _isLogin = false;
+    _userId = '';
+    _password = '';
+    _writeChar = null;
+    _notifyChar = null;
+    _gradeAvg = 0.0;
+    _profileImageUrl = '';
+    _userInfo = {};
+    _userHealthData = {};
+    _muscleAgeData = [];
+    _surveyAnswers = {};
+    _surveyQuestions = [];
+    _plateData = {};
+    notifyListeners();
+  }
+
 //
 //
 //
 //
   Map<String, dynamic> _plateData = {};
   Map<String, dynamic> get plateData => _plateData;
-
   Future<void> set_food_plate_data() async {
     try {
       double weight = _userHealthData?['표준체중'][0] ?? 0.0;

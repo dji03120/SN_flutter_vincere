@@ -11,9 +11,6 @@ import 'package:provider/provider.dart';
 class ApiServiceFast {
   final String baseUrl = 'https://vincerebiohealth.kr/api/vincere'; // 운영
   dynamic header = {'Content-Type': 'application/json'};
-  // final String baseUrl = 'http://127.0.0.1:8080'; //root'; // 로컬
-
-  // 2024-08-21 AJG web 통신용 추가
 
   dynamic checkResponse(http.Response response) {
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -90,7 +87,7 @@ class ApiServiceFast {
       headers: header,
       body: json.encode({
         'user_id': user_id,
-        'health_data': sanitizeForJson(health_data),
+        'health_data': health_data,
       }),
     );
     return checkResponse(response);
@@ -260,6 +257,8 @@ Future<void> saveMeasureResult(BuildContext context) async {
   try {
     // API 호출
     ApiServiceFast apiService = ApiServiceFast();
+    print("\n\n\n\n");
+    print(userModel.userHealthData);
     Map<String, dynamic> result = await apiService.insertUserHealth(userModel.userId, userModel.userHealthData ?? {});
     // 결과 처리
     if (result.containsKey("result")) {

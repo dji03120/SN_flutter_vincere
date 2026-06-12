@@ -22,11 +22,7 @@ class RadarChartWidget extends StatelessWidget {
       features: features,
       data: data,
       ticks: ticks,
-      featuresTextStyle: const TextStyle(
-        fontSize: 14,
-        color: Color(0xFF111111),
-        fontWeight: FontWeight.bold,
-      ),
+      featuresTextStyle: const TextStyle(fontSize: 14, color: Color(0xFF111111), fontWeight: FontWeight.bold),
       // 줄 높이 → 글자가 더 멀어짐
       outlineColor: Color(0xFF888888), // ✅ 테두리 색 설정
       graphColors: colors,
@@ -64,17 +60,8 @@ class _CustomRadarChartState extends State<CustomRadarChart> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    );
-
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
     _controller.forward();
   }
 

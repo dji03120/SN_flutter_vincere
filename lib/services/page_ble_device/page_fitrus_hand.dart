@@ -65,6 +65,7 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
   double bpm = 0.0;
   String _notifyStr = '';
   DateTime lastUpdate = DateTime.now();
+  double _connectFailCount = 0;
 
   //
   //
@@ -79,70 +80,6 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
         if (mounted) setState(fn);
       }
     });
-  }
-
-  //
-  //
-  //
-  //
-  /// BLE 연결
-  Future<void> _scanAndConnect() async {
-    final userModel = Provider.of<UserModel>(context, listen: false);
-    safeSetState(() {
-      _connectFailed = false;
-      measureState = MeasureState.connecting;
-    });
-
-    try {
-      final device = await bluetooth.requestDevice(
-        RequestOptionsBuilder(
-          [RequestFilterBuilder(namePrefix: "FitrusPlus3")],
-          optionalServices: [SERVICE_UUID],
-        ),
-      );
-      safeSetState(() => _device = device);
-
-      for (int i = 0; i < 3; i++) {
-        try {
-          await Future.delayed(const Duration(milliseconds: 1));
-          await device.gatt?.connect();
-
-          final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
-          _writeChar = await service?.getCharacteristic(WRITE_UUID);
-          _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
-          userModel.set_notify_char(_notifyChar!);
-          userModel.set_write_char(_writeChar!);
-
-          await _notifyChar!.startNotifications();
-          js_util.callMethod(_notifyChar!, 'addEventListener', ['characteristicvaluechanged', js_util.allowInterop(_onNotify)]);
-          safeSetState(() => measureState = MeasureState.waitUserReady);
-          break;
-        } catch (e) {
-          if (i == 2) safeSetState(() => _connectFailed = true);
-        }
-      }
-      if (measureState != MeasureState.waitUserReady) {
-        safeSetState(() => _connectFailed = true);
-      }
-    } catch (e) {
-      safeSetState(() => _connectFailed = true);
-    }
-  }
-
-  Future<void> ble_disconnect() async {
-    if (_device != null) {
-      try {
-        _device!.gatt?.disconnect();
-      } catch (e) {
-        print('BLE disconnect failed: $e');
-      } finally {
-        safeSetState(() {
-          _device = null;
-          _writeChar = null;
-          _notifyChar = null;
-        });
-      }
-    }
   }
 
   //
@@ -175,8 +112,6 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
         }
       }
 
-      //
-      //
       //
       //
       if (widget.measureType == MeasureType.spo2) {
@@ -451,6 +386,77 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
   //
   //
   //
+  /// BLE 연결
+  Future<void> _scanAndConnect() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    safeSetState(() {
+      _connectFailed = false;
+      measureState = MeasureState.connecting;
+    });
+
+    if (_connectFailCount >= 3) {
+      showConnectionGuide(context);
+    }
+
+    try {
+      final device = await bluetooth.requestDevice(
+        RequestOptionsBuilder(
+          [RequestFilterBuilder(namePrefix: "FitrusPlus3")],
+          optionalServices: [SERVICE_UUID],
+        ),
+      );
+      safeSetState(() => _device = device);
+
+      for (int i = 0; i < 3; i++) {
+        try {
+          await device.gatt?.connect();
+          final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
+          _writeChar = await service?.getCharacteristic(WRITE_UUID);
+          _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
+          userModel.set_notify_char(_notifyChar!);
+          userModel.set_write_char(_writeChar!);
+
+          await _notifyChar!.startNotifications();
+          js_util.callMethod(_notifyChar!, 'addEventListener', ['characteristicvaluechanged', js_util.allowInterop(_onNotify)]);
+          _connectFailCount = 0;
+          safeSetState(() => measureState = MeasureState.waitUserReady);
+          break;
+        } catch (e) {
+          if (i == 2) safeSetState(() => _connectFailed = true);
+        }
+      }
+      if (measureState != MeasureState.waitUserReady) {
+        _connectFailCount += 1;
+        await Future.delayed(const Duration(milliseconds: 500));
+        safeSetState(() => _connectFailed = true);
+      }
+    } catch (e) {
+      _connectFailCount += 1;
+      await Future.delayed(const Duration(milliseconds: 500));
+      safeSetState(() => _connectFailed = true);
+    }
+  }
+
+  Future<void> ble_disconnect() async {
+    if (_device != null) {
+      try {
+        _device!.gatt?.disconnect();
+      } catch (e) {
+        print('BLE disconnect failed: $e');
+      } finally {
+        safeSetState(() {
+          _device = null;
+          _writeChar = null;
+          _notifyChar = null;
+        });
+      }
+    }
+  }
+
+  //
+  //
+  //
+  //
   Future<Map<String, dynamic>> _requestOSDBFP() async {
     ApiServiceFast apiService = ApiServiceFast();
     UserModel userModel = Provider.of<UserModel>(context, listen: false);
@@ -484,7 +490,7 @@ class _PageConnectFitrusHandState extends State<PageConnectFitrusHand> with Sing
     userModel.userHealthData?['심박수'][0] = response['result']['hr'];
     userModel.userHealthData?['심박변이도'][0] = response['result']['hrv'];
     safeSetState(() => _notifyStr = response.toString());
-    await apiService.insertUserHealth(userModel.userId, userModel.userHealthData ?? {}); //save
+    await saveMeasureResult(context);
   }
 
   void _onAiAnalyzeFinished(Map result) {

@@ -47,6 +47,7 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
   double bfp = 0.0;
 
   bool _connectFailed = false;
+  double _connectFailCount = 0;
   bool _saved = false;
 
 //
@@ -66,6 +67,10 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
   /// BLE 연결
   Future<void> _scanAndConnect() async {
     setState(() => _connectFailed = false);
+    if (_connectFailCount >= 3) {
+      // 3회 실패시 안내화면
+      showConnectionGuide(context);
+    }
 
     try {
       final device = await bluetooth.requestDevice(
@@ -74,20 +79,16 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
           optionalServices: [SERVICE_UUID],
         ),
       );
-
       setState(() => _device = device);
 
       for (int i = 0; i < 3; i++) {
         try {
           await device.gatt?.connect();
-
           final service = await device.gatt?.getPrimaryService(SERVICE_UUID);
           _writeChar = await service?.getCharacteristic(WRITE_UUID);
           _notifyChar = await service?.getCharacteristic(NOTIFY_UUID);
 
           await _notifyChar!.startNotifications();
-
-          // Notify 이벤트 등록
           js_util.callMethod(_notifyChar!, 'addEventListener', [
             'characteristicvaluechanged',
             js_util.allowInterop(_onNotify),
@@ -97,14 +98,20 @@ class _PageConnectFitrusWeightState extends State<PageConnectFitrusWeight> with 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("디바이스 연결됨")),
           );
-
+          _connectFailed = false;
           break;
         } catch (e) {
+          await Future.delayed(const Duration(milliseconds: 500));
           if (i == 2) safeSetState(() => _connectFailed = true);
+        }
+        if (_connectFailed == true) {
+          _connectFailCount += 1;
         }
       }
     } catch (e) {
+      await Future.delayed(const Duration(milliseconds: 500));
       safeSetState(() => _connectFailed = true);
+      _connectFailCount += 1;
     }
   }
 

@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
-
-import 'package:Vincere/services/page_ble_device/page_fitrus_hand.dart';
-import 'package:Vincere/services/page_ble_device/page_select_measure_type_fitrus.dart';
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info.dart';
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
-import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_bluetooth/flutter_web_bluetooth.dart';
@@ -46,6 +43,7 @@ class _PageConnectFitrusWeightState extends State<PageInbodyBloodPressureSmall> 
   MeasureState measureState = MeasureState.connecting;
   double weightResult = 0.0;
   bool _connectFailed = false;
+  double _connectFailCount = 0;
   Timer? _statusTimer;
   double S = 0; // 최고혈압
   double D = 0; // 최저혈압
@@ -429,15 +427,15 @@ class _PageConnectFitrusWeightState extends State<PageInbodyBloodPressureSmall> 
   /// BLE 연결
   Future<void> _scanAndConnect() async {
     setState(() => _connectFailed = false);
+    if (_connectFailCount >= 3) {
+      // 3회 실패시 안내화면
+      showConnectionGuide(context);
+    }
 
     try {
       final device = await bluetooth.requestDevice(
-        RequestOptionsBuilder(
-          [RequestFilterBuilder(namePrefix: device_name)],
-          optionalServices: [SERVICE_UUID],
-        ),
+        RequestOptionsBuilder([RequestFilterBuilder(namePrefix: device_name)], optionalServices: [SERVICE_UUID]),
       );
-
       setState(() => _device = device);
 
       for (int i = 0; i < 3; i++) {
@@ -459,13 +457,19 @@ class _PageConnectFitrusWeightState extends State<PageInbodyBloodPressureSmall> 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("디바이스 연결됨")),
           );
+          _connectFailed = false;
           break;
         } catch (e) {
           if (i == 2) safeSetState(() => _connectFailed = true);
         }
+        if (_connectFailed == true) {
+          //연결 실패
+          _connectFailCount += 1;
+        }
       }
     } catch (e) {
       safeSetState(() => _connectFailed = true);
+      _connectFailCount += 1;
     }
   }
 

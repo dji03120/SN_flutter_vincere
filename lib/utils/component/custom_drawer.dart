@@ -162,19 +162,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  static Future<void> _logout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('userId');
-    await prefs.remove('password');
-    UserModel userModel = Provider.of<UserModel>(context, listen: false);
-    userModel.set_login_data();
-    print(userModel.isLogin);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
-  }
-
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -185,7 +172,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop(); // '예'를 선택하면 먼저 알림창을 닫음
-                await _logout(context); // 로그아웃 처리
+                await logout(context); // 로그아웃 처리
               },
               child: const Text('예'),
             ),

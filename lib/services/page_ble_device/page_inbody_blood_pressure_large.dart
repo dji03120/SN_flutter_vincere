@@ -48,6 +48,7 @@ class _PageConnectFitrusWeightState extends State<PageInbodyBloodPressureLarge> 
   MeasureState measureState = MeasureState.connecting;
   String result = "";
   bool _connectFailed = false;
+  double _connectFailCount = 0;
 
 //
 //
@@ -56,7 +57,7 @@ class _PageConnectFitrusWeightState extends State<PageInbodyBloodPressureLarge> 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scanAndConnect());
+    //WidgetsBinding.instance.addPostFrameCallback((_) => _scanAndConnect());
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat(reverse: true);
   }
 
@@ -138,7 +139,11 @@ class _PageConnectFitrusWeightState extends State<PageInbodyBloodPressureLarge> 
           Text("1. 블루투스 목록에서 기기를 선택 후", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
           Text("   페어링을 눌러주세요", style: TextStyle(fontSize: 18, color: Colors.black.withOpacity(0.7))),
         ]),
-        if (_connectFailed) RoundButton(margin: const EdgeInsets.fromLTRB(50, 36, 50, 0), text: "연결", onPressed: _scanAndConnect)
+        RoundButton(
+          margin: const EdgeInsets.fromLTRB(50, 36, 50, 0),
+          text: "연결",
+          onPressed: _scanAndConnect,
+        )
       ],
     );
   }
@@ -372,6 +377,10 @@ class _PageConnectFitrusWeightState extends State<PageInbodyBloodPressureLarge> 
   /// BLE 연결
   Future<void> _scanAndConnect() async {
     setState(() => _connectFailed = false);
+    if (_connectFailCount >= 3) {
+      // 3회 실패시 안내화면
+      showConnectionGuide(context);
+    }
 
     try {
       final device = await bluetooth.requestDevice(
@@ -402,13 +411,20 @@ class _PageConnectFitrusWeightState extends State<PageInbodyBloodPressureLarge> 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("디바이스 연결됨")),
           );
+          _connectFailed = false;
           break;
         } catch (e) {
+          await Future.delayed(const Duration(milliseconds: 500));
           if (i == 2) safeSetState(() => _connectFailed = true);
+        }
+        if (_connectFailed == true) {
+          _connectFailCount += 1;
         }
       }
     } catch (e) {
+      await Future.delayed(const Duration(milliseconds: 500));
       safeSetState(() => _connectFailed = true);
+      _connectFailCount += 1;
     }
   }
 

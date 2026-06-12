@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:js_util' as js_util;
 
+import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info.dart';
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/header.dart';
@@ -39,6 +40,7 @@ class _PageConnectFitrusWeightState extends State<PageInbodyHandPressure> with S
   MeasureState measureState = MeasureState.connecting;
   double pressureResult = 0; //kg
   bool _connectFailed = false;
+  double _connectFailCount = 0;
   Timer? _measureTimer;
   Timer? _stopTimer;
 
@@ -427,6 +429,10 @@ class _PageConnectFitrusWeightState extends State<PageInbodyHandPressure> with S
   Future<void> _scanAndConnect() async {
     setState(() => _connectFailed = false);
 
+    if (_connectFailCount >= 3) {
+      showConnectionGuide(context);
+    }
+
     try {
       final device = await bluetooth.requestDevice(
         RequestOptionsBuilder(
@@ -456,15 +462,20 @@ class _PageConnectFitrusWeightState extends State<PageInbodyHandPressure> with S
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("디바이스 연결됨")),
           );
+          _connectFailed = false;
           await _sendCommand("reset");
           _startMeasurementLoop();
           break;
         } catch (e) {
           if (i == 2) safeSetState(() => _connectFailed = true);
         }
+        if (_connectFailed == true) {
+          _connectFailCount += 1;
+        }
       }
     } catch (e) {
       safeSetState(() => _connectFailed = true);
+      _connectFailCount += 1;
     }
   }
 
