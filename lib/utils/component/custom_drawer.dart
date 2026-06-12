@@ -109,7 +109,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           _showLogoutDialog(context);
                         } else {
                           // 로그인 화면으로 이동
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const LoginScreen()), (route) => false,);
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -171,8 +171,16 @@ class _CustomDrawerState extends State<CustomDrawer> {
           actions: <Widget>[
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop(); // '예'를 선택하면 먼저 알림창을 닫음
-                await logout(context); // 로그아웃 처리
+                Navigator.of(context).pop(); // '예'를 선택하면 먼저 현재 알림창을 닫음
+                await logout(context); // 비동기로 로그아웃 로직(서버 통신, 토큰 삭제 등)을 처리함
+
+                if (!context.mounted) return; // 비동기 작업 사이에 화면이 완전히 벗어났다면 아래 네비게이션을 중단함 (메모리 누수 및 에러 방지)
+
+                Navigator.pushAndRemoveUntil( // 로그인 화면으로 이동하면서 쌓여있던 이전 스택(화면들)을 모두 제거함
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false, // 모든 라우트를 지우겠다는 조건
+                );
               },
               child: const Text('예'),
             ),

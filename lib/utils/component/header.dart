@@ -65,8 +65,16 @@ class _HeaderState extends State<Header> {
           actions: <Widget>[
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop(); // '예'를 선택하면 먼저 알림창을 닫음
-                await logout(context); // 로그아웃 처리
+                Navigator.of(context).pop();
+                await logout(context);
+
+                if (!context.mounted) return;
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
+                );
               },
               child: const Text('예'),
             ),
@@ -115,13 +123,14 @@ class _HeaderState extends State<Header> {
             height: 28,
             child: OutlinedButton(
               onPressed: userId != null
-                  ? () => _showLogoutDialog(context)
-                  : () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
-                    },
+                ? () => _showLogoutDialog(context)
+                : () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      (route) => false,
+                    );
+                  },
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFDEDEDE)),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
