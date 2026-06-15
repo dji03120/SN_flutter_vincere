@@ -1,4 +1,4 @@
-// import 'package:Vincere/services/page_ble_device/web/page_blood_sugar.dart';
+import 'package:Vincere/services/page_ble_device/page_blood_sugar.dart';
 import 'package:Vincere/services/page_ble_device/page_inbody_blood_pressure_large.dart';
 import 'package:Vincere/services/page_ble_device/page_inbody_blood_pressure_small.dart';
 import 'package:flutter/material.dart';
