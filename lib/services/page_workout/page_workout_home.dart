@@ -10,7 +10,7 @@ import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/utils/component/mission_card.dart';
 import 'package:Vincere/utils/http/webReqFastapi.dart';
 import 'package:Vincere/services/page_ble_device/ble_utils.dart';
-import 'package:Vincere/services/page_ble_device/page_connect_elexir.dart';
+import 'package:Vincere/services/page_ble_device/web/page_connect_elexir.dart';
 import 'package:flutter/services.dart';
 
 import 'package:Vincere/utils/export/screens.dart';

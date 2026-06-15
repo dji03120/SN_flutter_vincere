@@ -1,6 +1,6 @@
 import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/services/page_ble_device/page_fitrus_weight.dart';
-import 'package:Vincere/services/page_ble_device/page_blood_sugar.dart';
+import 'package:Vincere/services/page_ble_device/web/page_blood_sugar.dart';
 import 'package:Vincere/services/page_ble_device/page_inbody_hand_pressure.dart';
 import 'package:Vincere/services/page_ble_device/page_select_measure_type_fitrus.dart';
 import 'package:Vincere/services/page_ble_device/page_select_measure_type_bloodpress.dart';

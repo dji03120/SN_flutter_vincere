@@ -5,7 +5,7 @@ import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/component/radar_chart.dart';
 import 'package:Vincere/utils/export/screens.dart';
 import 'package:Vincere/page_home/screen_home_widgets.dart';
-import 'package:Vincere/services/page_ble_device/page_select_device.dart';
+import 'package:Vincere/services/page_ble_device/web/page_select_device_web.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
