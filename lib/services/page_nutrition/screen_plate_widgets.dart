@@ -789,6 +789,10 @@ class _RecommandFoodState extends State<RecommandFood> {
 
   @override
   Widget build(BuildContext context) {
+
+    print(userModel.plateData['carbsFoodListData']);
+    print(userModel.plateData['proteinFoodListData']);
+
     return Column(children: [
       Container(
         margin: const EdgeInsets.only(left: 16, right: 16, top: 36),
@@ -868,16 +872,32 @@ class _RecommandFoodState extends State<RecommandFood> {
                   ),
                   Divider(thickness: 1.0),
                   // 표 데이터 행들
-                  ...userModel.plateData['carbsFoodListData']
-                      .map((food) => _buildTableRow(
-                            food['food_id'],
-                            food['food_name'],
-                            food['food_weight'],
-                            food['TOTAL_CARB_CAL'].round(),
-                            food['TOTAL_PROTEIN_CAL'].round(),
-                            // '식품명1', '500g','150kcal', '250kcal'
-                          ))
-                      .toList(),
+                  // 사용자가 이미 권장 필요 에너지양을 충족시, 완료 창 표시
+                  if ((userModel.plateData['foodRecCarbsCal'] ?? 0) <= 0)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: Text(
+                          '오늘의 권장 필요 에너지양을 충족하셨습니다!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF555555),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    ...userModel.plateData['carbsFoodListData']
+                        .map((food) => _buildTableRow(
+                      food['food_id'],
+                      food['food_name'],
+                      food['food_weight'],
+                      food['TOTAL_CARB_CAL'].round(),
+                      food['TOTAL_PROTEIN_CAL'].round(),
+                    ))
+                        .toList(),
                 ],
               ),
             ),
@@ -941,16 +961,32 @@ class _RecommandFoodState extends State<RecommandFood> {
                       ),
                       Divider(thickness: 1.0),
                       // 표 데이터 행들
-                      ...userModel.plateData['proteinFoodListData']
-                          .map((food) => _buildTableRow(
-                                food['food_id'],
-                                food['food_name'],
-                                food['food_weight'],
-                                food['TOTAL_CARB_CAL'].round(),
-                                food['TOTAL_PROTEIN_CAL'].round(),
-                                // '식품명1', '500g','150kcal', '250kcal'
-                              ))
-                          .toList(),
+                      // 사용자가 이미 권장 필요 에너지양을 충족시, 완료 창 표시
+                      if ((userModel.plateData['foodRecProteinCal'] ?? 0) <= 0)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24.0),
+                          child: Center(
+                            child: Text(
+                              '오늘의 권장 필요 에너지양을 충족하셨습니다!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF555555),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ...userModel.plateData['proteinFoodListData']
+                            .map((food) => _buildTableRow(
+                          food['food_id'],
+                          food['food_name'],
+                          food['food_weight'],
+                          food['TOTAL_CARB_CAL'].round(),
+                          food['TOTAL_PROTEIN_CAL'].round(),
+                        ))
+                            .toList(),
                     ]))
               ]))
     ]);

@@ -534,11 +534,31 @@ class UserModel extends ChangeNotifier {
         _plateData['foodRecProteinCal'] = _plateData['recDinnerProtein'];
         _plateData['strRec'] = "저녁";
       }
+      // 저녁 식사 입력 시 하루 전체 부족 영양소 기준으로 추가 추천 계산
       if (_plateData['dinnerRice'] != 0) {
-        // 저녁 섭취량이 입력된 경우
-        _plateData['foodRecCarbsCal'] = 0;
-        _plateData['foodRecProteinCal'] = 0;
-        _plateData['strRec'] = "";
+
+        final totalRice = _plateData['totalRice'] ?? 0;
+        final recDailyEnergy = _plateData['recDailyEnergy'] ?? 0;
+
+        // 하루 기준 부족 탄수화물/단백질 계산
+        final carbsLack =
+            (recDailyEnergy * 0.55) - (totalRice * 1.32);
+
+        final proteinLack =
+            (recDailyEnergy * 0.3) - (totalRice * 0.092);
+
+        // 부족분이 없으면 추천 미표시
+        if (carbsLack <= 0 && proteinLack <= 0) {
+          _plateData['foodRecCarbsCal'] = 0;
+          _plateData['foodRecProteinCal'] = 0;
+          _plateData['strRec'] = "";
+        } else {
+
+          // 부족한 영양소만 추가 보충 추천
+          _plateData['foodRecCarbsCal'] = carbsLack > 0 ? carbsLack : 0;
+          _plateData['foodRecProteinCal'] = proteinLack > 0 ? proteinLack : 0;
+          _plateData['strRec'] = "추가 보충";
+        }
       }
 
       //
