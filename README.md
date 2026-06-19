@@ -23,9 +23,19 @@ flutter build web --release
 
 cd build/web
 python -m http.server 8000
-
+~
 or C:/nginx.exe
-cloudflared tunnel --url http://localhost:8000
+
+// nginx localhost 실행용 cmd
+flutter build web --release
+nginx -t
+brew services restart nginx
+http://localhost:4659
+
+// Cloudflare 실행용 cmd (휴대폰 테스트 목적)
+flutter build web --release
+brew services restart nginx
+cloudflared tunnel --url http://localhost:4659
 
 
-flutter run -d web-server --web-port=5000 --web-hostname=0.0.0.0
+flutter run -d web-server --web-port=5000 --web-hostname=0.0.0.0~
