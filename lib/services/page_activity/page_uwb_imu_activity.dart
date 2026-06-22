@@ -843,11 +843,6 @@ class _IndoorMapPainter extends CustomPainter {
       ..strokeWidth = 1;
     final anchorPaint = Paint()..color = const Color(0xFF007130);
     final tagPaint = Paint()..color = const Color(0xFFFFB84D);
-    final pathPaint = Paint()
-      ..color = const Color(0xFF00914B).withOpacity(0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 16
-      ..strokeCap = StrokeCap.round;
 
     for (int i = 1; i < 4; i++) {
       final dx = size.width * i / 4;
@@ -855,14 +850,6 @@ class _IndoorMapPainter extends CustomPainter {
       canvas.drawLine(Offset(dx, 0), Offset(dx, size.height), gridPaint);
       canvas.drawLine(Offset(0, dy), Offset(size.width, dy), gridPaint);
     }
-
-    final route = Path()
-      ..moveTo(size.width * 0.18, size.height * 0.72)
-      ..quadraticBezierTo(size.width * 0.38, size.height * 0.28,
-          size.width * 0.62, size.height * 0.42)
-      ..quadraticBezierTo(size.width * 0.78, size.height * 0.54,
-          size.width * 0.66, size.height * 0.78);
-    canvas.drawPath(route, pathPaint);
 
     final anchors = [
       const Offset(0.08, 0.12),
