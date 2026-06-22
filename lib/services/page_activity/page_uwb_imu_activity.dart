@@ -27,6 +27,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
   bool _isRestDialogOpen = false;
   bool _isWaitingForRestResponse = false;
   int _elapsedSeconds = 0;
+  int _mockSignalStep = 0;
   double _sitToStandCount = 8;
   double _walkSeconds = 4.8;
   double _activityScore = 72;
@@ -103,6 +104,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
       }
       setState(() {
         _elapsedSeconds++;
+        _mockSignalStep = (_elapsedSeconds ~/ 3) % 3;
         final wave = sin(_elapsedSeconds / 2);
         final isDemoIdle =
             _elapsedSeconds % 28 >= 10 && _elapsedSeconds % 28 <= 21;
@@ -380,7 +382,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
                   border:
                       Border.all(color: const Color(0xFF92D2B0), width: 1.4),
                 ),
-                child: const Icon(Icons.hub_rounded,
+                child: const Icon(Icons.monitor_heart_outlined,
                     color: Color(0xFF92D2B0), size: 28),
               ),
               const SizedBox(width: 14),
@@ -496,14 +498,14 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
             Row(
               children: [
                 Expanded(
-                    child: _buildStatusItem(
+                    child: _buildConnectionStatusItem(
                         Icons.settings_input_antenna_rounded,
                         'UWB 앵커',
-                        '4/4 연결')),
+                        _getAnchorStatus())),
                 Container(width: 1, height: 48, color: const Color(0xFFE6E6E6)),
                 Expanded(
-                    child: _buildStatusItem(
-                        Icons.watch_rounded, '착용 태그', '정상 수신')),
+                    child: _buildConnectionStatusItem(
+                        Icons.watch_rounded, '수신 감도', _getSignalStatus())),
                 Container(width: 1, height: 48, color: const Color(0xFFE6E6E6)),
                 Expanded(
                     child: _buildStatusItem(
@@ -514,6 +516,98 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
         ),
       ),
     );
+  }
+
+  // 연결 상태를 신호등 상태로 표시하기 위한 기능
+  Widget _buildConnectionStatusItem(
+      IconData icon, String label, _SignalStatus signalStatus) {
+    return Column(
+      children: [
+        Icon(icon, color: signalStatus.color, size: 26),
+        const SizedBox(height: 8),
+        Text(label,
+            style: const TextStyle(color: Color(0xFF777777), fontSize: 12)),
+        const SizedBox(height: 3),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(
+                color: signalStatus.color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(signalStatus.label,
+                style: const TextStyle(
+                    color: Color(0xFF111111),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // UWB 앵커 연결 상태를 테스트 데이터와 실제 상태에 맞춰 결정하기 위한 기능
+  _SignalStatus _getAnchorStatus() {
+    if (_isPausedForRest || _isWaitingForRestResponse) {
+      return const _SignalStatus('보통', Color(0xFFFFC107));
+    }
+
+    if (!_isMonitoring) {
+      return const _SignalStatus('좋음', Color(0xFF00914B));
+    }
+
+    if (_previousSensorPacket == null) {
+      final anchorStep = (_mockSignalStep + 1) % 3;
+      if (anchorStep == 1) {
+        return const _SignalStatus('보통', Color(0xFFFFC107));
+      }
+      if (anchorStep == 2) {
+        return const _SignalStatus('약함', Color(0xFFE53935));
+      }
+      return const _SignalStatus('좋음', Color(0xFF00914B));
+    }
+
+    return _getSignalStatus();
+  }
+
+  // 마지막 수신 상태를 기준으로 감도 색상과 문구를 결정하기 위한 기능
+  _SignalStatus _getSignalStatus() {
+    if (_isPausedForRest || _isWaitingForRestResponse) {
+      return const _SignalStatus('보통', Color(0xFFFFC107));
+    }
+
+    if (!_isMonitoring) {
+      return const _SignalStatus('좋음', Color(0xFF00914B));
+    }
+
+    if (_previousSensorPacket == null) {
+      if (_mockSignalStep == 1) {
+        return const _SignalStatus('보통', Color(0xFFFFC107));
+      }
+      if (_mockSignalStep == 2) {
+        return const _SignalStatus('약함', Color(0xFFE53935));
+      }
+      return const _SignalStatus('좋음', Color(0xFF00914B));
+    }
+
+    final lastMovementAt = _lastMovementAt;
+    if (lastMovementAt == null) {
+      return const _SignalStatus('약함', Color(0xFFE53935));
+    }
+
+    final seconds = DateTime.now().difference(lastMovementAt).inSeconds;
+    if (seconds >= 8) {
+      return const _SignalStatus('약함', Color(0xFFE53935));
+    }
+    if (seconds >= 4) {
+      return const _SignalStatus('보통', Color(0xFFFFC107));
+    }
+    return const _SignalStatus('좋음', Color(0xFF00914B));
   }
 
   // 현재 측정 상태 배지를 보여주기 위한 기능
@@ -651,7 +745,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
             const Text('앵커 4대를 기준으로 태그 위치와 이동 밀도를 추정합니다.',
-                style: TextStyle(color: Color(0xFF777777), fontSize: 13)),
+                style: TextStyle(color: Color(0xFF777777), fontSize: 15)),
             const SizedBox(height: 16),
             AspectRatio(
               aspectRatio: 1.35,
@@ -697,9 +791,6 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
             _InsightRow(
                 icon: Icons.check_circle_rounded,
                 text: 'IMU로 자세 변화를 감지하고 UWB로 실내 이동 범위를 보정합니다.'),
-            _InsightRow(
-                icon: Icons.check_circle_rounded,
-                text: '향후 실제 태그 SDK 또는 BLE/WebSocket 수집 모듈과 연결할 수 있습니다.'),
           ],
         ),
       ),
@@ -729,6 +820,14 @@ class _ActivityMetric {
     required this.target,
     required this.icon,
   });
+}
+
+// 수신 감도 표시 문구와 색상을 묶기 위한 기능
+class _SignalStatus {
+  final String label;
+  final Color color;
+
+  const _SignalStatus(this.label, this.color);
 }
 
 // 실내 지도 위에 앵커와 착용 태그 위치를 그리기 위한 기능
