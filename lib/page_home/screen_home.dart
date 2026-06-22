@@ -1,3 +1,5 @@
+// 앱 홈 화면과 하단 탭 내비게이션을 제공하기 위한 기능
+
 import 'dart:math';
 
 import 'package:Vincere/services/page_ble_device/ble_utils.dart';
@@ -28,7 +30,8 @@ class MyHomePage extends StatefulWidget {
 //
 //
 //
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _tabSelectedIndex = 0;
   final PageController _pageController = PageController(viewportFraction: 0.9);
@@ -46,7 +49,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   Future<void> _initializeData() async {
     try {
       _tabController = TabController(length: 3, vsync: this);
-      _tabController.addListener(() => setState(() => _tabSelectedIndex = _tabController.index));
+      _tabController.addListener(
+          () => setState(() => _tabSelectedIndex = _tabController.index));
 
       final userModel = Provider.of<UserModel>(context, listen: false);
       if (userModel.isLogin == true) {
@@ -54,8 +58,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       }
 
       await sendCommandElexir(userModel.writeChar, elexir_commands["stop"]!);
-      await sendCommandElexir(userModel.writeChar, fitrus_hand_commands["bfp_stop"]!);
-      await sendCommandElexir(userModel.writeChar, fitrus_hand_commands["spo2_stop"]!);
+      await sendCommandElexir(
+          userModel.writeChar, fitrus_hand_commands["bfp_stop"]!);
+      await sendCommandElexir(
+          userModel.writeChar, fitrus_hand_commands["spo2_stop"]!);
       print("initialize user done");
       setState(() {});
     } catch (e) {
@@ -116,9 +122,21 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
           //if (_tabSelectedIndex == 2) Navigator.push(context, MaterialPageRoute(builder: (context) => const NewsBoard()));
         },
         tabs: <Widget>[
-          Tab(icon: Icon(Icons.home, color: _tabSelectedIndex == 0 ? Color(0xFF007130) : Colors.grey), text: "홈"),
-          Tab(icon: Icon(Icons.person, color: _tabSelectedIndex == 1 ? Color(0xFF007130) : Colors.grey), text: "마이페이지"),
-          Tab(icon: Icon(Icons.article, color: _tabSelectedIndex == 2 ? Color(0xFF007130) : Colors.grey), text: "건강뉴스"),
+          Tab(
+              icon: Icon(Icons.home,
+                  color:
+                      _tabSelectedIndex == 0 ? Color(0xFF007130) : Colors.grey),
+              text: "홈"),
+          Tab(
+              icon: Icon(Icons.person,
+                  color:
+                      _tabSelectedIndex == 1 ? Color(0xFF007130) : Colors.grey),
+              text: "마이페이지"),
+          Tab(
+              icon: Icon(Icons.article,
+                  color:
+                      _tabSelectedIndex == 2 ? Color(0xFF007130) : Colors.grey),
+              text: "건강뉴스"),
         ],
       ),
     );
@@ -156,7 +174,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("빈체레가 제안하는 개인 맞춤", style: TextStyle(fontSize: 16)),
-              Text("골든케어 솔루션", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+              Text("골든케어 솔루션",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
             ],
           ),
         ),
@@ -168,6 +187,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
             children: [
               contentsCardPlate(context),
               contentsCardActive(context),
+              contentsCardActivitySensor(context),
             ],
           ),
         ),
@@ -175,8 +195,12 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         Center(
           child: SmoothPageIndicator(
             controller: _pageController,
-            count: 2,
-            effect: WormEffect(dotColor: Colors.grey.shade300, activeDotColor: Colors.orangeAccent, dotHeight: 15, dotWidth: 15),
+            count: 3,
+            effect: WormEffect(
+                dotColor: Colors.grey.shade300,
+                activeDotColor: Colors.orangeAccent,
+                dotHeight: 15,
+                dotWidth: 15),
           ),
         ),
       ],
