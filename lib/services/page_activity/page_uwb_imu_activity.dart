@@ -592,7 +592,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
                 children: [
                   Text(metric.title,
                       style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 17,
                           fontWeight: FontWeight.w800,
                           color: Color(0xFF111111))),
                   const SizedBox(height: 4),
@@ -601,7 +601,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF666666)),
                   ),
@@ -624,7 +624,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
                       text: metric.unit,
                       style: const TextStyle(
                           color: Color(0xFF555555),
-                          fontSize: 13,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700)),
                 ],
               ),
