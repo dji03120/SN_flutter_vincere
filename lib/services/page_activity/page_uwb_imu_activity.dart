@@ -7,6 +7,11 @@ import 'dart:typed_data';
 
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/services/page_activity/activity_daily_store.dart';
+import 'package:Vincere/services/page_activity/logic/activity_sensor_parser.dart';
+import 'package:Vincere/services/page_activity/models/uwb_imu_activity_models.dart';
+import 'package:Vincere/services/page_activity/widgets/indoor_activity_map_card.dart';
+import 'package:Vincere/services/page_activity/widgets/rest_confirm_dialog.dart';
+import 'package:Vincere/services/page_activity/widgets/uwb_imu_activity_result_page.dart';
 import 'package:Vincere/services/page_workout/page_statistics.dart';
 import 'package:Vincere/utils/component/custom_widget.dart';
 import 'package:Vincere/utils/export/screens.dart';
@@ -76,22 +81,22 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
   }
 
   // 센서 기반 핵심 측정 항목의 표시 데이터를 구성하기 위한 기능
-  List<_ActivityMetric> get _metrics => [
-        _ActivityMetric(
+  List<ActivityMetric> get _metrics => [
+        ActivityMetric(
           title: '앉았다 일어서기',
           value: _sitToStandCount.toStringAsFixed(0),
           unit: '회',
           target: '목표 10회',
           icon: Icons.accessibility_new_rounded,
         ),
-        _ActivityMetric(
+        ActivityMetric(
           title: '4m 걷기',
           value: _walkSeconds.toStringAsFixed(1),
           unit: '초',
           target: '기준 5초 이내',
           icon: Icons.directions_walk_rounded,
         ),
-        _ActivityMetric(
+        ActivityMetric(
           title: '실내 활동량',
           value: _activityScore.toStringAsFixed(0),
           unit: '점',
@@ -244,40 +249,21 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
       return;
     }
 
-    final movementScore = _calculateMovementScore(bytes);
+    final movementScore = ActivitySensorParser.calculateMovementScore(
+        bytes, _previousSensorPacket);
     if (movementScore > 12) {
       setState(() {
         _markMovementDetected();
         _movementCount++;
         _activeSeconds++;
         _activityScore = (_activityScore + 0.6).clamp(0, 100).toDouble();
-        _tagPosition = _deriveTagPosition(bytes);
+        _tagPosition =
+            ActivitySensorParser.deriveTagPosition(bytes, _tagPosition);
       });
       _saveTodayActivity();
     }
     _previousSensorPacket = Uint8List.fromList(bytes);
     _checkRestPrompt();
-  }
-
-  // 센서 패킷 간 변화량을 계산하기 위한 기능
-  int _calculateMovementScore(Uint8List bytes) {
-    final previous = _previousSensorPacket;
-    if (previous == null || previous.length != bytes.length) return 99;
-
-    int score = 0;
-    for (int i = 0; i < bytes.length; i++) {
-      score += (bytes[i] - previous[i]).abs();
-    }
-    return score;
-  }
-
-  // 센서 패킷에서 실내 태그 위치 표시 좌표를 추정하기 위한 기능
-  Offset _deriveTagPosition(Uint8List bytes) {
-    if (bytes.length < 4) return _tagPosition;
-    final x = (bytes[0] + bytes[1]) / 510;
-    final y = (bytes[2] + bytes[3]) / 510;
-    return Offset(
-        x.clamp(0.08, 0.92).toDouble(), y.clamp(0.12, 0.88).toDouble());
   }
 
   // 움직임이 감지된 마지막 시각을 저장하기 위한 기능
@@ -303,103 +289,19 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
   }
 
   // 휴식 여부에 따라 측정 일시정지 또는 재개를 처리하기 위한 기능
-  void _showRestPrompt() {
+  Future<void> _showRestPrompt() async {
     _isRestDialogOpen = true;
     _sessionTimer?.cancel();
     _restEventCount++;
     setState(() => _isWaitingForRestResponse = true);
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return Dialog(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
-                    blurRadius: 22,
-                    offset: const Offset(0, 10))
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 58,
-                  height: 58,
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFE2FFF0),
-                      borderRadius: BorderRadius.circular(18)),
-                  child: const Icon(Icons.self_improvement_rounded,
-                      color: Color(0xFF007130), size: 34),
-                ),
-                const SizedBox(height: 18),
-                const Text('잠시 휴식중이십니까?',
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87)),
-                const SizedBox(height: 8),
-                Text(
-                  '10초 이상 움직임이 감지되지 않았습니다.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 14, color: Colors.black.withOpacity(0.62)),
-                ),
-                const SizedBox(height: 22),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _resumeFromRestPrompt();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF007130),
-                          side: const BorderSide(
-                              color: Color(0xFF92D2B0), width: 1.4),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text('아니오',
-                            style: TextStyle(fontWeight: FontWeight.w700)),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _pauseForRest();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF007130),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text('예',
-                            style: TextStyle(fontWeight: FontWeight.w800)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    ).then((_) => _isRestDialogOpen = false);
+    final result = await showRestConfirmDialog(context);
+    _isRestDialogOpen = false;
+    if (!mounted) return;
+    if (result == RestConfirmResult.rest) {
+      _pauseForRest();
+      return;
+    }
+    _resumeFromRestPrompt();
   }
 
   // 사용자가 휴식 중이라고 답했을 때 측정을 일시정지하기 위한 기능
@@ -504,7 +406,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
               const SizedBox(height: 12),
               _buildMetricGrid(),
               const SizedBox(height: 14),
-              _buildIndoorMapCard(),
+              IndoorActivityMapCard(tagPosition: _tagPosition),
               const SizedBox(height: 24),
               _buildInsightCard(),
               const SizedBox(height: 60),
@@ -595,7 +497,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
   }
 
   // 히어로 센서 상태에서 점 색상만 상태에 따라 바꾸기 위한 기능
-  Widget _buildHeroSignalItem(String label, _SignalStatus signalStatus) {
+  Widget _buildHeroSignalItem(String label, SignalStatus signalStatus) {
     return Column(
       children: [
         Text(label,
@@ -756,7 +658,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
 
   // 연결 상태를 신호등 상태로 표시하기 위한 기능
   Widget _buildConnectionStatusItem(
-      IconData icon, String label, _SignalStatus signalStatus) {
+      IconData icon, String label, SignalStatus signalStatus) {
     return Column(
       children: [
         Icon(icon, color: signalStatus.color, size: 26),
@@ -788,62 +690,62 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
   }
 
   // UWB 앵커 연결 상태를 테스트 데이터와 실제 상태에 맞춰 결정하기 위한 기능
-  _SignalStatus _getAnchorStatus() {
+  SignalStatus _getAnchorStatus() {
     if (_isPausedForRest || _isWaitingForRestResponse) {
-      return const _SignalStatus('보통', Color(0xFFFFC107));
+      return const SignalStatus('보통', Color(0xFFFFC107));
     }
 
     if (!_isMonitoring) {
-      return const _SignalStatus('좋음', Color(0xFF00914B));
+      return const SignalStatus('좋음', Color(0xFF00914B));
     }
 
     if (_previousSensorPacket == null) {
       final anchorStep = (_mockSignalStep + 1) % 3;
       if (anchorStep == 1) {
-        return const _SignalStatus('보통', Color(0xFFFFC107));
+        return const SignalStatus('보통', Color(0xFFFFC107));
       }
       if (anchorStep == 2) {
-        return const _SignalStatus('약함', Color(0xFFE53935));
+        return const SignalStatus('약함', Color(0xFFE53935));
       }
-      return const _SignalStatus('좋음', Color(0xFF00914B));
+      return const SignalStatus('좋음', Color(0xFF00914B));
     }
 
     return _getSignalStatus();
   }
 
   // 마지막 수신 상태를 기준으로 감도 색상과 문구를 결정하기 위한 기능
-  _SignalStatus _getSignalStatus() {
+  SignalStatus _getSignalStatus() {
     if (_isPausedForRest || _isWaitingForRestResponse) {
-      return const _SignalStatus('보통', Color(0xFFFFC107));
+      return const SignalStatus('보통', Color(0xFFFFC107));
     }
 
     if (!_isMonitoring) {
-      return const _SignalStatus('좋음', Color(0xFF00914B));
+      return const SignalStatus('좋음', Color(0xFF00914B));
     }
 
     if (_previousSensorPacket == null) {
       if (_mockSignalStep == 1) {
-        return const _SignalStatus('보통', Color(0xFFFFC107));
+        return const SignalStatus('보통', Color(0xFFFFC107));
       }
       if (_mockSignalStep == 2) {
-        return const _SignalStatus('약함', Color(0xFFE53935));
+        return const SignalStatus('약함', Color(0xFFE53935));
       }
-      return const _SignalStatus('좋음', Color(0xFF00914B));
+      return const SignalStatus('좋음', Color(0xFF00914B));
     }
 
     final lastMovementAt = _lastMovementAt;
     if (lastMovementAt == null) {
-      return const _SignalStatus('약함', Color(0xFFE53935));
+      return const SignalStatus('약함', Color(0xFFE53935));
     }
 
     final seconds = DateTime.now().difference(lastMovementAt).inSeconds;
     if (seconds >= 8) {
-      return const _SignalStatus('약함', Color(0xFFE53935));
+      return const SignalStatus('약함', Color(0xFFE53935));
     }
     if (seconds >= 4) {
-      return const _SignalStatus('보통', Color(0xFFFFC107));
+      return const SignalStatus('보통', Color(0xFFFFC107));
     }
-    return const _SignalStatus('좋음', Color(0xFF00914B));
+    return const SignalStatus('좋음', Color(0xFF00914B));
   }
 
   // 현재 측정 상태 배지를 보여주기 위한 기능
@@ -896,7 +798,7 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
   }
 
   // 핵심 측정 항목의 현재 값을 얇은 카드로 표시하기 위한 기능
-  Widget _buildMetricCard(_ActivityMetric metric) {
+  Widget _buildMetricCard(ActivityMetric metric) {
     return Card(
       elevation: 4,
       color: Colors.white,
@@ -1077,8 +979,8 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => _UwbImuActivityResultPage(
-          summary: _ActivitySessionSummary(
+        builder: (_) => UwbImuActivityResultPage(
+          summary: ActivitySessionSummary(
             activeSeconds: _activeSeconds,
             restSeconds: _restSeconds,
             movementCount: _movementCount,
@@ -1101,44 +1003,6 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
         .toList()
       ..sort((a, b) => b.dateKey.compareTo(a.dateKey));
     return records.take(7).toList();
-  }
-
-  // 실내 앵커 배치와 착용 태그 위치를 시각화하기 위한 기능
-  Widget _buildIndoorMapCard() {
-    return Card(
-      elevation: 4,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 18),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('실내 공간 활동량',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 6),
-            const Text('앵커 4대를 기준으로 태그 위치와 이동 밀도를 추정합니다.',
-                style: TextStyle(color: Color(0xFF777777), fontSize: 15)),
-            const SizedBox(height: 16),
-            AspectRatio(
-              aspectRatio: 1.35,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F8F5),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFD7E8DE)),
-                ),
-                child: CustomPaint(
-                  painter: _IndoorMapPainter(tagPosition: _tagPosition),
-                  child: const SizedBox.expand(),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   // 측정 데이터 해석과 앱 제공 정보를 요약하기 위한 기능
@@ -1186,439 +1050,6 @@ class _UwbImuActivityPageState extends State<UwbImuActivityPage> {
       return '$remainSeconds초';
     }
     return '$minutes분 $remainSeconds초';
-  }
-}
-
-// 활동 측정 카드에 필요한 값을 묶기 위한 기능
-class _ActivityMetric {
-  final String title;
-  final String value;
-  final String unit;
-  final String target;
-  final IconData icon;
-
-  const _ActivityMetric({
-    required this.title,
-    required this.value,
-    required this.unit,
-    required this.target,
-    required this.icon,
-  });
-}
-
-// 측정 결과 화면에 전달할 활동 요약 데이터를 묶기 위한 기능
-class _ActivitySessionSummary {
-  final int activeSeconds;
-  final int restSeconds;
-  final int movementCount;
-  final int restEventCount;
-  final double activityScore;
-  final double sitToStandCount;
-  final double walkSeconds;
-  final List<DailyActivitySummary> recentSummaries;
-
-  const _ActivitySessionSummary({
-    required this.activeSeconds,
-    required this.restSeconds,
-    required this.movementCount,
-    required this.restEventCount,
-    required this.activityScore,
-    required this.sitToStandCount,
-    required this.walkSeconds,
-    required this.recentSummaries,
-  });
-}
-
-// 측정 종료 후 문장형 활동 해석과 권장 행동을 보여주기 위한 기능
-class _UwbImuActivityResultPage extends StatelessWidget {
-  final _ActivitySessionSummary summary;
-
-  const _UwbImuActivityResultPage({required this.summary});
-
-  // 실제 측정 데이터가 있는지 판단하기 위한 기능
-  bool get _hasMeasuredActivity {
-    return summary.activeSeconds > 0 ||
-        summary.restSeconds > 0 ||
-        summary.movementCount > 0 ||
-        summary.restEventCount > 0;
-  }
-
-  // 최근 활동 평균 대비 오늘 활동량 비율을 계산하기 위한 기능
-  double get _movementRatioToRecentAverage {
-    final measured = summary.recentSummaries
-        .where((record) => record.movementCount > 0)
-        .toList();
-    if (measured.isEmpty) return 1;
-    final average =
-        measured.map((record) => record.movementCount).reduce((a, b) => a + b) /
-            measured.length;
-    if (average == 0) return 1;
-    return summary.movementCount / average;
-  }
-
-  // 오늘 휴식 비율을 계산하기 위한 기능
-  double get _restRatio {
-    final totalSeconds = summary.activeSeconds + summary.restSeconds;
-    if (totalSeconds == 0) return 0;
-    return summary.restSeconds / totalSeconds;
-  }
-
-  // 활동 측정 결과를 한 문장으로 요약하기 위한 기능
-  String get _headline {
-    if (!_hasMeasuredActivity) {
-      return '측정된 활동 결과가 없습니다.';
-    }
-    if (summary.restEventCount >= 2 ||
-        summary.restSeconds >= 60 ||
-        _restRatio >= 0.45) {
-      return '오래 앉아 있는 시간이 감지되었습니다.';
-    }
-    if (_movementRatioToRecentAverage >= 1.18 || summary.activityScore >= 82) {
-      return '오늘은 움직임이 평소보다 활발합니다.';
-    }
-    if (_movementRatioToRecentAverage <= 0.72 || summary.activityScore < 65) {
-      return '오늘은 움직임이 조금 적은 편입니다.';
-    }
-    return '오늘 활동 흐름이 안정적으로 유지되고 있습니다.';
-  }
-
-  // 활동 측정 결과에 따른 상태 라벨을 만들기 위한 기능
-  String get _movementTrend {
-    if (!_hasMeasuredActivity) {
-      return '측정 필요';
-    }
-    if (summary.restEventCount >= 2 ||
-        summary.restSeconds >= 60 ||
-        _restRatio >= 0.45) {
-      return '오래 앉아 있음';
-    }
-    if (_movementRatioToRecentAverage >= 1.18 || summary.activityScore >= 82) {
-      return '움직임 증가';
-    }
-    if (_movementRatioToRecentAverage <= 0.72 || summary.activityScore < 65) {
-      return '움직임 감소';
-    }
-    return '활동 유지';
-  }
-
-  // 활동 측정 결과에 따른 추천 행동을 만들기 위한 기능
-  String get _recommendation {
-    if (!_hasMeasuredActivity) {
-      return '활동 측정을 진행해 주세요.';
-    }
-    if (summary.restEventCount >= 2 || summary.restSeconds >= 60) {
-      return '자리에서 일어나 3분 정도 천천히 걸어보세요.';
-    }
-    if (summary.sitToStandCount < 10) {
-      return '앉았다 일어서기 5회를 추가로 진행해보세요.';
-    }
-    if (summary.walkSeconds > 5) {
-      return '짧은 보폭으로 4m 걷기를 한 번 더 측정해보세요.';
-    }
-    return '현재 활동 흐름을 유지해도 좋습니다.';
-  }
-
-  // 결과 화면 전체 레이아웃을 구성하기 위한 기능
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F4F9),
-      appBar: const Header(),
-      drawer: CustomDrawer(isLogin: true),
-      body: ScrollConfiguration(
-        behavior: DesktopDragScrollBehavior(),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildResultHero(context),
-              const SizedBox(height: 16),
-              if (_hasMeasuredActivity) ...[
-                _buildSummaryNumbers(),
-                const SizedBox(height: 16),
-                _buildInsightList(),
-              ] else
-                _buildEmptyResultCard(),
-              const SizedBox(height: 60),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // 결과 화면의 대표 문장과 상태 라벨을 보여주기 위한 기능
-  Widget _buildResultHero(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF111111),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(18)),
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 26),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 결과 화면에서 측정 화면으로 돌아가기 위한 기능
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_rounded, size: 18),
-              label: const Text('뒤로가기'),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF92D2B0),
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-                textStyle: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF92D2B0).withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(16),
-                  border:
-                      Border.all(color: const Color(0xFF92D2B0), width: 1.4),
-                ),
-                child: const Icon(Icons.fact_check_rounded,
-                    color: Color(0xFF92D2B0), size: 28),
-              ),
-              const SizedBox(width: 14),
-              const Expanded(
-                child: Text('활동 측정 결과',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Text(_headline,
-              style: TextStyle(
-                  color: Colors.white.withOpacity(0.86),
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  height: 1.45)),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE2FFF0),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Text(_movementTrend,
-                style: const TextStyle(
-                    color: Color(0xFF007130),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 측정 데이터가 없을 때 결과 화면의 빈 상태를 안내하기 위한 기능
-  Widget _buildEmptyResultCard() {
-    return Card(
-      elevation: 4,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 18),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
-        child: Column(
-          children: const [
-            Icon(Icons.info_outline_rounded,
-                color: Color(0xFF007130), size: 34),
-            SizedBox(height: 14),
-            Text('측정된 활동 결과가 없습니다.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Color(0xFF111111),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800)),
-            SizedBox(height: 6),
-            Text('활동 측정을 진행해 주세요.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Color(0xFF666666),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 결과 화면의 핵심 숫자 요약을 보여주기 위한 기능
-  Widget _buildSummaryNumbers() {
-    return Card(
-      elevation: 4,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 18),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
-          children: [
-            Expanded(
-                child: _buildResultStat(Icons.timer_rounded, '활동 시간',
-                    _formatDuration(summary.activeSeconds))),
-            Container(width: 1, height: 44, color: const Color(0xFFE6E6E6)),
-            Expanded(
-                child: _buildResultStat(Icons.directions_run_rounded, '움직임',
-                    '${summary.movementCount}회')),
-            Container(width: 1, height: 44, color: const Color(0xFFE6E6E6)),
-            Expanded(
-                child: _buildResultStat(Icons.self_improvement_rounded, '휴식',
-                    _formatDuration(summary.restSeconds))),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 결과 화면의 숫자 항목 하나를 표시하기 위한 기능
-  Widget _buildResultStat(IconData icon, String label, String value) {
-    return Column(
-      children: [
-        Icon(icon, color: const Color(0xFF00914B), size: 26),
-        const SizedBox(height: 8),
-        Text(label,
-            style: const TextStyle(color: Color(0xFF777777), fontSize: 12)),
-        const SizedBox(height: 3),
-        Text(value,
-            style: const TextStyle(
-                color: Color(0xFF111111),
-                fontSize: 14,
-                fontWeight: FontWeight.w800)),
-      ],
-    );
-  }
-
-  // 결과 화면의 문장형 해석 목록을 보여주기 위한 기능
-  Widget _buildInsightList() {
-    return Card(
-      elevation: 4,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 18),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('오늘의 활동 해석',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 16),
-            _buildResultInsight(Icons.trending_up_rounded, _movementTrend),
-            _buildResultInsight(
-                Icons.event_seat_rounded, '휴식 감지 ${summary.restEventCount}회'),
-            _buildResultInsight(Icons.recommend_rounded, _recommendation),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 결과 화면의 문장형 해석 한 줄을 표시하기 위한 기능
-  Widget _buildResultInsight(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE2FFF0),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: const Color(0xFF007130), size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(text,
-                style: const TextStyle(
-                    color: Color(0xFF333333),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    height: 1.45)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 결과 화면에서 초 단위 시간을 읽기 쉽게 변환하기 위한 기능
-  String _formatDuration(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remainSeconds = seconds % 60;
-    if (minutes == 0) {
-      return '$remainSeconds초';
-    }
-    return '$minutes분 $remainSeconds초';
-  }
-}
-
-// 수신 감도 표시 문구와 색상을 묶기 위한 기능
-class _SignalStatus {
-  final String label;
-  final Color color;
-
-  const _SignalStatus(this.label, this.color);
-}
-
-// 실내 지도 위에 앵커와 착용 태그 위치를 그리기 위한 기능
-class _IndoorMapPainter extends CustomPainter {
-  final Offset tagPosition;
-
-  const _IndoorMapPainter({required this.tagPosition});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final gridPaint = Paint()
-      ..color = const Color(0xFFD8E8DE)
-      ..strokeWidth = 1;
-    final anchorPaint = Paint()..color = const Color(0xFF007130);
-    final tagPaint = Paint()..color = const Color(0xFFFFB84D);
-
-    for (int i = 1; i < 4; i++) {
-      final dx = size.width * i / 4;
-      final dy = size.height * i / 4;
-      canvas.drawLine(Offset(dx, 0), Offset(dx, size.height), gridPaint);
-      canvas.drawLine(Offset(0, dy), Offset(size.width, dy), gridPaint);
-    }
-
-    final anchors = [
-      const Offset(0.08, 0.12),
-      const Offset(0.92, 0.12),
-      const Offset(0.08, 0.88),
-      const Offset(0.92, 0.88),
-    ];
-    for (final anchor in anchors) {
-      final point = Offset(anchor.dx * size.width, anchor.dy * size.height);
-      canvas.drawCircle(point, 8, anchorPaint);
-      canvas.drawCircle(point, 14,
-          Paint()..color = const Color(0xFF007130).withOpacity(0.14));
-    }
-
-    final tag =
-        Offset(tagPosition.dx * size.width, tagPosition.dy * size.height);
-    canvas.drawCircle(
-        tag, 18, Paint()..color = const Color(0xFFFFB84D).withOpacity(0.24));
-    canvas.drawCircle(tag, 9, tagPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _IndoorMapPainter oldDelegate) {
-    return oldDelegate.tagPosition != tagPosition;
   }
 }
 
