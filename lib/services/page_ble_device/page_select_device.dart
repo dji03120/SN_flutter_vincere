@@ -1,7 +1,10 @@
+// 건강정보 측정 장비 선택과 인바디 QR 측정 진입을 위한 기능
+
 import 'package:Vincere/services/page_ble_device/ble_utils.dart';
 import 'package:Vincere/services/page_ble_device/page_fitrus_weight.dart';
 import 'package:Vincere/services/page_ble_device/page_blood_sugar.dart';
 import 'package:Vincere/services/page_ble_device/page_inbody_hand_pressure.dart';
+import 'package:Vincere/services/page_ble_device/page_inbody_machine_measurement.dart';
 import 'package:Vincere/services/page_ble_device/page_select_measure_type_fitrus.dart';
 import 'package:Vincere/services/page_ble_device/page_select_measure_type_bloodpress.dart';
 import 'package:Vincere/services/page_health/screen_my_health_info_input.dart';
@@ -17,16 +20,16 @@ class SelectMeasureDevice extends StatefulWidget {
   State<SelectMeasureDevice> createState() => _SelectMeasureDeviceState();
 }
 
-class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTickerProviderStateMixin {
+class _SelectMeasureDeviceState extends State<SelectMeasureDevice>
+    with SingleTickerProviderStateMixin {
+  @override
+  void initState() {
+    super.initState();
+    permissionCheck(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    void initState() {
-      super.initState();
-      permissionCheck(context);
-    }
-
     return Scaffold(
       appBar: const Header(),
       drawer: const CustomDrawer(
@@ -43,9 +46,28 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
               children: [
                 const Text(
                   "측정 장비를 선택해주세요",
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Colors.black87),
+                  style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87),
                 ),
                 const SizedBox(height: 40),
+
+                // 인바디 장비 QR 측정 카드
+                _ModernCard(
+                  icon: Icons.qr_code_2_rounded,
+                  title: "인바디 장비 측정",
+                  subtitle: "사용자 QR로 인바디 측정기록 연결",
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const PageInbodyMachineMeasurement()));
+                  },
+                ),
+
+                const SizedBox(height: 20),
 
                 // ---------------------- 카드 1 : 체중계 ----------------------
                 _ModernCard(
@@ -53,7 +75,10 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                   title: "스마트 체중계 측정",
                   subtitle: "체중계와 연동하여 자동 측정",
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageConnectFitrusWeight()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const PageConnectFitrusWeight()));
                   },
                 ),
 
@@ -65,7 +90,11 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                   title: "체성분 및 스트레스 측정",
                   subtitle: "AI 기반 정밀 체성분 측정",
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageSelectFitrusMeasureType()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const PageSelectFitrusMeasureType()));
                   },
                 ),
 
@@ -77,7 +106,10 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                   title: "악력 측정",
                   subtitle: "악력계와 연동하여 자동 측정",
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageInbodyHandPressure()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const PageInbodyHandPressure()));
                   },
                 ),
                 const SizedBox(height: 20),
@@ -88,7 +120,11 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                   title: "혈압 측정",
                   subtitle: "혈압계와 연동하여 자동 측정",
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageSelectBloodPressMeasureType()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const PageSelectBloodPressMeasureType()));
                   },
                 ),
                 const SizedBox(height: 20),
@@ -99,7 +135,10 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                   title: "혈당 측정",
                   subtitle: "혈당 측정기와 연동하여 자동 측정",
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => PageBloodSugar()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const PageBloodSugar()));
                   },
                 ),
 
@@ -110,7 +149,10 @@ class _SelectMeasureDeviceState extends State<SelectMeasureDevice> with SingleTi
                   title: "직접 입력하기",
                   subtitle: "측정 없이 수동으로 입력",
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => ScreenHealthInfoInput()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ScreenHealthInfoInput()));
                   },
                 ),
               ],
@@ -137,7 +179,6 @@ class _ModernCard extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    super.key,
   });
 
   @override
@@ -162,16 +203,23 @@ class _ModernCardState extends State<_ModernCard> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 22),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(22),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))],
-            border: Border.all(color: Colors.white.withOpacity(0.4)),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10))
+            ],
+            border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.12), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                    color: Colors.blueAccent.withValues(alpha: 0.12),
+                    shape: BoxShape.circle),
                 child: Icon(widget.icon, size: 32, color: Colors.blueAccent),
               ),
               const SizedBox(width: 20),
@@ -181,9 +229,18 @@ class _ModernCardState extends State<_ModernCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AutoSizeText(widget.title, maxLines: 1, minFontSize: 12, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+                    AutoSizeText(widget.title,
+                        maxLines: 1,
+                        minFontSize: 12,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 4),
-                    AutoSizeText(widget.subtitle, maxLines: 2, minFontSize: 12, style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.6))),
+                    AutoSizeText(widget.subtitle,
+                        maxLines: 2,
+                        minFontSize: 12,
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black.withValues(alpha: 0.6))),
                   ],
                 ),
               )
