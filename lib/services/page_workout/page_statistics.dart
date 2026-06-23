@@ -280,10 +280,7 @@ class Component4State extends State<StatisticsPage> {
     return '$minutes분 $remainSeconds초';
   }
 
-  //
-  //
-  //
-  //
+  // Elexir 운동 이력 달력과 날짜별 운동 기록을 표시하기 위한 기능
   Widget _calendarWidget(UserModel userModel, Set<DateTime> mySelectedDays) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Card(
@@ -295,127 +292,145 @@ class Component4State extends State<StatisticsPage> {
       ),
       child: Container(
         padding: const EdgeInsets.all(20),
-        child: TableCalendar(
-          rowHeight: 40,
-          locale: 'ko_KR',
-          firstDay: DateTime.utc(2000, 1, 1),
-          lastDay: DateTime.utc(2100, 12, 31),
-          focusedDay: _focusedDay,
-          onDaySelected: (selectedDay, focusedDay) {
-            //
-            //
-            _selectedDayDatas = [];
-            List<DateTime> dateKeys = _workoutList.keys.toList();
-            for (int i = 0; i < dateKeys.length; i++) {
-              DateTime dateKey = dateKeys[i];
-              DateTime ymdt =
-                  DateTime.utc(dateKey.year, dateKey.month, dateKey.day);
-              if ((dateKey.hour == 0) & (dateKey.minute == 0)) continue;
-              if (ymdt == selectedDay)
-                _selectedDayDatas.add(_workoutList[dateKey]!);
-            }
-            Map<dynamic, dynamic> workoutData = _selectedDayDatas[0];
-            //
-            //
-            if (!workoutData.containsKey('60hz')) return;
-            _muscleIntensity['60hz'] = [];
-            _muscleIntensity['100hz'] = [];
-            _muscleDuration['60hz'] = [];
-            _muscleDuration['100hz'] = [];
-            _muscleNames = [];
-            List<String> keys = workoutData['60hz'].keys.toList();
-            print(keys);
-            //
-            //
-            for (int i = 0; i < keys.length; i++) {
-              final muscle = keys[i];
-              if (workoutData['60hz'][muscle]['type'] == 'paid') {
-                if ((userModel.userInfo?['authCd'] ?? '').contains('PAID') ==
-                    false) {
-                  continue;
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Elexir 운동 이력',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 6),
+            const Text('날짜별 근육 부위별 강도와 운동 시간을 확인합니다.',
+                style: TextStyle(color: Color(0xFF666666), fontSize: 14)),
+            const SizedBox(height: 12),
+            TableCalendar(
+              rowHeight: 40,
+              locale: 'ko_KR',
+              firstDay: DateTime.utc(2000, 1, 1),
+              lastDay: DateTime.utc(2100, 12, 31),
+              focusedDay: _focusedDay,
+              onDaySelected: (selectedDay, focusedDay) {
+                _selectedDayDatas = [];
+                List<DateTime> dateKeys = _workoutList.keys.toList();
+                for (int i = 0; i < dateKeys.length; i++) {
+                  DateTime dateKey = dateKeys[i];
+                  DateTime ymdt =
+                      DateTime.utc(dateKey.year, dateKey.month, dateKey.day);
+                  if ((dateKey.hour == 0) & (dateKey.minute == 0)) continue;
+                  if (ymdt == selectedDay) {
+                    _selectedDayDatas.add(_workoutList[dateKey]!);
+                  }
                 }
-              }
+                if (_selectedDayDatas.isEmpty) {
+                  setState(() {
+                    _focusedDay = focusedDay;
+                    _muscleNames = [];
+                  });
+                  return;
+                }
 
-              double intensity60 =
-                  workoutData['60hz'][muscle]['intensitySum']?.toDouble() ??
+                Map<dynamic, dynamic> workoutData = _selectedDayDatas[0];
+                if (!workoutData.containsKey('60hz')) return;
+                _muscleIntensity['60hz'] = [];
+                _muscleIntensity['100hz'] = [];
+                _muscleDuration['60hz'] = [];
+                _muscleDuration['100hz'] = [];
+                _muscleNames = [];
+                List<String> keys = workoutData['60hz'].keys.toList();
+                print(keys);
+
+                for (int i = 0; i < keys.length; i++) {
+                  final muscle = keys[i];
+                  if (workoutData['60hz'][muscle]['type'] == 'paid') {
+                    if ((userModel.userInfo?['authCd'] ?? '')
+                            .contains('PAID') ==
+                        false) {
+                      continue;
+                    }
+                  }
+
+                  double intensity60 =
+                      workoutData['60hz'][muscle]['intensitySum']?.toDouble() ??
+                          0.0;
+                  double duration60 =
+                      workoutData['60hz'][muscle]['duration']?.toDouble() ??
+                          0.0;
+                  double avg60hz =
+                      duration60 == 0 ? 0.0 : (intensity60 / duration60);
+
+                  double intensity100 = workoutData['100hz'][muscle]
+                              ['intensitySum']
+                          ?.toDouble() ??
                       0.0;
-              double duration60 =
-                  workoutData['60hz'][muscle]['duration']?.toDouble() ?? 0.0;
-              double avg60hz =
-                  duration60 == 0 ? 0.0 : (intensity60 / duration60);
+                  double duration100 =
+                      workoutData['100hz'][muscle]['duration']?.toDouble() ??
+                          0.0;
+                  double avg100hz =
+                      duration100 == 0 ? 0.0 : (intensity100 / duration100);
 
-              double intensity100 =
-                  workoutData['100hz'][muscle]['intensitySum']?.toDouble() ??
-                      0.0;
-              double duration100 =
-                  workoutData['100hz'][muscle]['duration']?.toDouble() ?? 0.0;
-              double avg100hz =
-                  duration100 == 0 ? 0.0 : (intensity100 / duration100);
+                  _muscleIntensity['60hz']!.add(avg60hz);
+                  _muscleIntensity['100hz']!.add(avg100hz);
+                  _muscleDuration['60hz']!.add(duration60);
+                  _muscleDuration['100hz']!.add(duration100);
+                  _muscleNames.add(keys[i]);
+                }
 
-              // 리스트에 추가
-              _muscleIntensity['60hz']!.add(avg60hz);
-              _muscleIntensity['100hz']!.add(avg100hz);
-              _muscleDuration['60hz']!.add(duration60);
-              _muscleDuration['100hz']!.add(duration100);
-              _muscleNames.add(keys[i]);
-            }
+                print("$_muscleNames, $_muscleIntensity, $_muscleDuration");
+                setState(() {
+                  _focusedDay = focusedDay;
+                });
+              },
+              calendarFormat: CalendarFormat.month,
+              headerStyle: const HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                headerPadding: EdgeInsets.symmetric(vertical: 6),
+              ),
+              daysOfWeekHeight: 30,
+              daysOfWeekStyle: const DaysOfWeekStyle(
+                weekdayStyle: TextStyle(fontSize: 14),
+                weekendStyle: TextStyle(fontSize: 14, color: Colors.red),
+              ),
+              calendarStyle: const CalendarStyle(
+                cellMargin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+                todayDecoration: BoxDecoration(
+                    color: Colors.orangeAccent, shape: BoxShape.circle),
+                todayTextStyle: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                  final isHighlighted = mySelectedDays.any((d) =>
+                      d.year == day.year &&
+                      d.month == day.month &&
+                      d.day == day.day);
 
-//
-            print("$_muscleNames, $_muscleIntensity, $_muscleDuration");
-            setState(() {
-              _focusedDay = focusedDay;
-            });
-          },
-          calendarFormat: CalendarFormat.month,
-          headerStyle: const HeaderStyle(
-            formatButtonVisible: false,
-            titleCentered: true,
-            headerPadding: EdgeInsets.symmetric(vertical: 6), // 헤더 아래 여백
-          ),
-          daysOfWeekHeight: 30, // 요일 영역 높이
-          daysOfWeekStyle: const DaysOfWeekStyle(
-            weekdayStyle: TextStyle(fontSize: 14), // 평일 글자 크기
-            weekendStyle:
-                TextStyle(fontSize: 14, color: Colors.red), // 주말 글자 크기
-          ),
-          calendarStyle: const CalendarStyle(
-            cellMargin:
-                EdgeInsets.symmetric(horizontal: 3, vertical: 4), // 셀 간격
-            todayDecoration: BoxDecoration(
-                color: Colors.orangeAccent, shape: BoxShape.circle),
-            todayTextStyle: const TextStyle(
-                fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          calendarBuilders: CalendarBuilders(
-            defaultBuilder: (context, day, focusedDay) {
-              final isHighlighted = mySelectedDays.any((d) =>
-                  d.year == day.year &&
-                  d.month == day.month &&
-                  d.day == day.day);
+                  if (isHighlighted) {
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        OverflowBox(
+                            maxWidth: double.infinity,
+                            child: Container(
+                                width: screenWidth / 6,
+                                height: 25,
+                                decoration: BoxDecoration(
+                                  color: Colors.orangeAccent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ))),
+                        Text('${day.day}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
+                      ],
+                    );
+                  }
 
-              if (isHighlighted) {
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    OverflowBox(
-                        maxWidth: double.infinity,
-                        child: Container(
-                            width: screenWidth / 6,
-                            height: 25,
-                            decoration: BoxDecoration(
-                              color: Colors.orangeAccent,
-                              borderRadius: BorderRadius.circular(10),
-                            ))),
-                    Text('${day.day}',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.white)),
-                  ],
-                );
-              }
-
-              return null; // 기본 빌더로 렌더링
-            },
-          ),
+                  return null;
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
