@@ -1,4 +1,4 @@
-// 인바디 장비 측정을 위한 사용자 귀속 QR 발급 기능
+// 인바디 장비 측정을 위한 사용자 QR 발급 기능
 
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/utils/component/custom_drawer.dart';
@@ -32,11 +32,11 @@ class _PageInbodyMachineMeasurementState
     _issuedAt = DateTime.now().toUtc().toIso8601String();
   }
 
-  // 운영 환경에서 사용할 InBody UserID 기본값을 만들기 위한 기능
+  // 운영 환경에서 사용할 InBody UserID 기본값을 로그인 ID와 맞추기 위한 기능
   String _buildOperationalInbodyUserId(UserModel userModel) {
     final userId = userModel.userId.trim();
     if (userId.isEmpty) return '';
-    return 'vincere_$userId';
+    return userId;
   }
 
   // 인바디 장비가 InBody UserID로 사용자를 식별할 수 있는 QR 값을 만들기 위한 기능
@@ -62,7 +62,7 @@ class _PageInbodyMachineMeasurementState
   Widget build(BuildContext context) {
     final userModel = Provider.of<UserModel>(context);
     final qrPayload = _buildQrPayload(userModel);
-    final isUserReady = userModel.userId.isNotEmpty;
+    final isQrReady = userModel.userId.isNotEmpty;
 
     return Scaffold(
       appBar: const Header(),
@@ -86,7 +86,7 @@ class _PageInbodyMachineMeasurementState
               ),
               const SizedBox(height: 8),
               Text(
-                '장비에서 QR을 스캔하면 운영 서버에서 관리할 InBody UserID로 측정 기록을 연결할 수 있습니다.',
+                '장비에서 QR을 스캔하면 InBody UserID로 측정 기록을 연결할 수 있습니다.',
                 style: TextStyle(
                     fontSize: 15,
                     height: 1.45,
@@ -95,8 +95,10 @@ class _PageInbodyMachineMeasurementState
               const SizedBox(height: 28),
               _QrPanel(
                 qrPayload: qrPayload,
-                isUserReady: isUserReady,
+                isUserReady: isQrReady,
                 issuedAt: _issuedAt,
+                idLabel: 'InBody UserID',
+                emptyLabel: 'InBody UserID 없음',
                 onRefresh: _regenerateQr,
                 onCopy: () => _copyQrPayload(qrPayload),
               ),
@@ -114,6 +116,8 @@ class _QrPanel extends StatelessWidget {
   final String qrPayload;
   final bool isUserReady;
   final String issuedAt;
+  final String idLabel;
+  final String emptyLabel;
   final VoidCallback onRefresh;
   final VoidCallback onCopy;
 
@@ -121,6 +125,8 @@ class _QrPanel extends StatelessWidget {
     required this.qrPayload,
     required this.isUserReady,
     required this.issuedAt,
+    required this.idLabel,
+    required this.emptyLabel,
     required this.onRefresh,
     required this.onCopy,
   });
@@ -158,12 +164,12 @@ class _QrPanel extends StatelessWidget {
                     errorCorrectionLevel: QrErrorCorrectLevel.M,
                     backgroundColor: Colors.white,
                   )
-                : const Center(
+                : Center(
                     child: Text(
-                      '로그인 정보가 필요합니다.',
+                      emptyLabel,
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                   ),
           ),
@@ -175,9 +181,7 @@ class _QrPanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           SelectableText(
-            qrPayload.isEmpty
-                ? 'InBody UserID 없음'
-                : 'InBody UserID: $qrPayload',
+            qrPayload.isEmpty ? emptyLabel : '$idLabel: $qrPayload',
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 14,
@@ -236,7 +240,7 @@ class _MeasurementGuideCard extends StatelessWidget {
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('측정 진행 순서',
+          Text('개인 측정 진행 순서',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           SizedBox(height: 14),
           _GuideStep(index: '1', text: '인바디 장비에서 사용자 ID 등록 또는 QR 스캔을 선택합니다.'),
