@@ -3,6 +3,7 @@
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/utils/component/custom_drawer.dart';
 import 'package:Vincere/utils/component/header.dart';
+import 'package:Vincere/utils/http/webReqFastapi.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +21,7 @@ class PageInbodyMachineMeasurement extends StatefulWidget {
 class _PageInbodyMachineMeasurementState
     extends State<PageInbodyMachineMeasurement> {
   late String _issuedAt;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -56,6 +58,42 @@ class _PageInbodyMachineMeasurementState
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('QR 데이터가 복사되었습니다.')),
     );
+  }
+
+  // 인바디 서버 측정 결과를 조회하고 Vincere DB 저장 후 화면 데이터를 갱신하기 위한 기능
+  Future<void> _syncInbodyMeasurement(UserModel userModel) async {
+    final userId = _buildOperationalInbodyUserId(userModel);
+    if (userId.isEmpty || _isSyncing) return;
+
+    setState(() => _isSyncing = true);
+    try {
+      final apiService = ApiServiceFast();
+      final result = await apiService.syncInbodyMeasurement(userId);
+      if (!mounted) return;
+
+      if (result.containsKey('result')) {
+        await userModel.set_user_info();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('인바디 측정 결과가 저장되었습니다.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(result['error']?.toString() ?? '저장할 측정 결과가 없습니다.')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('인바디 결과 동기화 중 오류가 발생했습니다: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
   }
 
   @override
@@ -99,8 +137,10 @@ class _PageInbodyMachineMeasurementState
                 issuedAt: _issuedAt,
                 idLabel: 'InBody UserID',
                 emptyLabel: 'InBody UserID 없음',
+                isSyncing: _isSyncing,
                 onRefresh: _regenerateQr,
                 onCopy: () => _copyQrPayload(qrPayload),
+                onSync: () => _syncInbodyMeasurement(userModel),
               ),
               const SizedBox(height: 22),
               const _MeasurementGuideCard(),
@@ -118,8 +158,10 @@ class _QrPanel extends StatelessWidget {
   final String issuedAt;
   final String idLabel;
   final String emptyLabel;
+  final bool isSyncing;
   final VoidCallback onRefresh;
   final VoidCallback onCopy;
+  final VoidCallback onSync;
 
   const _QrPanel({
     required this.qrPayload,
@@ -127,8 +169,10 @@ class _QrPanel extends StatelessWidget {
     required this.issuedAt,
     required this.idLabel,
     required this.emptyLabel,
+    required this.isSyncing,
     required this.onRefresh,
     required this.onCopy,
+    required this.onSync,
   });
 
   @override
@@ -218,6 +262,27 @@ class _QrPanel extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isUserReady && !isSyncing ? onSync : null,
+              icon: isSyncing
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.download_done_rounded, size: 18),
+              label: Text(isSyncing ? '불러오는 중' : '측정 결과 불러오기'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black87,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey.shade300,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
           ),
         ],
       ),

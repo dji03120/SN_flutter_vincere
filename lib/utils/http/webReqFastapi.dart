@@ -1,3 +1,5 @@
+// FastAPI 서버와 Vincere 앱 데이터를 연동하기 위한 기능
+
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:Vincere/page_home/utils.dart';
@@ -93,10 +95,32 @@ class ApiServiceFast {
     return checkResponse(response);
   }
 
+  // 인바디 서버 측정값을 Vincere DB에 동기화하기 위한 기능
+  Future<Map<String, dynamic>> syncInbodyMeasurement(
+    String userId, {
+    String? inbodyUserId,
+    String? datetimes,
+  }) async {
+    print('$baseUrl/sync-inbody-measurement');
+    final Map<String, dynamic> param = {
+      'user_id': userId,
+      if (inbodyUserId != null && inbodyUserId.isNotEmpty)
+        'inbody_user_id': inbodyUserId,
+      if (datetimes != null && datetimes.isNotEmpty) 'datetimes': datetimes,
+    };
+    final response = await http.post(
+      Uri.parse('$baseUrl/sync-inbody-measurement'),
+      headers: header,
+      body: json.encode(param),
+    );
+    return checkResponse(response);
+  }
+
   //
   //
   //
-  Future<Map<String, dynamic>> requestOSDBFP(UserModel userModel, double voltage) async {
+  Future<Map<String, dynamic>> requestOSDBFP(
+      UserModel userModel, double voltage) async {
     print('$baseUrl/proxy-osd-bodyfat');
     final Map<String, dynamic> param = {
       'param': {
@@ -119,7 +143,8 @@ class ApiServiceFast {
   //
   //
   //
-  Future<Map<String, dynamic>> requestOSDPPG(UserModel userModel, List<int> ppgList) async {
+  Future<Map<String, dynamic>> requestOSDPPG(
+      UserModel userModel, List<int> ppgList) async {
     print('$baseUrl/proxy-osd-ppg');
     final Map<String, dynamic> param = {
       "age": calculateAge(userModel.userInfo?["bym"]),
@@ -189,14 +214,16 @@ class ApiServiceFast {
   Future<List<SurveyItem>> fetchAllSurveys() async {
     // 모든 survey loading
     print('$baseUrl/survery');
-    final response = await http.get(Uri.parse('$baseUrl/survery'), headers: header);
+    final response =
+        await http.get(Uri.parse('$baseUrl/survery'), headers: header);
 
     if (response.statusCode == 200) {
       final jsonRes = checkResponse(response);
       final SurveyResponse surveyResponse = SurveyResponse.fromJson(jsonRes);
       return surveyResponse.items;
     } else {
-      throw Exception('Failed to load surveys from API. Status code: ${response.statusCode}');
+      throw Exception(
+          'Failed to load surveys from API. Status code: ${response.statusCode}');
     }
   }
 
@@ -206,35 +233,44 @@ class ApiServiceFast {
   Future<List<dynamic>> select_all_surveys() async {
     // survey table의 id에 해당하는 모든 question 로딩
     print('$baseUrl/survery');
-    final response = await http.get(Uri.parse('$baseUrl/survery'), headers: header);
+    final response =
+        await http.get(Uri.parse('$baseUrl/survery'), headers: header);
     return checkResponse(response)['items'];
   }
 
   //
   //
   //
-  Future<List<Map<String, dynamic>>> select_survey_questions(int surveyId) async {
+  Future<List<Map<String, dynamic>>> select_survey_questions(
+      int surveyId) async {
     // survey table의 id에 해당하는 모든 question 로딩
     print('$baseUrl/survery-question/$surveyId');
-    final response = await http.get(Uri.parse('$baseUrl/survery-question/$surveyId'), headers: header);
+    final response = await http
+        .get(Uri.parse('$baseUrl/survery-question/$surveyId'), headers: header);
     final jsonRes = checkResponse(response)['result'];
-    final questions = (jsonRes as List).map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e)).toList();
+    final questions = (jsonRes as List)
+        .map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e))
+        .toList();
     return questions;
   }
 
   //
   //
   //
-  Future<Map<String, dynamic>> select_survey_question_one(int questionId) async {
+  Future<Map<String, dynamic>> select_survey_question_one(
+      int questionId) async {
     print('$baseUrl/survery-question-one/$questionId');
-    final response = await http.get(Uri.parse('$baseUrl/survery-question-one/$questionId'), headers: header);
+    final response = await http.get(
+        Uri.parse('$baseUrl/survery-question-one/$questionId'),
+        headers: header);
     return checkResponse(response)['result'];
   }
 
   //
   //
   //
-  Future<void> insert_survey_answer(String userId, int surveyId, Map answers) async {
+  Future<void> insert_survey_answer(
+      String userId, int surveyId, Map answers) async {
     // survey table의 id에 해당하는 모든 question 로딩
     print('$baseUrl/insert-survey-answer');
     final Map<String, dynamic> param = {
@@ -259,23 +295,33 @@ Future<void> saveMeasureResult(BuildContext context) async {
     ApiServiceFast apiService = ApiServiceFast();
     print("\n\n\n\n");
     print(userModel.userHealthData);
-    Map<String, dynamic> result = await apiService.insertUserHealth(userModel.userId, userModel.userHealthData ?? {});
+    Map<String, dynamic> result = await apiService.insertUserHealth(
+        userModel.userId, userModel.userHealthData ?? {});
     // 결과 처리
     if (result.containsKey("result")) {
       await userModel.set_user_info();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('건강정보가 성공적으로 업데이트되었습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.green),
+        const SnackBar(
+            content: Text('건강정보가 성공적으로 업데이트되었습니다.'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green),
       );
     }
     if (result.containsKey("error")) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('업데이트 중 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('업데이트 중 오류가 발생했습니다.'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red),
       );
     }
   } catch (e) {
     print("저장 중 오류 발생: $e");
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('알 수 없는 오류가 발생했습니다.'), duration: Duration(seconds: 2), backgroundColor: Colors.red),
+      const SnackBar(
+          content: Text('알 수 없는 오류가 발생했습니다.'),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.red),
     );
   }
 }
