@@ -1,3 +1,5 @@
+// 사용자 건강정보 상세 화면을 표시하고 미측정 항목을 구분하기 위한 기능
+
 import 'dart:async';
 
 import 'package:Vincere/services/page_health/insight_card.dart';
@@ -27,7 +29,14 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
   Map userInfo = {};
   bool _isLoading = true;
   // 예시 데이터
-  final List<String> _radarNames = ['걷기', '앉았다 일어서기', '근육', '신체질량지수(BMI)', '체지방률', '악력'];
+  final List<String> _radarNames = [
+    '걷기',
+    '앉았다 일어서기',
+    '근육',
+    '신체질량지수(BMI)',
+    '체지방률',
+    '악력'
+  ];
   final Map<String, List<double>> _radarValues = {
     '1': [],
     '2': [95, 95, 95, 95, 95, 95],
@@ -35,11 +44,49 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
   double animatedMuscle = 0;
   double animatedWeight = 0;
   double animatedHeight = 0;
+  final Set<String> _zeroMeansMissingMetrics = {
+    '악력',
+    '걷기',
+    '앉았다 일어서기',
+    '혈당',
+    '혈압(고)',
+    '혈압(저)',
+    '심박수',
+    '산소포화도',
+    '심박변이도',
+    '스트레스지수',
+    '세포내 수분(ICW)',
+    '세포외 수분(ECW)',
+  };
+
+  // 건강정보 원본 값을 숫자로 안전하게 변환하기 위한 기능
+  double _metricValue(dynamic metricData) {
+    if (metricData == null || metricData[0] == null) return 0.0;
+    if (metricData[0] is num) return (metricData[0] as num).toDouble();
+    return double.tryParse(metricData[0].toString()) ?? 0.0;
+  }
+
+  // 미측정 건강항목을 레이더 차트와 상세 행에서 구분하기 위한 기능
+  bool _isMetricMissing(String name, dynamic metricData) {
+    if (metricData == null || metricData[0] == null) return true;
+    return _zeroMeansMissingMetrics.contains(name) &&
+        _metricValue(metricData) == 0;
+  }
+
+  // 건강등급을 레이더 차트 점수로 변환하기 위한 기능
+  double _metricRadarValue(String name, dynamic metricData) {
+    if (_isMetricMissing(name, metricData)) return 0.0;
+
+    int grade = metricData?[4] ?? 5;
+    if (grade <= 0) grade = 5;
+    return ((6 - grade) * 20).clamp(0, 100).toDouble();
+  }
 
   //
   //
   //
-  void _animateValue(double targetMuscle, double targetWeight, double targetHeight) {
+  void _animateValue(
+      double targetMuscle, double targetWeight, double targetHeight) {
     const int steps = 10; // 애니메이션 프레임 수
     int currentStep = 0;
 
@@ -61,19 +108,18 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
   Future<void> _initializeData() async {
     try {
       final userModel = Provider.of<UserModel>(context, listen: false);
-      userModel.set_user_info();
+      await userModel.set_user_info();
+      if (!mounted) return;
+
       print(userModel.userHealthData);
       _animateValue(
         userModel.userHealthData?['근육'][0] ?? 0.0,
         userModel.userHealthData?['몸무게'][0] ?? 0.0,
         userModel.userHealthData?['키'][0] ?? 0.0,
       );
-      for (int i = 0; i < _radarNames.length; i++) {
-        int grade = userModel.userHealthData?[_radarNames[i]][4] ?? 5;
-        if (grade == 0) grade = 5;
-        double value = (6 - (grade)) * 20;
-        _radarValues['1']?.add(value);
-      }
+      _radarValues['1'] = _radarNames.map((name) {
+        return _metricRadarValue(name, userModel.userHealthData?[name]);
+      }).toList();
       print(_radarValues);
       _isLoading = false;
       if (mounted) setState(() {});
@@ -114,8 +160,14 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
               child: SingleChildScrollView(
                 child: Column(children: [
                   Container(
-                    decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]),
-                    child: _content_radar(context, widget, _radarNames, _radarValues),
+                    decoration: BoxDecoration(boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4))
+                    ]),
+                    child: _content_radar(
+                        context, widget, _radarNames, _radarValues),
                   ),
                   SizedBox(height: 10),
                   ProfileMuscleCard(userModel: userModel),
@@ -124,7 +176,8 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                     padding: const EdgeInsets.all(6.0),
                     child: InsightSummaryCard(
                       title: "건강 인사이트",
-                      summary: "ex) 체지방률과 BMI가 기준보다 높습니다. 체중 관리 중심의 생활습관 개선이 권장됩니다.",
+                      summary:
+                          "ex) 체지방률과 BMI가 기준보다 높습니다. 체중 관리 중심의 생활습관 개선이 권장됩니다.",
                       insights: [
                         {
                           "icon": Icons.warning_amber_rounded,
@@ -152,9 +205,11 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                       elevation: 4,
                       margin: const EdgeInsets.symmetric(vertical: 3),
                       color: Colors.grey[100],
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 3),
                         child: Column(children: [
                           SizedBox(height: 25),
                           Container(
@@ -163,21 +218,36 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.black87, width: 1.6),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6, offset: Offset(0, 3))],
+                              border:
+                                  Border.all(color: Colors.black87, width: 1.6),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 3))
+                              ],
                             ),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => HisHealth()));
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => HisHealth()));
                               },
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 18),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('나의 건강정보 이력', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black)),
-                                    Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.black),
+                                    Text('나의 건강정보 이력',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.black)),
+                                    Icon(Icons.arrow_forward_ios_rounded,
+                                        size: 18, color: Colors.black),
                                   ],
                                 ),
                               ),
@@ -188,100 +258,140 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                               elevation: 4,
                               margin: const EdgeInsets.symmetric(vertical: 6),
                               color: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  SizedBox(height: 25),
-                                  Row(children: [
-                                    Icon(Icons.person, color: Colors.green, size: 30),
-                                    const SizedBox(width: 12),
-                                    Text("신체조성", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
-                                  ]),
-                                  Divider(),
-                                  SizedBox(height: 10),
-                                  dataRow('신체질량지수(BMI)', -1),
-                                  dataRow('근육', 1),
-                                  dataRow('체지방률', -1),
-                                  SizedBox(height: 25),
-                                ]),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 3),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 25),
+                                      Row(children: [
+                                        Icon(Icons.person,
+                                            color: Colors.green, size: 30),
+                                        const SizedBox(width: 12),
+                                        Text("신체조성",
+                                            style: const TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87)),
+                                      ]),
+                                      Divider(),
+                                      SizedBox(height: 10),
+                                      dataRow('신체질량지수(BMI)', -1),
+                                      dataRow('근육', 1),
+                                      dataRow('체지방률', -1),
+                                      SizedBox(height: 25),
+                                    ]),
                               )),
                           SizedBox(height: 20),
                           Card(
                               elevation: 4,
                               margin: const EdgeInsets.symmetric(vertical: 6),
                               color: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  SizedBox(height: 25),
-                                  Row(children: [
-                                    Icon(Icons.directions_run, color: Colors.green, size: 30),
-                                    const SizedBox(width: 12),
-                                    Text("신체기능", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
-                                  ]),
-                                  Divider(),
-                                  SizedBox(height: 10),
-                                  dataRow('악력', 1),
-                                  dataRow('걷기', 1),
-                                  dataRow('앉았다 일어서기', 1),
-                                  SizedBox(height: 25),
-                                ]),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 3),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 25),
+                                      Row(children: [
+                                        Icon(Icons.directions_run,
+                                            color: Colors.green, size: 30),
+                                        const SizedBox(width: 12),
+                                        Text("신체기능",
+                                            style: const TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87)),
+                                      ]),
+                                      Divider(),
+                                      SizedBox(height: 10),
+                                      dataRow('악력', 1),
+                                      dataRow('걷기', 1),
+                                      dataRow('앉았다 일어서기', 1),
+                                      SizedBox(height: 25),
+                                    ]),
                               )),
                           SizedBox(height: 20),
                           Card(
                               elevation: 4,
                               margin: const EdgeInsets.symmetric(vertical: 6),
                               color: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  SizedBox(height: 25),
-                                  Row(children: [
-                                    Icon(Icons.more_horiz, color: Colors.green, size: 30),
-                                    const SizedBox(width: 12),
-                                    Text("기타 항목", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
-                                  ]),
-                                  Divider(),
-                                  SizedBox(height: 10),
-                                  dataRow('몸무게', -1),
-                                  dataRow('근육량', 1),
-                                  dataRow('체지방량', -1),
-                                  dataRow('기초대사량', 2),
-                                  dataRow('세포내 수분(ICW)', 2),
-                                  dataRow('세포외 수분(ECW)', 2),
-                                  dataRow('단백질량', 2),
-                                  dataRow('무기질량', 2),
-                                  SizedBox(height: 25),
-                                ]),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 3),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 25),
+                                      Row(children: [
+                                        Icon(Icons.more_horiz,
+                                            color: Colors.green, size: 30),
+                                        const SizedBox(width: 12),
+                                        Text("기타 항목",
+                                            style: const TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87)),
+                                      ]),
+                                      Divider(),
+                                      SizedBox(height: 10),
+                                      dataRow('몸무게', -1),
+                                      dataRow('근육량', 1),
+                                      dataRow('체지방량', -1),
+                                      dataRow('기초대사량', 2),
+                                      dataRow('세포내 수분(ICW)', 2),
+                                      dataRow('세포외 수분(ECW)', 2),
+                                      dataRow('단백질량', 2),
+                                      dataRow('무기질량', 2),
+                                      SizedBox(height: 25),
+                                    ]),
                               )),
                           Card(
                               elevation: 4,
                               margin: const EdgeInsets.symmetric(vertical: 6),
                               color: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  SizedBox(height: 25),
-                                  Row(children: [
-                                    Icon(Icons.self_improvement, color: Colors.green, size: 30),
-                                    const SizedBox(width: 12),
-                                    Text("기타 항목", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
-                                  ]),
-                                  Divider(),
-                                  SizedBox(height: 10),
-                                  dataRow('혈당', 2),
-                                  dataRow('혈압(고)', 2),
-                                  dataRow('혈압(저)', 2),
-                                  dataRow('심박수', 2),
-                                  dataRow('산소포화도', 2),
-                                  dataRow('심박변이도', 2),
-                                  dataRow('스트레스지수', 2),
-                                  SizedBox(height: 25),
-                                ]),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 3),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 25),
+                                      Row(children: [
+                                        Icon(Icons.self_improvement,
+                                            color: Colors.green, size: 30),
+                                        const SizedBox(width: 12),
+                                        Text("기타 항목",
+                                            style: const TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87)),
+                                      ]),
+                                      Divider(),
+                                      SizedBox(height: 10),
+                                      dataRow('혈당', 2),
+                                      dataRow('혈압(고)', 2),
+                                      dataRow('혈압(저)', 2),
+                                      dataRow('심박수', 2),
+                                      dataRow('산소포화도', 2),
+                                      dataRow('심박변이도', 2),
+                                      dataRow('스트레스지수', 2),
+                                      SizedBox(height: 25),
+                                    ]),
                               )),
                           SizedBox(height: 25),
                         ]),
@@ -296,7 +406,8 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
 //
 //
 //
-  Widget _content_radar(context, widget, List<String> _radarNames, Map _radarValues) {
+  Widget _content_radar(
+      context, widget, List<String> _radarNames, Map _radarValues) {
     double width = MediaQuery.of(context).size.width;
     //UserModel userModel = Provider.of<UserModel>(context);
 
@@ -323,82 +434,133 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => SelectMeasureDevice()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SelectMeasureDevice()));
                     },
                     style: TextButton.styleFrom(
                       fixedSize: Size(width * 0.7, 50),
                       minimumSize: Size.zero,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: Color(0xFF92D2B0), width: 2),
+                        side: const BorderSide(
+                            color: Color(0xFF92D2B0), width: 2),
                       ),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min, // 텍스트 + 아이콘 크기만큼
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.bluetooth, color: Color(0xFF92D2B0), size: 20),
+                        Icon(Icons.bluetooth,
+                            color: Color(0xFF92D2B0), size: 20),
                         SizedBox(width: 6),
-                        Text('건강정보 측정하기', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF92D2B0))),
+                        Text('건강정보 측정하기',
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF92D2B0))),
                       ],
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 10),
-              Container(width: 312, child: Divider(color: Colors.white.withOpacity(0.15), thickness: 2)),
+              Container(
+                  width: 312,
+                  child: Divider(
+                      color: Colors.white.withOpacity(0.15), thickness: 2)),
               SizedBox(height: 32),
 
               // 하단: Radar
               SizedBox(
                   height: 350 * 0.7 + 10,
-                  child: Stack(alignment: Alignment.center, clipBehavior: Clip.none, children: [
-                    //['체질량지수', '체지방률', '근육', '앉았다 일어나기(횟수)', '걷기(m/sec)', '악력(kg)'];
-                    CustomRadarChart(
-                      features: _radarNames,
-                      data: _radarValues['2'],
-                      sides: _radarNames.length,
-                      graphColors: [Colors.orangeAccent],
-                      ticks: [20, 40, 60, 80, 100],
-                      size: 350 * 0.8,
-                    ),
-                    CustomRadarChart(
-                      features: _radarNames,
-                      data: _radarValues['1'],
-                      sides: _radarNames.length,
-                      graphColors: [Colors.green],
-                      ticks: [20, 40, 60, 80, 100],
-                      size: 350 * 0.8,
-                    ),
-                    Transform.translate(
-                        offset: const Offset(-130, -10),
-                        child: Column(mainAxisSize: MainAxisSize.max, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(width: 30, height: 3, color: Colors.orangeAccent),
-                              const SizedBox(width: 6),
-                              const Text('목표', style: TextStyle(fontSize: 12, color: Colors.white)),
-                            ],
-                          ),
-                          Row(mainAxisSize: MainAxisSize.min, children: [
-                            Container(width: 30, height: 3, color: Colors.green), // 텍스트와 막대 간격
-                            const SizedBox(width: 6),
-                            const Text('현재', style: TextStyle(fontSize: 12, color: Colors.white)),
-                          ])
-                        ]))
-                  ])),
+                  child: Stack(
+                      alignment: Alignment.center,
+                      clipBehavior: Clip.none,
+                      children: [
+                        //['체질량지수', '체지방률', '근육', '앉았다 일어나기(횟수)', '걷기(m/sec)', '악력(kg)'];
+                        CustomRadarChart(
+                          features: _radarNames,
+                          data: _radarValues['2'],
+                          sides: _radarNames.length,
+                          graphColors: [Colors.orangeAccent],
+                          ticks: [20, 40, 60, 80, 100],
+                          size: 350 * 0.8,
+                        ),
+                        CustomRadarChart(
+                          features: _radarNames,
+                          data: _radarValues['1'],
+                          sides: _radarNames.length,
+                          graphColors: [Colors.green],
+                          ticks: [20, 40, 60, 80, 100],
+                          size: 350 * 0.8,
+                        ),
+                        Transform.translate(
+                            offset: const Offset(-130, -10),
+                            child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                          width: 30,
+                                          height: 3,
+                                          color: Colors.orangeAccent),
+                                      const SizedBox(width: 6),
+                                      const Text('목표',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.white)),
+                                    ],
+                                  ),
+                                  Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                            width: 30,
+                                            height: 3,
+                                            color: Colors.green), // 텍스트와 막대 간격
+                                        const SizedBox(width: 6),
+                                        const Text('현재',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white)),
+                                      ])
+                                ]))
+                      ])),
               SizedBox(height: 32),
-              Container(width: 312, child: Divider(color: Colors.white.withOpacity(0.15), thickness: 2)),
+              Container(
+                  width: 312,
+                  child: Divider(
+                      color: Colors.white.withOpacity(0.15), thickness: 2)),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(margin: const EdgeInsets.fromLTRB(38, 12, 12, 24), child: _buildHealthMetric('키', animatedHeight, 'cm')),
-                  Container(height: 74, child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1, width: 1)),
-                  Container(margin: const EdgeInsets.fromLTRB(12, 12, 12, 24), child: _buildHealthMetric('몸무게', animatedWeight, 'kg')),
-                  Container(height: 74, child: VerticalDivider(color: Colors.white.withOpacity(0.15), thickness: 1, width: 1)),
-                  Container(margin: const EdgeInsets.fromLTRB(12, 12, 38, 24), child: _buildHealthMetric('근육', animatedMuscle, '%')),
+                  Container(
+                      margin: const EdgeInsets.fromLTRB(38, 12, 12, 24),
+                      child: _buildHealthMetric('키', animatedHeight, 'cm')),
+                  Container(
+                      height: 74,
+                      child: VerticalDivider(
+                          color: Colors.white.withOpacity(0.15),
+                          thickness: 1,
+                          width: 1)),
+                  Container(
+                      margin: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                      child: _buildHealthMetric('몸무게', animatedWeight, 'kg')),
+                  Container(
+                      height: 74,
+                      child: VerticalDivider(
+                          color: Colors.white.withOpacity(0.15),
+                          thickness: 1,
+                          width: 1)),
+                  Container(
+                      margin: const EdgeInsets.fromLTRB(12, 12, 38, 24),
+                      child: _buildHealthMetric('근육', animatedMuscle, '%')),
                 ],
               ),
             ],
@@ -411,18 +573,23 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
 //
   Widget dataRow(String name, int direction) {
     UserModel userModel = Provider.of<UserModel>(context);
-    int grade = userModel.userHealthData?[name][4] ?? 5;
-    double value = userModel.userHealthData?[name][0] ?? 0;
+    final metricData = userModel.userHealthData?[name];
+    int grade = metricData?[4] ?? 5;
+    double value = _metricValue(metricData);
     double progress = 0.2;
-    double standard = userModel.userHealthData?[name][5] ?? 0.0;
+    double standard = (metricData?[5] is num)
+        ? (metricData?[5] as num).toDouble()
+        : double.tryParse(metricData?[5]?.toString() ?? '') ?? 0.0;
     double standardDiff = value - standard;
+    final bool isMissingValue = _isMetricMissing(name, metricData);
+    final bool isReferenceOnly = direction == 2;
 
     if (grade == 0) grade = 5;
     if (direction == 1) progress = (6 - grade) / 5;
     if (direction == -1) progress = grade / 5;
 
     String state = '평균';
-    String label = '${name} (${userModel.userHealthData?[name][3] ?? 0})';
+    String label = '${name} (${metricData?[3] ?? '-'})';
     String standardDiffStr = standardDiff.toStringAsFixed(1);
     if (standardDiff >= 0) {
       standardDiffStr = " +$standardDiffStr ▲";
@@ -453,6 +620,20 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
       progress = 1;
       standardDiffStr = '-';
     }
+    if (isMissingValue) {
+      state = '미측정';
+      color = Colors.grey.shade300;
+      progress = 0;
+      standardDiffStr = '-';
+    }
+
+    final String valueText = isMissingValue ? '-' : value.toStringAsFixed(1);
+    final String standardText = isMissingValue
+        ? '미측정'
+        : isReferenceOnly
+            ? '측정값'
+            : '$state (${standard.toStringAsFixed(1)})';
+    final Color valueColor = isMissingValue ? Colors.black54 : Colors.black;
 
     // 화면에 보일 때 애니메이션 시작하도록 상태 변수 추가
     double animatedProgress = 0.0;
@@ -477,18 +658,28 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                 SizedBox(height: 4),
                 Row(
                   children: [
-                    AutoSizeText(label, maxLines: 1, minFontSize: 12, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                    AutoSizeText(label,
+                        maxLines: 1,
+                        minFontSize: 12,
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500)),
                     const Spacer(),
                     RichText(
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "${value.toStringAsFixed(1)}  ",
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                            text: "$valueText  ",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: valueColor),
                           ),
                           TextSpan(
                             text: "($standardDiffStr)",
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black),
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.normal,
+                                color: valueColor),
                           ),
                         ],
                       ),
@@ -498,7 +689,11 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                 const SizedBox(height: 8),
                 Stack(
                   children: [
-                    Container(height: 45, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(3))),
+                    Container(
+                        height: 45,
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(3))),
                     TweenAnimationBuilder<double>(
                       tween: Tween<double>(begin: 0, end: animatedProgress),
                       duration: const Duration(milliseconds: 800),
@@ -506,21 +701,37 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
                       builder: (context, animatedValue, child) {
                         return FractionallySizedBox(
                           widthFactor: animatedValue,
-                          child: Container(height: 45, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
+                          child: Container(
+                              height: 45,
+                              decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: BorderRadius.circular(3))),
                         );
                       },
                     ),
                     const Positioned.fill(
-                        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Expanded(child: SizedBox()),
-                      SizedBox(height: 25, child: VerticalDivider(color: Colors.white, thickness: 1, width: 2)),
-                      Expanded(child: SizedBox()),
-                      SizedBox(height: 25, child: VerticalDivider(color: Colors.white, thickness: 1, width: 2)),
-                      Expanded(child: SizedBox()),
-                    ])),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                          Expanded(child: SizedBox()),
+                          SizedBox(
+                              height: 25,
+                              child: VerticalDivider(
+                                  color: Colors.white, thickness: 1, width: 2)),
+                          Expanded(child: SizedBox()),
+                          SizedBox(
+                              height: 25,
+                              child: VerticalDivider(
+                                  color: Colors.white, thickness: 1, width: 2)),
+                          Expanded(child: SizedBox()),
+                        ])),
                     Positioned.fill(
-                      child: Center(child: Text("$state (${standard.toStringAsFixed(1)})", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black))),
-                    ),
+                        child: Center(
+                            child: Text(standardText,
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)))),
                   ],
                 )
               ],
@@ -535,11 +746,19 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
   Widget _buildHealthMetric(String label, double value, String unit) {
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))), //이름
+        Text(label,
+            style: TextStyle(
+                fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))), //이름
         SizedBox(height: 2),
-        Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)), //값
+        Text(value.toStringAsFixed(1),
+            style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                color: Colors.white)), //값
         SizedBox(height: 2),
-        Text(unit, style: TextStyle(fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))), //단위
+        Text(unit,
+            style: TextStyle(
+                fontSize: 15, color: Color(0xFFFFFF).withOpacity(0.8))), //단위
       ],
     );
   }
