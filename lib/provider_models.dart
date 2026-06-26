@@ -304,9 +304,15 @@ class UserModel extends ChangeNotifier {
       }
 
       //
-      // get user health
+      // 사용자 건강정보가 없을 때 후속 추천 플랜 조회를 건너뛰기 위한 기능
       ApiServiceFast apiServicFast = ApiServiceFast();
-      _userHealthData = (await apiServicFast.selectUserHealth(_userId.toString()))['result'];
+      final healthResult = (await apiServicFast.selectUserHealth(_userId.toString()))['result'];
+      _userHealthData = healthResult is Map<String, dynamic> ? healthResult : {};
+      if (_userHealthData == null || _userHealthData!.isEmpty) {
+        _userHealthData = {};
+        notifyListeners();
+        return;
+      }
       _gradeAvg = _userHealthData?['grade_average'] ?? 3;
 
       //
@@ -333,6 +339,7 @@ class UserModel extends ChangeNotifier {
     }
     print("userdata : ${_userInfo}");
     print("userHealthData : ${_userHealthData}");
+    notifyListeners();
   }
 
   //

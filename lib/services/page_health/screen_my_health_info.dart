@@ -59,16 +59,23 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
     '세포외 수분(ECW)',
   };
 
+  // 건강정보 원본 리스트에서 지정된 위치의 값을 안전하게 꺼내기 위한 기능
+  dynamic _metricItem(dynamic metricData, int index) {
+    if (metricData is! List || metricData.length <= index) return null;
+    return metricData[index];
+  }
+
   // 건강정보 원본 값을 숫자로 안전하게 변환하기 위한 기능
   double _metricValue(dynamic metricData) {
-    if (metricData == null || metricData[0] == null) return 0.0;
-    if (metricData[0] is num) return (metricData[0] as num).toDouble();
-    return double.tryParse(metricData[0].toString()) ?? 0.0;
+    final rawValue = _metricItem(metricData, 0);
+    if (rawValue == null) return 0.0;
+    if (rawValue is num) return rawValue.toDouble();
+    return double.tryParse(rawValue.toString()) ?? 0.0;
   }
 
   // 미측정 건강항목을 레이더 차트와 상세 행에서 구분하기 위한 기능
   bool _isMetricMissing(String name, dynamic metricData) {
-    if (metricData == null || metricData[0] == null) return true;
+    if (_metricItem(metricData, 0) == null) return true;
     return _zeroMeansMissingMetrics.contains(name) &&
         _metricValue(metricData) == 0;
   }
@@ -77,7 +84,9 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
   double _metricRadarValue(String name, dynamic metricData) {
     if (_isMetricMissing(name, metricData)) return 0.0;
 
-    int grade = metricData?[4] ?? 5;
+    int grade = (_metricItem(metricData, 4) is int)
+        ? _metricItem(metricData, 4)
+        : int.tryParse(_metricItem(metricData, 4)?.toString() ?? '') ?? 5;
     if (grade <= 0) grade = 5;
     return ((6 - grade) * 20).clamp(0, 100).toDouble();
   }
@@ -113,9 +122,9 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
 
       print(userModel.userHealthData);
       _animateValue(
-        userModel.userHealthData?['근육'][0] ?? 0.0,
-        userModel.userHealthData?['몸무게'][0] ?? 0.0,
-        userModel.userHealthData?['키'][0] ?? 0.0,
+        _metricValue(userModel.userHealthData?['근육']),
+        _metricValue(userModel.userHealthData?['몸무게']),
+        _metricValue(userModel.userHealthData?['키']),
       );
       _radarValues['1'] = _radarNames.map((name) {
         return _metricRadarValue(name, userModel.userHealthData?[name]);
@@ -125,6 +134,8 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
       if (mounted) setState(() {});
     } catch (e) {
       print('Error initializing data: $e');
+      _isLoading = false;
+      if (mounted) setState(() {});
     }
   }
 
@@ -574,12 +585,15 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
   Widget dataRow(String name, int direction) {
     UserModel userModel = Provider.of<UserModel>(context);
     final metricData = userModel.userHealthData?[name];
-    int grade = metricData?[4] ?? 5;
+    int grade = (_metricItem(metricData, 4) is int)
+        ? _metricItem(metricData, 4)
+        : int.tryParse(_metricItem(metricData, 4)?.toString() ?? '') ?? 5;
     double value = _metricValue(metricData);
     double progress = 0.2;
-    double standard = (metricData?[5] is num)
-        ? (metricData?[5] as num).toDouble()
-        : double.tryParse(metricData?[5]?.toString() ?? '') ?? 0.0;
+    final standardValue = _metricItem(metricData, 5);
+    double standard = (standardValue is num)
+        ? standardValue.toDouble()
+        : double.tryParse(standardValue?.toString() ?? '') ?? 0.0;
     double standardDiff = value - standard;
     final bool isMissingValue = _isMetricMissing(name, metricData);
     final bool isReferenceOnly = direction == 2;
@@ -589,7 +603,7 @@ class _ScreenHealthInfo extends State<ScreenHealthInfo> {
     if (direction == -1) progress = grade / 5;
 
     String state = '평균';
-    String label = '${name} (${metricData?[3] ?? '-'})';
+    String label = '${name} (${_metricItem(metricData, 3) ?? '-'})';
     String standardDiffStr = standardDiff.toStringAsFixed(1);
     if (standardDiff >= 0) {
       standardDiffStr = " +$standardDiffStr ▲";
