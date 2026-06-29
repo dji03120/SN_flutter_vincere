@@ -1,18 +1,58 @@
 // FastAPI 서버와 Vincere 앱 데이터를 연동하기 위한 기능
 
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:Vincere/page_home/utils.dart';
 import 'package:Vincere/provider_models.dart';
 import 'package:Vincere/services/page_survery_copy/data_models.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
+
+// 서버 오류 원문을 사용자 화면에 노출하지 않기 위한 기능
+class ApiRequestException implements Exception {
+  final int statusCode;
+  final String message;
+
+  ApiRequestException(this.statusCode, this.message);
+
+  @override
+  String toString() => message;
+}
 
 class ApiServiceFast {
   final String baseUrl = 'https://vincerebiohealth.kr/api/vincere'; // 운영
   dynamic header = {'Content-Type': 'application/json'};
+
+  // 서버 오류 응답을 사용자용 안내 문구로 변환하기 위한 기능
+  String _buildSafeErrorMessage(http.Response response) {
+    try {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final decodedJson = json.decode(decodedBody);
+      final rawMessage = decodedJson is Map
+          ? (decodedJson['message'] ?? decodedJson['error'])?.toString().trim()
+          : null;
+      final hasUnsafeDetails = rawMessage != null &&
+          (rawMessage.contains('Traceback') ||
+              rawMessage.contains('Client Error') ||
+              rawMessage.contains('Bad Request') ||
+              rawMessage.contains('HTTPError') ||
+              rawMessage.contains('lookinbody.com'));
+
+      if (rawMessage != null && rawMessage.isNotEmpty && !hasUnsafeDetails) {
+        return rawMessage;
+      }
+    } catch (_) {
+      // 오류 응답 본문 파싱에 실패하면 상태 코드 기반 기본 문구를 사용한다.
+    }
+
+    if (response.statusCode == 400 || response.statusCode == 404) {
+      return '조회 가능한 데이터가 없습니다.';
+    }
+    if (response.statusCode >= 500) {
+      return '서버에서 데이터를 처리하지 못했습니다. 잠시 후 다시 시도해주세요.';
+    }
+    return '요청을 처리하지 못했습니다. 입력값을 확인해주세요.';
+  }
 
   dynamic checkResponse(http.Response response) {
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -24,8 +64,9 @@ class ApiServiceFast {
         throw Exception('Failed to decode JSON: ${e.toString()}');
       }
     } else {
-      throw Exception(
-        'Request failed with status: ${response.statusCode}, body: ${response.body}',
+      throw ApiRequestException(
+        response.statusCode,
+        _buildSafeErrorMessage(response),
       );
     }
   }
