@@ -1,3 +1,5 @@
+// 마이페이지 회원정보와 프로필 사진 관리를 위한 기능
+
 import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:Vincere/page_account/screen_kakao_address.dart';
 import 'package:Vincere/page_account/screen_update_pswd.dart';
@@ -947,14 +949,18 @@ class _MyPageState extends State<MyPage> {
       Map<String, dynamic> result = await apiService.fetchProfileImage(userId.toString());
       //print('Profile image API response: $result');
 
-      if (result['success'] == true && result['imageUrl'] != null) {
-        print('Setting profile image URL: ${result['imageUrl'].substring(0, 50)}...');
+      final profileImageUrl = apiService.extractProfileImageUrl(result);
+      if (result['success'] == true && profileImageUrl != null) {
+        print('Setting profile image URL: $profileImageUrl');
         setState(() {
-          _profileImageUrl = result['imageUrl'];
+          _profileImageUrl = profileImageUrl;
           widget.onProfileImageChange(_profileImageUrl); // main화면의 상태 업데이트
         });
       } else {
         print('Failed to get profile image: ${result['message']}');
+        setState(() {
+          _profileImageUrl = null;
+        });
         widget.onProfileImageChange(null);
       }
     } catch (e) {
@@ -981,6 +987,13 @@ class _MyPageState extends State<MyPage> {
           SnackBar(
             content: Text('프로필 이미지가 업로드되었습니다.'),
             backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('이미지 업로드에 실패했습니다: ${result['message'] ?? '서버 응답을 확인해 주세요.'}'),
+            backgroundColor: Colors.red,
           ),
         );
       }

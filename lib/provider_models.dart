@@ -1,3 +1,5 @@
+// 앱 전역 상태와 사용자 데이터를 관리하기 위한 기능
+
 import 'dart:convert';
 
 import 'package:Vincere/utils/http/webReqFastapi.dart';
@@ -296,8 +298,9 @@ class UserModel extends ChangeNotifier {
       //
       // get profile image
       Map<String, dynamic> profileRes = await apiService.fetchProfileImage(_userId.toString());
-      if (profileRes['success'] == true && profileRes['imageUrl'] != null) {
-        _profileImageUrl = profileRes['imageUrl'];
+      final profileImageUrl = apiService.extractProfileImageUrl(profileRes);
+      if (profileRes['success'] == true && profileImageUrl != null) {
+        _profileImageUrl = profileImageUrl;
       } else {
         _profileImageUrl = '';
         print('Failed to get profile image: ${profileRes['message']}');

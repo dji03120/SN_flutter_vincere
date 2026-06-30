@@ -1,3 +1,5 @@
+// Spring API 통신과 프로필 이미지 응답 정규화를 위한 기능
+
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
@@ -6,6 +8,7 @@ class ApiService {
   final String baseUrl = 'https://vincerebiohealth.kr/root'; // 운영
   dynamic header = {'Content-Type': 'application/json'};
   // final String baseUrl = 'http://127.0.0.1:8080'; //root'; // 로컬
+  Uri get _baseUri => Uri.parse(baseUrl);
 
   // 2024-08-21 AJG web 통신용 추가
 
@@ -335,7 +338,7 @@ class ApiService {
       var multipartFile = http.MultipartFile.fromBytes(
         'file',
         imageBytes,
-        filename: 'profile_$userId.jpg',
+        filename: _profileImageFileName(userId, fileName),
       );
 
       request.files.add(multipartFile);
@@ -346,9 +349,9 @@ class ApiService {
       var result = jsonDecode(responseData);
 
       if (response.statusCode == 200) {
-        return result;
+        return result is Map<String, dynamic> ? normalizeProfileImageResponse(result) : {'success': false};
       } else {
-        throw Exception('Failed to upload image');
+        throw Exception('Failed to upload image: ${response.statusCode}, $responseData');
       }
     } catch (e) {
       print('Error uploading profile image: $e');
@@ -365,7 +368,8 @@ class ApiService {
         headers: header,
       );
 
-      return checkResponse(response);
+      final result = checkResponse(response);
+      return result is Map<String, dynamic> ? normalizeProfileImageResponse(result) : {'success': false};
     } catch (e) {
       print('Error deleting profile image: $e');
       throw e;
@@ -383,11 +387,108 @@ class ApiService {
         body: jsonEncode(<String, String>{'userId': userId}),
       );
 
-      return checkResponse(response);
+      final result = checkResponse(response);
+      return result is Map<String, dynamic> ? normalizeProfileImageResponse(result) : {'success': false};
     } catch (e) {
       print('Error fetching profile image: $e');
       return {'success': false};
     }
+  }
+
+  // 프로필 이미지 API 응답 형식을 앱 내부 형식으로 맞추기 위한 기능
+  Map<String, dynamic> normalizeProfileImageResponse(Map<String, dynamic> response) {
+    final normalized = Map<String, dynamic>.from(response);
+    final imageUrl = extractProfileImageUrl(response);
+    normalized['success'] = _isSuccessResponse(response) || imageUrl != null;
+
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      normalized['imageUrl'] = imageUrl;
+    }
+
+    return normalized;
+  }
+
+  // 서버가 내려주는 다양한 이미지 URL 키를 하나로 추출하기 위한 기능
+  String? extractProfileImageUrl(Map<String, dynamic> response) {
+    final directUrl = _firstStringValue(response, const ['imageUrl', 'profileImageUrl', 'profileImgUrl', 'fileUrl', 'url', 'path']);
+    if (directUrl != null) {
+      return _normalizeProfileImageUrl(directUrl);
+    }
+
+    final result = response['result'];
+    if (result is Map<String, dynamic>) {
+      return extractProfileImageUrl(result);
+    }
+    if (result is String && result.trim().isNotEmpty) {
+      return _normalizeProfileImageUrl(result);
+    }
+
+    final data = response['data'];
+    if (data is Map<String, dynamic>) {
+      return extractProfileImageUrl(data);
+    }
+
+    return null;
+  }
+
+  // 서버의 성공 플래그 표현을 bool 값으로 변환하기 위한 기능
+  bool _isSuccessResponse(Map<String, dynamic> response) {
+    final value = response['success'] ?? response['status'] ?? response['code'];
+    if (value is bool) return value;
+    if (value is num) return value == 1 || value == 200;
+    if (value is String) {
+      final lowerValue = value.toLowerCase();
+      return lowerValue == 'true' || lowerValue == 'success' || lowerValue == 'ok' || lowerValue == 'y' || lowerValue == '1' || lowerValue == '200';
+    }
+    return response.containsKey('imageUrl') || response.containsKey('profileImageUrl') || response.containsKey('fileUrl') || response.containsKey('url');
+  }
+
+  // 응답 맵에서 첫 번째 문자열 값을 찾기 위한 기능
+  String? _firstStringValue(Map<String, dynamic> response, List<String> keys) {
+    for (final key in keys) {
+      final value = response[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
+
+  // 프로필 이미지 경로를 Image.network가 읽을 수 있는 URL로 변환하기 위한 기능
+  String _normalizeProfileImageUrl(String imageUrl) {
+    final trimmedUrl = imageUrl.trim();
+    if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://') || trimmedUrl.startsWith('data:image/')) {
+      return trimmedUrl;
+    }
+
+    if (trimmedUrl.startsWith('/root/')) {
+      return '${_baseUri.origin}$trimmedUrl';
+    }
+
+    if (trimmedUrl.startsWith('/')) {
+      return '$baseUrl$trimmedUrl';
+    }
+
+    return '$baseUrl/$trimmedUrl';
+  }
+
+  // 업로드 파일명을 사용자 ID와 원본 확장자로 구성하기 위한 기능
+  String _profileImageFileName(String userId, String fileName) {
+    final extension = _imageFileExtension(fileName);
+    return 'profile_$userId$extension';
+  }
+
+  // 원본 파일명에서 이미지 확장자를 안전하게 추출하기 위한 기능
+  String _imageFileExtension(String fileName) {
+    final sanitizedFileName = fileName.split('?').first;
+    final dotIndex = sanitizedFileName.lastIndexOf('.');
+    if (dotIndex == -1 || dotIndex == sanitizedFileName.length - 1) {
+      return '.jpg';
+    }
+
+    final extension = sanitizedFileName.substring(dotIndex).toLowerCase();
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
+    return allowedExtensions.contains(extension) ? extension : '.jpg';
   }
 
   // 쌀 섭취량 입력
