@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   final String baseUrl = 'https://vincerebiohealth.kr/root'; // 운영
@@ -335,10 +336,14 @@ class ApiService {
         Uri.parse('$baseUrl/app/uploadProfileImage.do'),
       );
 
+      final normalizedFileName = _profileImageFileName(userId, fileName, imageBytes);
+      final contentType = _profileImageContentType(fileName, imageBytes);
+
       var multipartFile = http.MultipartFile.fromBytes(
         'file',
         imageBytes,
-        filename: _profileImageFileName(userId, fileName),
+        filename: normalizedFileName,
+        contentType: contentType,
       );
 
       request.files.add(multipartFile);
@@ -473,22 +478,69 @@ class ApiService {
   }
 
   // 업로드 파일명을 사용자 ID와 원본 확장자로 구성하기 위한 기능
-  String _profileImageFileName(String userId, String fileName) {
-    final extension = _imageFileExtension(fileName);
+  String _profileImageFileName(String userId, String fileName, Uint8List imageBytes) {
+    final extension = _imageFileExtension(fileName, imageBytes);
     return 'profile_$userId$extension';
   }
 
-  // 원본 파일명에서 이미지 확장자를 안전하게 추출하기 위한 기능
-  String _imageFileExtension(String fileName) {
+  // 업로드 이미지의 확장자에 맞는 MIME 타입을 지정하기 위한 기능
+  MediaType _profileImageContentType(String fileName, Uint8List imageBytes) {
+    final extension = _imageFileExtension(fileName, imageBytes);
+    switch (extension) {
+      case '.png':
+        return MediaType('image', 'png');
+      case '.webp':
+        return MediaType('image', 'webp');
+      case '.heic':
+        return MediaType('image', 'heic');
+      case '.heif':
+        return MediaType('image', 'heif');
+      case '.jpg':
+      case '.jpeg':
+      default:
+        return MediaType('image', 'jpeg');
+    }
+  }
+
+  // 원본 파일명과 이미지 바이트에서 확장자를 안전하게 추출하기 위한 기능
+  String _imageFileExtension(String fileName, Uint8List imageBytes) {
     final sanitizedFileName = fileName.split('?').first;
     final dotIndex = sanitizedFileName.lastIndexOf('.');
-    if (dotIndex == -1 || dotIndex == sanitizedFileName.length - 1) {
-      return '.jpg';
+    if (dotIndex != -1 && dotIndex < sanitizedFileName.length - 1) {
+      final extension = sanitizedFileName.substring(dotIndex).toLowerCase();
+      const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
+      if (allowedExtensions.contains(extension)) {
+        return extension;
+      }
     }
 
-    final extension = sanitizedFileName.substring(dotIndex).toLowerCase();
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
-    return allowedExtensions.contains(extension) ? extension : '.jpg';
+    return _imageFileExtensionFromBytes(imageBytes);
+  }
+
+  // 모바일 브라우저가 확장자 없는 파일명을 줄 때 이미지 바이트로 확장자를 추정하기 위한 기능
+  String _imageFileExtensionFromBytes(Uint8List imageBytes) {
+    if (imageBytes.length >= 12) {
+      if (imageBytes[0] == 0x89 && imageBytes[1] == 0x50 && imageBytes[2] == 0x4E && imageBytes[3] == 0x47) {
+        return '.png';
+      }
+      if (imageBytes[0] == 0xFF && imageBytes[1] == 0xD8 && imageBytes[2] == 0xFF) {
+        return '.jpg';
+      }
+      if (imageBytes[0] == 0x52 && imageBytes[1] == 0x49 && imageBytes[2] == 0x46 && imageBytes[3] == 0x46 && imageBytes[8] == 0x57 && imageBytes[9] == 0x45 && imageBytes[10] == 0x42 && imageBytes[11] == 0x50) {
+        return '.webp';
+      }
+      if (imageBytes[4] == 0x66 && imageBytes[5] == 0x74 && imageBytes[6] == 0x79 && imageBytes[7] == 0x70) {
+        final brand = String.fromCharCodes(imageBytes.sublist(8, 12)).toLowerCase();
+        if (brand.startsWith('hei') || brand.startsWith('heic') || brand.startsWith('heix')) {
+          return '.heic';
+        }
+        if (brand.startsWith('mif') || brand.startsWith('msf')) {
+          return '.heif';
+        }
+      }
+    }
+
+    return '.jpg';
   }
 
   // 쌀 섭취량 입력
