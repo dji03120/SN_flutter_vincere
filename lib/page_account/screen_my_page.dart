@@ -3,6 +3,7 @@
 import 'package:Vincere/utils/http/webReqSpring.dart';
 import 'package:Vincere/page_account/screen_kakao_address.dart';
 import 'package:Vincere/page_account/screen_update_pswd.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -175,17 +176,190 @@ class _MyPageState extends State<MyPage> {
     return DateTime(1990, 1, 1);
   }
 
-  // 달력 팝업으로 생년월일을 선택해 입력칸에 반영하기 위한 기능
+  // 선택한 년월 기준의 마지막 일자를 계산하기 위한 기능
+  int _daysInMonth(int year, int month) {
+    return DateTime(year, month + 1, 0).day;
+  }
+
+  // 커스텀 바텀시트로 생년월일을 선택해 입력칸에 반영하기 위한 기능
   Future<void> _pickBirthDate() async {
-    final pickedDate = await showDatePicker(
+    final initialDate = _getInitialBirthDate();
+    final currentYear = DateTime.now().year;
+    final years =
+        List<int>.generate(currentYear - 1899, (index) => currentYear - index);
+    final months = List<int>.generate(12, (index) => index + 1);
+
+    int selectedYear = initialDate.year;
+    int selectedMonth = initialDate.month;
+    int selectedDay = initialDate.day;
+
+    final yearController =
+        FixedExtentScrollController(initialItem: years.indexOf(selectedYear));
+    final monthController =
+        FixedExtentScrollController(initialItem: selectedMonth - 1);
+    final dayController =
+        FixedExtentScrollController(initialItem: selectedDay - 1);
+
+    final pickedDate = await showModalBottomSheet<DateTime>(
       context: context,
-      initialDate: _getInitialBirthDate(),
-      firstDate: DateTime(1900, 1, 1),
-      lastDate: DateTime.now(),
-      initialEntryMode: DatePickerEntryMode.calendarOnly,
-      helpText: '생년월일 선택',
-      cancelText: '취소',
-      confirmText: '확인',
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final days = List<int>.generate(
+                _daysInMonth(selectedYear, selectedMonth),
+                (index) => index + 1);
+            if (selectedDay > days.length) {
+              selectedDay = days.length;
+              // 월 변경으로 일수가 줄어든 경우 일자 휠 위치를 보정하기 위한 기능
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (dayController.hasClients) {
+                  dayController.jumpToItem(selectedDay - 1);
+                }
+              });
+            }
+
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              padding: EdgeInsets.fromLTRB(
+                  20, 10, 20, MediaQuery.of(context).padding.bottom + 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E5EA),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          '생년월일 선택',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('취소'),
+                      ),
+                      const SizedBox(width: 4),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(
+                              context,
+                              DateTime(
+                                  selectedYear, selectedMonth, selectedDay));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF007331),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                        ),
+                        child: const Text('확인'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Container(
+                    height: 210,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F9FB),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: const Color(0xFFEDEDED)),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: CupertinoPicker(
+                            scrollController: yearController,
+                            itemExtent: 44,
+                            magnification: 1.08,
+                            squeeze: 1.05,
+                            useMagnifier: true,
+                            selectionOverlay:
+                                const CupertinoPickerDefaultSelectionOverlay(
+                              background: Color(0x12007331),
+                            ),
+                            onSelectedItemChanged: (index) {
+                              setModalState(() {
+                                selectedYear = years[index];
+                                selectedDay = selectedDay.clamp(1,
+                                    _daysInMonth(selectedYear, selectedMonth));
+                              });
+                            },
+                            children: years
+                                .map((year) => Center(child: Text('$year년')))
+                                .toList(),
+                          ),
+                        ),
+                        Expanded(
+                          child: CupertinoPicker(
+                            scrollController: monthController,
+                            itemExtent: 44,
+                            magnification: 1.08,
+                            squeeze: 1.05,
+                            useMagnifier: true,
+                            selectionOverlay:
+                                const CupertinoPickerDefaultSelectionOverlay(
+                              background: Color(0x12007331),
+                            ),
+                            onSelectedItemChanged: (index) {
+                              setModalState(() {
+                                selectedMonth = months[index];
+                                selectedDay = selectedDay.clamp(1,
+                                    _daysInMonth(selectedYear, selectedMonth));
+                              });
+                            },
+                            children: months
+                                .map((month) => Center(child: Text('$month월')))
+                                .toList(),
+                          ),
+                        ),
+                        Expanded(
+                          child: CupertinoPicker(
+                            scrollController: dayController,
+                            itemExtent: 44,
+                            magnification: 1.08,
+                            squeeze: 1.05,
+                            useMagnifier: true,
+                            selectionOverlay:
+                                const CupertinoPickerDefaultSelectionOverlay(
+                              background: Color(0x12007331),
+                            ),
+                            onSelectedItemChanged: (index) {
+                              setModalState(() {
+                                selectedDay = days[index];
+                              });
+                            },
+                            children: days
+                                .map((day) => Center(child: Text('$day일')))
+                                .toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
 
     if (pickedDate == null) return;
